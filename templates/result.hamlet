@@ -1,0 +1,16 @@
+<div id=topbar>
+    <a href=@{HomeR}>
+        <div id=logo>
+            :: TED -> [SRT]
+    <form id="ted_srt" method=GET action=@{HomeR}>
+        <input id=search_input name=q type=text placeholder=URL>
+        <input id=search_button type=submit value=SRT>
+<div id=main data-tid=#{tid}>
+    <p>Talk page: #
+        <a href=#{q'}>#{title}
+    <fieldset id=avail>
+        <legend>Available Subtitles
+        $forall (s, name) <- srtlist
+            <li data-lang=#{s}>#{name}
+
+<div id=download>Download
