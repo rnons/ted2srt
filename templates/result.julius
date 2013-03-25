@@ -15,19 +15,16 @@ $("#download").bind("click", function() {
         }
     });
     var len = $("#main li.selected").length
-    if (len=== 0) {
-        console.log(len);
+    if (len === 0) {
         alert("No language selected");
-    } else if (len > 2) {
-        alert("Can't select more than two languages");
     } else {
-        //var url = "http://localhost:3030/download?tid=865&lang=en"
         var tid = $("#main").data("tid");
-        var url = "/download?tid=" + tid
+        var title = $("#main").find('a').text();
+        var url = "/download?tid=" + tid + "&title=" + title
         $("#main li.selected").each(function(i){
             url += "&lang=" + $(this).data("lang");
         });
-        //console.log(url);
+        console.log(url);
         location.href = url;
     }
 });

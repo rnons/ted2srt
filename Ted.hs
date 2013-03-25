@@ -1,22 +1,23 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 module Ted where
 
+import Control.Concurrent
 import Control.Exception
-import Network.HTTP
-import Text.Regex.PCRE
-import Data.Maybe
-import Data.Array
+import Control.Monad
 import Data.Aeson
 import qualified Data.Aeson.Generic as G
-import qualified Data.ByteString.Lazy as L
+import Data.Array
 import qualified Data.ByteString.Lazy.Char8 as C
+import Data.Char (isSpace)
 import Data.Data
-import Text.Printf
-import Control.Monad
+import Data.Maybe
+import Network.HTTP
 import System.Directory
 import System.IO
 import System.Process
-import Control.Concurrent
+import Text.Printf
+import Text.Regex.Posix ((=~))
+import Text.Regex.PCRE hiding ((=~))
 
 data Caption = Caption
     { captions :: [Item]
@@ -29,8 +30,10 @@ data Item = Item
     , startTime         :: Int
     } deriving (Data, Typeable, Show)
 
-tedPageContent uri = do
-    catch ((simpleHTTP $ getRequest uri) >>= getResponseBody)
+rstrip = reverse . dropWhile isSpace . reverse
+
+tedPageContent uri =
+    catch (simpleHTTP $ getRequest $ rstrip uri >>= getResponseBody)
           (\e -> do print (e :: SomeException)
                     return "")
 
@@ -39,14 +42,14 @@ html2srt body = do
     let reg = makeRegexOpts compDotAll defaultExecOpt "<select name=\"languageCode\"(.+?)</select>"
     case matchOnceText reg body of
          Just (_, m, _) -> do
-            let (mt, _) =  m ! 0
+            let (mt, _) =  m ! 1
             let srt = mt =~ "<option value=\"([^\"]+)\"[^>]*>([^<]+)</option>" :: [[String]]
             let srtlist = map (\xs -> (xs!!1, xs!!2)) srt
             return $ Just srtlist
          _              -> return Nothing
 
 getTid body = do
-    let pat = "<div id=\"share_and_save\"[^>]*?data-id=\"(\\d+)\""
+    let pat = "data-id=\"([^ ]*)\""
     let r = body =~ pat :: [[String]]
     last $ last r
 
@@ -74,12 +77,8 @@ toSrt tid (s1:s2:_) = do
                      let sh = "diff --new-line-format \"%L\" " ++ p1' ++ " " ++ p2' ++ " > " ++ path
                      forkIO $ do
                          createProcess (shell sh)
-                         --createProcess ( proc
-                         --                "diff"
-                         --                [p1', p2', " > ", path] )
                          return ()
                      wait path
-                     --return $ Just p1'
                  _                    -> return Nothing
   where
     wait path = do
@@ -102,7 +101,6 @@ oneSrt tid lang = do
            rsp <- simpleHTTP $ getRequest url
            json <- getResponseBody rsp
            print json
-           --json <- readFile "en"
            let res = G.decode $ C.pack json :: Maybe Caption
            case res of
                 Just r -> do
@@ -111,7 +109,6 @@ oneSrt tid lang = do
                     return $ Just path
                 Nothing -> 
                     return Nothing
-    --print $ head $ captions $ fromJust res
   where
     ppr h (c,i) = do
         let st = startTime c + mediaPad

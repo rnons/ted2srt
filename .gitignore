@@ -4,4 +4,4 @@
 *.o
 *.aes
 main
-srt/*
+*.srt
