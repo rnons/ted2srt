@@ -14,3 +14,11 @@
             <li data-lang=#{s}>#{name}
 
 <div id=download>Download
+<footer>
+    <div id=footer_right>
+        Ted2srt by #
+        <a href="http://rnons.info">
+            rnons
+        \ | #
+        <a href="https://github.com/rnons/ted2srt">
+            source

@@ -1,8 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 module Ted where
 
-import Control.Concurrent
-import Control.Exception
+import qualified Control.Exception as E
 import Control.Monad
 import Data.Aeson
 import qualified Data.Aeson.Generic as G
@@ -33,8 +32,8 @@ data Item = Item
 rstrip = reverse . dropWhile isSpace . reverse
 
 tedPageContent uri = 
-    catch ((simpleHTTP $ getRequest $ rstrip uri) >>= getResponseBody)
-          (\e -> do print (e :: SomeException)
+    E.catch ((simpleHTTP $ getRequest $ rstrip uri) >>= getResponseBody)
+          (\e -> do print (e :: E.SomeException)
                     return "")
 
 --html2srt :: String -> [(String, String)]

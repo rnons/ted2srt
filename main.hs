@@ -17,11 +17,15 @@ data Search = Search
     }
 
 mkYesod "Ted" [parseRoutes|
+/favicon.ico FaviconR GET
 / HomeR GET
 /download DownloadR GET
 |]
 
 instance Yesod Ted
+
+getFaviconR :: GHandler s m ()
+getFaviconR = sendFile "image/x-icon" "favicon.ico"
 
 getHomeR :: Handler RepHtml
 getHomeR = do
@@ -43,7 +47,7 @@ getHomeR = do
                   _            -> redirect HomeR
          _       -> 
              defaultLayout $ do
-                 setTitle "TED2SRT: Subtitles worth spreading"
+                 setTitle "Ted2srt: Subtitles worth spreading"
                  $(whamletFile "templates/homepage.hamlet")
                  toWidget $(cassiusFileReload "templates/homepage.cassius")
 
