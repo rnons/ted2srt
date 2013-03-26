@@ -43,7 +43,7 @@ getHomeR = do
                   _            -> redirect HomeR
          _       -> 
              defaultLayout $ do
-                 setTitle "ted2srt: subtitles worth spreading"
+                 setTitle "TED2SRT: Subtitles worth spreading"
                  $(whamletFile "templates/homepage.hamlet")
                  toWidget $(cassiusFileReload "templates/homepage.cassius")
 

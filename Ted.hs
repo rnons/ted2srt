@@ -32,8 +32,8 @@ data Item = Item
 
 rstrip = reverse . dropWhile isSpace . reverse
 
-tedPageContent uri =
-    catch (simpleHTTP $ getRequest $ rstrip uri >>= getResponseBody)
+tedPageContent uri = 
+    catch ((simpleHTTP $ getRequest $ rstrip uri) >>= getResponseBody)
           (\e -> do print (e :: SomeException)
                     return "")
 
@@ -74,18 +74,12 @@ toSrt tid (s1:s2:_) = do
             p2 <- oneSrt tid s2
             case (p1, p2) of
                  (Just p1', Just p2') -> do
-                     let sh = "diff --new-line-format \"%L\" " ++ p1' ++ " " ++ p2' ++ " > " ++ path
-                     forkIO $ do
-                         createProcess (shell sh)
-                         return ()
-                     wait path
+                     c1 <- readFile p1'
+                     c2 <- readFile p2'
+                     let content = unlines $ merge (lines c1) (lines c2)
+                     writeFile path content
+                     return $ Just path
                  _                    -> return Nothing
-  where
-    wait path = do
-        diffed <- doesFileExist path
-        if diffed then return $ Just path
-                  else wait path
-
 
 oneSrt :: String -> String -> IO (Maybe String)
 oneSrt tid lang = do
@@ -106,6 +100,7 @@ oneSrt tid lang = do
                 Just r -> do
                     h <- openFile path WriteMode
                     forM_ (zip (captions $ fromJust res) [1,2..]) (ppr h)
+                    hClose h
                     return $ Just path
                 Nothing -> 
                     return Nothing
@@ -121,6 +116,18 @@ oneSrt tid lang = do
             em = et `div` 1000 `mod` 3600 `div` 60
             es = et `div` 1000 `mod` 60
             ems = et `mod` 1000
-        let fmt = "%d\r\n%02d:%02d:%02d,%03d --> " ++
-                  "%02d:%02d:%02d,%03d\r\n%s\r\n\r\n"
+        let fmt = "%d\n%02d:%02d:%02d,%03d --> " ++
+                  "%02d:%02d:%02d,%03d\n%s\n\n"
         hPrintf h fmt (i::Int) sh sm ss sms eh em es ems (content c)
+
+
+-- | Merge srt files of two language line by line. However,
+-- one line in srt_1 may correspond to two lines in srt_2, or vice versa.
+merge :: [String] -> [String] -> [String]
+merge (a:as) (b:bs) 
+    | a == b    = a : merge as bs
+    | a == ""   = b : merge (a:as) bs
+    | b == ""   = a : merge as (b:bs)
+    | otherwise = a : b : merge as bs
+merge _      _      = []
+
