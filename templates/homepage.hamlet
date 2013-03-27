@@ -1,6 +1,6 @@
-<div id=logo>
+<div id=logo_homepage>
     :: TED -> [SRT]
-<form id=ted_srt method=GET action=@{HomeR}>
+<form id=search_form_homepage method=GET action=@{HomeR}>
     <input id=search_button type=submit value=SRT>
     <input id=search_input name=q type=text placeholder=URL>
 <footer>

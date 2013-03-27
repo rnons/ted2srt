@@ -2,9 +2,9 @@
     <a href=@{HomeR}>
         <div id=logo>
             :: TED -> [SRT]
-    <form id="ted_srt" method=GET action=@{HomeR}>
-        <input id=search_input name=q type=text placeholder=URL>
+    <form id=search_form method=GET action=@{HomeR}>
         <input id=search_button type=submit value=SRT>
+        <input id=search_input name=q type=text placeholder=URL>
 <div id=main data-tid=#{tid}>
     <p>Talk page: #
         <a href=#{q'}>#{title}

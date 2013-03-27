@@ -1,5 +1,13 @@
-body
+body 
     margin: 0
+
+#logo_homepage
+    font: bold 30px sans-serif
+    color: rgba(255, 43, 6, 1.0)
+    margin: auto
+    position: relative
+    text-align: center
+    top: 214px
 
 #topbar
     height: 32px
@@ -16,17 +24,23 @@ body
 #logo:hover
     color: rgba(255, 43, 6, 0.7)
 
-#ted_srt
+#search_form_homepage
     margin: auto
     position: relative
-    width: 480px
+    top: 249px
+    width: 470px
+
+#search_form
+    margin: auto
+    position: relative
+    width: 470px
     float: left
 
 #search_input
     width: 390px
     height: 26px
     border: 1.5px solid #727272
-    float: left
+    float: right
     padding: 2px 7px
     margin: 0
 
@@ -34,7 +48,7 @@ body
     border-color: rgba(255, 43, 6, 0.7)
 
 #search_button
-    float: left
+    float: right
     width: 60px
     height: 32px
     padding: 0
@@ -71,6 +85,12 @@ li:hover
 
 li::first-letter
     font-size: 105%
+a
+    text-decoration: none
+    color: #424242
+
+a:hover
+    color: #ff2b06
 
 #download
     width: 100px
@@ -85,13 +105,6 @@ li::first-letter
 #download:hover
     background-color: rgba(255, 43, 6, 0.8)
     cursor: pointer
-
-a
-    text-decoration: none
-    color: #424242
-
-a:hover
-    color: #ff2b06
 
 footer
     border-top: 1px solid #a2a2a2
@@ -111,3 +124,4 @@ footer a
 
 footer a:hover
     color: #424242
+
