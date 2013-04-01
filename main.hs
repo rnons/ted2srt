@@ -5,24 +5,31 @@ import qualified Data.Text as T
 import Filesystem.Path.CurrentOS
 import System.Directory
 import Text.Cassius
+import Text.Jasmine (minifym)
 import Text.Julius
 import Yesod
+import Yesod.Default.Util (addStaticContentExternal)
+import Yesod.Static
 
 import Ted
+import Settings
 
 data Ted = Ted
-
-data Search = Search
-    { url :: T.Text
+    { getStatic :: Static
     }
 
 mkYesod "Ted" [parseRoutes|
+/static StaticR Static getStatic
 /favicon.ico FaviconR GET
 / HomeR GET
 /download DownloadR GET
 |]
 
-instance Yesod Ted
+instance Yesod Ted where
+    addStaticContent = 
+        addStaticContentExternal minifym genFileName staticDir (StaticR . flip StaticRoute [])
+      where
+        genFileName = base64md5
 
 getFaviconR :: GHandler s m ()
 getFaviconR = sendFile "image/x-icon" "favicon.ico"
@@ -34,6 +41,7 @@ getHomeR = do
          Just q' -> do
              body <- liftIO $ tedPageContent (T.unpack q')
              res <- html2srt body
+             liftIO $ print res
              case res of
                   Just srtlist -> do
                      let tid = getTid body
@@ -69,5 +77,9 @@ getDownloadR = do
                   _      -> redirect HomeR
          _                  -> redirect HomeR 
 
+$(staticFiles staticDir)
+
 main :: IO ()
-main = warpDebug 3000 Ted
+main = do
+    s <- staticSite
+    warpDebug 3000 $ Ted s
