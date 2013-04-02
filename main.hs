@@ -4,9 +4,7 @@
 import qualified Data.Text as T
 import Filesystem.Path.CurrentOS
 import System.Directory
-import Text.Cassius
 import Text.Jasmine (minifym)
-import Text.Julius
 import Yesod
 import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Static
@@ -50,14 +48,14 @@ getHomeR = do
                          setTitle $ toHtml title
                          addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
                          $(whamletFile "templates/result.hamlet")
-                         toWidget $(cassiusFileReload "templates/default.cassius")
-                         toWidget $(juliusFileReload "templates/result.julius")
+                         toWidget $(cssFile "templates/default.cassius")
+                         toWidget $(jssFile "templates/result.julius")
                   _            -> redirect HomeR
          _       -> 
              defaultLayout $ do
                  setTitle "Ted2srt: Subtitles worth spreading"
                  $(whamletFile "templates/homepage.hamlet")
-                 toWidget $(cassiusFileReload "templates/default.cassius")
+                 toWidget $(cssFile "templates/default.cassius")
 
 getDownloadR :: Handler RepPlain
 getDownloadR = do
