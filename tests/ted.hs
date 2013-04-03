@@ -1,23 +1,26 @@
+{-# LANGUAGE OverloadedStrings #-}
 import Control.Monad.IO.Class
 import Test.HUnit
 import Test.Hspec
+import Text.XML.Cursor
 
 import Ted
 
 main :: IO ()
 main = do
     let uri = "http://www.ted.com/talks/francis_collins_we_need_better_drugs_now.html"
-    body <- tedPageContent uri
-    hspec $ spec body
+    cur <- getCursor uri
+    hspec $ spec cur
 
-spec :: String -> Spec
-spec body = do 
+spec :: Cursor -> Spec
+spec cur = do 
     describe "Ted.hs tests" $ do
+        let (tid, title) = talkIdTitle cur
         it "talk id" $
-            getTid body @?= "1696"
+            tid @?= "1696"
         it "talk title" $
-            getTitle body @?= "Francis Collins: We need better drugs -- now"
+            title @?= "Francis Collins: We need better drugs -- now"
             
         it "available subtitles" $ do
-            srtlist <- html2srt body
-            fmap length srtlist @?= Just 6
+            let srtlist = languageCodeList cur
+            length srtlist @?= 7

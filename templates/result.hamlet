@@ -10,8 +10,8 @@
         <a href=#{q'}>#{title}
     <fieldset id=avail>
         <legend>Available Subtitles
-        $forall (s, name) <- srtlist
-            <li data-lang=#{s}>#{name}
+        $forall (lang, code) <- tail langList
+            <li data-lang=#{code}>#{lang}
 
 <div id=download>Download
 <footer>

@@ -1,22 +1,21 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Ted where
 
-import qualified Control.Exception as E
 import Control.Monad
 import Data.Aeson
 import qualified Data.Aeson.Generic as G
-import Data.Array
-import qualified Data.ByteString.Lazy.Char8 as C
-import Data.Char (isSpace)
 import Data.Data
 import Data.Maybe
-import Network.HTTP
+import Network.HTTP.Conduit (simpleHttp)
 import System.Directory
 import System.IO
 import System.Process
+import Text.HTML.DOM (parseLBS)
 import Text.Printf
-import Text.Regex.Posix ((=~))
-import Text.Regex.PCRE hiding ((=~))
+import Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
+                        ($//), (&|), (&//), (>=>))
+import qualified Text.XML.Cursor as XC
 
 data Caption = Caption
     { captions :: [Item]
@@ -24,38 +23,29 @@ data Caption = Caption
 
 data Item = Item
     { duration          :: Int
-    , content           :: String
+    , content :: String
     , startOfParagraph  :: Bool
     , startTime         :: Int
     } deriving (Data, Typeable, Show)
 
-rstrip = reverse . dropWhile isSpace . reverse
+getCursor uri = do
+    lbs <- simpleHttp uri
+    return $ fromDocument $ parseLBS lbs
 
-tedPageContent uri = 
-    E.catch ((simpleHTTP $ getRequest $ rstrip uri) >>= getResponseBody)
-          (\e -> do print (e :: E.SomeException)
-                    return "")
+talkIdTitle cursor = (attr "data-id", attr "data-title")
+  where
+    cur = head $ cursor $// element "div" >=> attributeIs "id" "share_and_save"
+    attr name = head $ attribute name cur
 
---html2srt :: String -> [(String, String)]
-html2srt body = do
-    let reg = makeRegexOpts compDotAll defaultExecOpt "<select name=\"languageCode\"(.+?)</select>"
-    case matchOnceText reg body of
-         Just (_, m, _) -> do
-            let (mt, _) =  m ! 1
-            let srt = mt =~ "<option value=\"([^\"]+)\"[^>]*>([^<]+)</option>" :: [[String]]
-            let srtlist = map (\xs -> (xs!!1, xs!!2)) srt
-            return $ Just srtlist
-         _              -> return Nothing
-
-getTid body = do
-    let pat = "data-id=\"([^ ]*)\""
-    let r = body =~ pat :: [[String]]
-    last $ last r
-
-getTitle body = do
-    let pat = "<span id=\"altHeadline\" >(.+)</span>"
-        r = body =~ pat :: [[String]]
-    last $ last r
+languageCodeList cursor = zip lang code
+  where
+    lang = cursor $// element "select" 
+                  >=> attributeIs "name" "languageCode" 
+                  &// element "option" &// XC.content
+    code = concat $ cursor $// element "select" 
+                           >=> attributeIs "name" "languageCode" 
+                           &// element "option"
+                           &| attribute "value"
 
 mediaPad = 15330    -- time lag in miliseconds
 
@@ -64,7 +54,6 @@ toSrt tid [lang] = oneSrt tid lang
 toSrt tid (s1:s2:_) = do
     pwd <- getCurrentDirectory
     let path = pwd ++ "/srt/" ++ tid ++ "." ++ s1 ++ "." ++ s2 ++ ".srt"
-    print path
     cached <- doesFileExist path
     if cached 
        then return $ Just path
@@ -85,16 +74,13 @@ oneSrt tid lang = do
     pwd <- getCurrentDirectory
     let path = pwd ++ "/srt/" ++ tid ++ "." ++ lang ++ ".srt"
     cached <- doesFileExist path
-    print cached
     if cached 
        then return $ Just path
        else do
            let url = "http://www.ted.com/talks/subtitles/id/" 
                    ++ tid ++ "/lang/" ++ lang
-           rsp <- simpleHTTP $ getRequest url
-           json <- getResponseBody rsp
-           print json
-           let res = G.decode $ C.pack json :: Maybe Caption
+           json <- simpleHttp url
+           let res = G.decode json :: Maybe Caption
            case res of
                 Just r -> do
                     h <- openFile path WriteMode
@@ -118,7 +104,6 @@ oneSrt tid lang = do
         let fmt = "%d\n%02d:%02d:%02d,%03d --> " ++
                   "%02d:%02d:%02d,%03d\n%s\n\n"
         hPrintf h fmt (i::Int) sh sm ss sms eh em es ems (content c)
-
 
 -- | Merge srt files of two language line by line. However,
 -- one line in srt_1 may correspond to two lines in srt_2, or vice versa.

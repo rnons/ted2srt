@@ -1,5 +1,5 @@
 $("#main li").bind("click", function() {
-    var len = $("#main li.selected").length
+    var len = $("#main li.selected").length;
     if ( len < 2 ) {
         $(this).toggleClass("selected");
     } else if ( len === 2) {
@@ -11,10 +11,10 @@ $("#main li").bind("click", function() {
 $("#download").bind("click", function() {
     $("#main li").each(function(i){
         if ($(this).hasClass("selected")) {
-            //console.log($(this).data("lang"));
+            console.log($(this).data("lang"));
         }
     });
-    var len = $("#main li.selected").length
+    var len = $("#main li.selected").length;
     if (len === 0) {
         alert("No language selected");
     } else {

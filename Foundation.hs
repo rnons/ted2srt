@@ -42,20 +42,19 @@ getHomeR = do
     q <- lookupGetParam "q"
     case q of
          Just q' -> do
-             body <- liftIO $ tedPageContent (T.unpack q')
-             res <- html2srt body
-             liftIO $ print res
-             case res of
-                  Just srtlist -> do
-                     let tid = getTid body
-                         title = getTitle body
+             cur <- liftIO $ getCursor $ T.unpack q'
+             let langList = languageCodeList cur
+             --liftIO $ print res
+             if Prelude.null langList
+                then redirect HomeR
+                else do
+                     let (tid, title) = talkIdTitle cur
                      defaultLayout $ do
                          setTitle $ toHtml title
                          addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
                          $(whamletFile "templates/result.hamlet")
                          toWidget $(cssFile "templates/default.cassius")
                          toWidget $(jssFile "templates/result.julius")
-                  _            -> redirect HomeR
          _       -> 
              defaultLayout $ do
                  setTitle "Ted2srt: Subtitles worth spreading"
