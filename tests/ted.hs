@@ -20,4 +20,4 @@ spec body = do
             
         it "available subtitles" $ do
             srtlist <- html2srt body
-            fmap length srtlist @?= Just 2
+            fmap length srtlist @?= Just 6
