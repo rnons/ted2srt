@@ -58,7 +58,7 @@ getHomeR = do
          _       -> 
              defaultLayout $ do
                  setTitle "Ted2srt: Subtitles worth spreading"
-                 toWidgetHead [hamlet| <meta name=desciption content="Look up available subtitles of TED talks, download srt of one or two languages. TED演讲双语字幕下载。">|]
+                 toWidgetHead [hamlet| <meta name=description content="Look up available subtitles of TED talks, download srt of one or two languages. TED演讲双语字幕下载。">|]
                  $(whamletFile "templates/homepage.hamlet")
                  toWidget $(cssFile "templates/default.cassius")
 
