@@ -5,22 +5,18 @@ $("#main li").bind("click", function() {
     } else if ( len === 2) {
         $(this).removeClass("selected");
     }
-    //       .siblings().removeClass("selected");
 });
 
 $("#download").bind("click", function() {
-    $("#main li").each(function(i){
-        if ($(this).hasClass("selected")) {
-            console.log($(this).data("lang"));
-        }
-    });
     var len = $("#main li.selected").length;
     if (len === 0) {
         alert("No language selected");
     } else {
         var tid = $("#main").data("tid");
-        var title = $("#main").find('a').text();
-        var url = "/download?tid=" + tid + "&title=" + title
+        var fname = $("#main").data("fname");
+        var lag = $("#main").data("lag");   
+        var url = "/download?tid=" + tid + 
+                  "&fname=" + fname + "&lag=" + lag;
         $("#main li.selected").each(function(i){
             url += "&lang=" + $(this).data("lang");
         });

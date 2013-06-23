@@ -3,9 +3,13 @@
 
 module Settings where
 
+import Language.Haskell.TH.Syntax
 import Text.Cassius
+import Text.Hamlet
 import Text.Julius
 import Yesod.Static
+import Data.Default
+import Yesod.Default.Util
 
 staticDir :: FilePath
 staticDir = "static"
@@ -21,3 +25,16 @@ cssFile = cassiusFileReload
 jssFile = juliusFileReload
 #endif
 
+widgetFileSettings :: WidgetFileSettings
+widgetFileSettings = def
+    { wfsHamletSettings = defaultHamletSettings
+        { hamletNewlines = AlwaysNewlines
+        }
+    }
+
+widgetFile :: String -> Q Exp
+#if PRODUCTION 
+widgetFile = widgetFileNoReload widgetFileSettings
+#else
+widgetFile = widgetFileReload widgetFileSettings
+#endif

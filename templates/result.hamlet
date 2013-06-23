@@ -5,12 +5,12 @@
     <form id=search_form method=GET action=@{HomeR}>
         <input id=search_button type=submit value=SRT>
         <input id=search_input name=q type=text placeholder=URL>
-<div id=main data-tid=#{tid}>
+<div id=main data-tid=#{tid talk} data-fname=#{srtName talk} data-lag=#{srtLag talk}>
     <p>Talk page: #
-        <a href=#{q'}>#{title}
+        <a href=#{q'}>#{title talk}
     <fieldset id=avail>
         <legend>Available Subtitles
-        $forall (lang, code) <- tail langList
+        $forall (lang, code) <- tail $ srtLang talk
             <li data-lang=#{code}>#{lang}
 
 <div id=download>Download

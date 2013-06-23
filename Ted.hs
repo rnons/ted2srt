@@ -5,17 +5,22 @@ module Ted where
 import Control.Monad
 import Data.Aeson
 import qualified Data.Aeson.Generic as G
+import qualified Data.ByteString.Lazy.Char8 as L8
 import Data.Data
 import Data.Maybe
-import Network.HTTP.Conduit (simpleHttp)
+import Data.Text (Text)
+import qualified Data.Text as T
+import Network.HTTP.Conduit
 import System.Directory
 import System.IO
 import System.Process
 import Text.HTML.DOM (parseLBS)
 import Text.Printf
+import Text.Regex.Posix ((=~))
 import Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
                         ($//), (&|), (&//), (>=>))
 import qualified Text.XML.Cursor as XC
+import Control.Monad.IO.Class (liftIO)
 
 data Caption = Caption
     { captions :: [Item]
@@ -23,21 +28,44 @@ data Caption = Caption
 
 data Item = Item
     { duration          :: Int
-    , content :: String
+    , content           :: String
     , startOfParagraph  :: Bool
     , startTime         :: Int
     } deriving (Data, Typeable, Show)
 
-getCursor uri = do
-    lbs <- simpleHttp uri
-    return $ fromDocument $ parseLBS lbs
+data Talk = Talk 
+    { tid               :: Text
+    , title             :: Text
+    , srtLang              :: [(Text, Text)]
+    , srtName          :: String
+    , srtLag           :: Double
+    } deriving Show
 
-talkIdTitle cursor = (attr "data-id", attr "data-title")
+getTalk :: Text -> IO Talk
+getTalk uri = do
+    body <- simpleHttp $ T.unpack uri
+{-
+    request <- parseUrl $ T.unpack uri
+    body <- responseBody $ withManager $ httpLbs request
+    body <- liftIO $ withManager $ \manager -> do
+        response <- http request manager
+        responseBody response
+-}
+    let cursor = fromDocument $ parseLBS body
+    return Talk { tid = talkIdTitle cursor "data-id"
+               , title = talkIdTitle cursor "data-title"
+               , srtLang = languageCodes cursor
+               , srtName = mediaSlug body
+               , srtLag = mediaPad body
+               }
+
+talkIdTitle cursor name = attr name
   where
     cur = head $ cursor $// element "div" >=> attributeIs "id" "share_and_save"
     attr name = head $ attribute name cur
 
-languageCodeList cursor = zip lang code
+{- List in the form of [("English", "en")] -}
+languageCodes cursor = zip lang code
   where
     lang = cursor $// element "select" 
                   >=> attributeIs "name" "languageCode" 
@@ -47,19 +75,40 @@ languageCodeList cursor = zip lang code
                            &// element "option"
                            &| attribute "value"
 
-mediaPad = 15330    -- time lag in miliseconds
+{- File name when saved to local. -}
+mediaSlug :: L8.ByteString -> String
+mediaSlug body = last $ last r
+  where
+    pat = "mediaSlug\":\"([^\"]+)\"" :: String
+    r = (L8.unpack body) =~ pat :: [[String]]
 
-toSrt :: String -> [String] -> IO (Maybe String)
-toSrt tid [lang] = oneSrt tid lang
-toSrt tid (s1:s2:_) = do
+{- Time lag in miliseconds. -}
+mediaPad :: L8.ByteString -> Double
+mediaPad body = read t * 1000.0
+  where
+    pat = "mediaPad\":(.+)}" :: String
+    r = (L8.unpack body) =~ pat :: [[String]]
+    t = last $ last r
+
+toSrt :: Text -> [Text] -> Text -> Int -> IO (Maybe String)
+toSrt tid [lang] fname lag = oneSrt tid lang fname lag
+toSrt tid (s1:s2:_) fname lag = do
     pwd <- getCurrentDirectory
-    let path = pwd ++ "/srt/" ++ tid ++ "." ++ s1 ++ "." ++ s2 ++ ".srt"
+    let path = T.unpack $ T.concat [ T.pack pwd
+                                   , "/srt/"
+                                   , fname
+                                   , "."
+                                   , s1
+                                   , "."
+                                   , s2
+                                   , ".srt"
+                                   ]
     cached <- doesFileExist path
     if cached 
        then return $ Just path
        else do
-            p1 <- oneSrt tid s1
-            p2 <- oneSrt tid s2
+            p1 <- oneSrt tid s1 fname lag
+            p2 <- oneSrt tid s2 fname lag
             case (p1, p2) of
                  (Just p1', Just p2') -> do
                      c1 <- readFile p1'
@@ -69,16 +118,22 @@ toSrt tid (s1:s2:_) = do
                      return $ Just path
                  _                    -> return Nothing
 
-oneSrt :: String -> String -> IO (Maybe String)
-oneSrt tid lang = do
+oneSrt :: Text -> Text -> Text -> Int -> IO (Maybe String)
+oneSrt tid lang fname lag = do
     pwd <- getCurrentDirectory
-    let path = pwd ++ "/srt/" ++ tid ++ "." ++ lang ++ ".srt"
+    let path = T.unpack $ T.concat [ T.pack pwd
+                                   , "/srt/"
+                                   , fname
+                                   , "."
+                                   , lang
+                                   , ".srt"
+                                   ]
     cached <- doesFileExist path
     if cached 
        then return $ Just path
        else do
            let url = "http://www.ted.com/talks/subtitles/id/" 
-                   ++ tid ++ "/lang/" ++ lang
+                   ++ T.unpack tid ++ "/lang/" ++ T.unpack lang
            json <- simpleHttp url
            let res = G.decode json :: Maybe Caption
            case res of
@@ -91,7 +146,8 @@ oneSrt tid lang = do
                     return Nothing
   where
     ppr h (c,i) = do
-        let st = startTime c + mediaPad
+        --let st = startTime c + (read $ T.unpack lag)
+        let st = startTime c + lag
             sh = st `div` 1000 `div` 3600
             sm = st `div` 1000 `mod` 3600 `div` 60
             ss = st `div` 1000 `mod` 60
