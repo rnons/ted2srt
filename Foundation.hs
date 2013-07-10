@@ -42,14 +42,13 @@ getHomeR = do
     q <- lookupGetParam "q"
     case q of
          Just q' -> do
-             talk <- liftIO $ getTalk q'
-             if Prelude.null $ srtLang talk
-                then redirect HomeR
-                else do
-                     defaultLayout $ do
-                         setTitle $ toHtml $ title talk
-                         addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
-                         $(widgetFile "result")
+             talk' <- liftIO $ getTalk q'
+             case talk' of
+                  Just talk -> defaultLayout $ do
+                      setTitle $ toHtml $ title talk
+                      addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
+                      $(widgetFile "result")
+                  _          -> redirect HomeR
          _       -> 
              defaultLayout $ do
                  setTitle "Ted2srt: Subtitles worth spreading"

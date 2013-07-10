@@ -2,7 +2,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Ted where
 
+import Control.Exception as E
 import Control.Monad
+import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
 import qualified Data.Aeson.Generic as G
 import qualified Data.ByteString.Lazy.Char8 as L8
@@ -10,17 +12,15 @@ import Data.Data
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import Network.HTTP.Conduit
+import Network.HTTP.Conduit (simpleHttp)
 import System.Directory
 import System.IO
-import System.Process
 import Text.HTML.DOM (parseLBS)
 import Text.Printf
 import Text.Regex.Posix ((=~))
 import Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
                         ($//), (&|), (&//), (>=>))
 import qualified Text.XML.Cursor as XC
-import Control.Monad.IO.Class (liftIO)
 
 data Caption = Caption
     { captions :: [Item]
@@ -36,28 +36,26 @@ data Item = Item
 data Talk = Talk 
     { tid               :: Text
     , title             :: Text
-    , srtLang              :: [(Text, Text)]
-    , srtName          :: String
-    , srtLag           :: Double
+    , srtLang           :: [(Text, Text)]
+    , srtName           :: String
+    , srtLag            :: Double
     } deriving Show
 
-getTalk :: Text -> IO Talk
-getTalk uri = do
-    body <- simpleHttp $ T.unpack uri
-{-
-    request <- parseUrl $ T.unpack uri
-    body <- responseBody $ withManager $ httpLbs request
-    body <- liftIO $ withManager $ \manager -> do
-        response <- http request manager
-        responseBody response
--}
-    let cursor = fromDocument $ parseLBS body
-    return Talk { tid = talkIdTitle cursor "data-id"
-               , title = talkIdTitle cursor "data-title"
-               , srtLang = languageCodes cursor
-               , srtName = mediaSlug body
-               , srtLag = mediaPad body
-               }
+getTalk uri
+    | pattern `T.isPrefixOf` uri = E.catch
+        (do body <- simpleHttp $ T.unpack uri
+            let cursor = fromDocument $ parseLBS body
+            return $ Just Talk { tid = talkIdTitle cursor "data-id"
+                               , title = talkIdTitle cursor "data-title"
+                               , srtLang = languageCodes cursor
+                               , srtName = mediaSlug body
+                               , srtLag = mediaPad body
+                               })
+        (\e -> do print (e :: E.SomeException)
+                  return Nothing)
+    | otherwise = return Nothing
+  where
+    pattern = "http://www.ted.com/talks/"
 
 talkIdTitle cursor name = attr name
   where
@@ -80,14 +78,14 @@ mediaSlug :: L8.ByteString -> String
 mediaSlug body = last $ last r
   where
     pat = "mediaSlug\":\"([^\"]+)\"" :: String
-    r = (L8.unpack body) =~ pat :: [[String]]
+    r = L8.unpack body =~ pat :: [[String]]
 
 {- Time lag in miliseconds. -}
 mediaPad :: L8.ByteString -> Double
 mediaPad body = read t * 1000.0
   where
     pat = "mediaPad\":(.+)}" :: String
-    r = (L8.unpack body) =~ pat :: [[String]]
+    r = L8.unpack body =~ pat :: [[String]]
     t = last $ last r
 
 toSrt :: Text -> [Text] -> Text -> Int -> IO (Maybe String)

@@ -10,8 +10,11 @@
         <a href=#{q'}>#{title talk}
     <fieldset id=avail>
         <legend>Available Subtitles
-        $forall (lang, code) <- tail $ srtLang talk
-            <li data-lang=#{code}>#{lang}
+        $if (length $ srtLang talk) > 1
+            $forall (lang, code) <- tail $ srtLang talk
+                <li data-lang=#{code}>#{lang}
+        $else 
+            <p>No subtitles available!
 
 <div id=download>Download
 <footer>
