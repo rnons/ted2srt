@@ -2,7 +2,7 @@
     :: TED -> [SRT]
 <form id=search_form_homepage method=GET action=@{HomeR}>
     <input id=search_button type=submit value=SRT>
-    <input id=search_input name=q type=text placeholder=URL>
+    <input id=search_input name=q type=text placeholder=URL autofocus=true>
 <footer>
     <div id=footer_right>
         Ted2srt by #

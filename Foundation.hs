@@ -52,7 +52,7 @@ getHomeR = do
          _       -> 
              defaultLayout $ do
                  setTitle "Ted2srt: Subtitles worth spreading"
-                 toWidgetHead [hamlet| <meta name=description content="Look up available subtitles of TED talks, download srt of one or two languages. TED演讲双语字幕下载。">|]
+                 toWidgetHead [hamlet| <meta name=description content="Download subtitles of TED talks. Choose from a list of all avialable languages. Download TED talks subtitles as srt files. You can even download subtitles of two languages as a single srt file! TED演讲双语字幕下载。">|]
                  $(widgetFile "homepage")
 
 getDownloadR :: Handler RepPlain
