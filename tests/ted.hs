@@ -9,18 +9,23 @@ import Ted
 main :: IO ()
 main = do
     let uri = "http://www.ted.com/talks/francis_collins_we_need_better_drugs_now.html"
-    cur <- getCursor uri
-    hspec $ spec cur
+    talk <- getTalk uri
+    hspec $ spec talk
 
-spec :: Cursor -> Spec
-spec cur = do 
+spec :: Maybe Talk -> Spec
+spec talk = do 
     describe "Ted.hs tests" $ do
-        let (tid, title) = talkIdTitle cur
         it "talk id" $
-            tid @?= "1696"
+            fmap tid talk  @?= Just "1696"
         it "talk title" $
-            title @?= "Francis Collins: We need better drugs -- now"
+            fmap title talk @?= Just "Francis Collins: We need better drugs -- now"
             
         it "available subtitles" $ do
-            let srtlist = languageCodeList cur
-            length srtlist @?= 7
+            let srtlist = fmap srtLang talk
+            fmap length srtlist @?= Just 24
+
+        it "mediaSlug" $ do
+            fmap srtName talk @?= Just "FrancisCollins_2012P"
+
+        it "mediaPad" $ do
+            fmap srtLag talk @?= Just 15330.0

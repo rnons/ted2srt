@@ -1,30 +1,30 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Network.Wai.Handler.Warp (Connection)
-import Yesod.Dispatch
 import Yesod.Test
+import Test.Hspec (hspec)
 import Foundation
 import Settings
 
 main :: IO ()
 main = do
     s <- staticSite
-    app <- toWaiAppPlain $ Ted s
-    runTests app undefined homeSpecs
+    hspec $ do
+        yesodSpec (Ted s) homeSpecs
 
-type Specs = SpecsConn Connection
+type Specs = YesodSpec Ted
 
 homeSpecs :: Specs
 homeSpecs = 
-    describe "web page tests" $ do
-        it "loads the index" $ do
-            get_ "/"
+    ydescribe "web page tests" $ do
+        yit "loads the index" $ do
+            get HomeR
             statusIs 200
             htmlAllContain "#search_button" "submit"
             htmlAllContain "#search_input" "q"
 
-        it "lookup available subtitles" $ do
-            get_ "/?q=http://www.ted.com/talks/francis_collins_we_need_better_drugs_now.html"
+        yit "lookup available subtitles" $ do
+            let reqBuilder = addGetParam "q" "http://www.ted.com/talks/francis_collins_we_need_better_drugs_now.html"
+            request reqBuilder
             statusIs 200
-            htmlCount "li" 6
+            htmlCount "li" 23 
             htmlAllContain "#download" "Download"
