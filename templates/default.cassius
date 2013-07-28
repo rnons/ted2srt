@@ -73,6 +73,7 @@ body
 fieldset
     border: 1.5px solid #727272
     padding: 20px 40px
+    margin-top: 20px
 
 li
     width: 200px
@@ -91,6 +92,29 @@ a
 
 a:hover
     color: #ff2b06
+
+.show-av
+    background: #EEEEEE
+    color: #777777
+    font-size: 12px
+
+.av 
+    display: none
+    font-size: 12px
+
+.av a
+    color: red
+
+.av a:hover
+    text-decoration: underline
+
+.av p
+    margin: 0 
+
+.av li
+    width: 150px
+    margin: 0 20px
+    cursor: auto
 
 #download
     width: 100px
@@ -124,4 +148,3 @@ footer a
 
 footer a:hover
     color: #424242
-

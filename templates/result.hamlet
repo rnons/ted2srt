@@ -1,27 +1,23 @@
 <div id=topbar>
-    <a href=@{HomeR}>
-        <div id=logo>
-            :: TED -> [SRT]
-    <form id=search_form method=GET action=@{HomeR}>
-        <input id=search_button type=submit value=SRT>
-        <input id=search_input name=q type=text placeholder=URL autofocus=true>
+  <a href=@{HomeR}>
+    <div id=logo>
+      :: TED -> [SRT]
+  <form id=search_form method=GET action=@{HomeR}>
+    <input id=search_button type=submit value=SRT>
+    <input id=search_input name=q type=text placeholder=URL autofocus=true>
 <div id=main data-tid=#{tid talk} data-fname=#{srtName talk} data-lag=#{srtLag talk}>
-    <p>Talk page: #
-        <a href=#{q'}>#{title talk}
-    <fieldset id=avail>
-        <legend>Available Subtitles
-        $if (length $ srtLang talk) > 1
-            $forall (lang, code) <- tail $ srtLang talk
-                <li data-lang=#{code}>#{lang}
-        $else 
-            <p>No subtitles available!
+  <p>Talk page: #
+    <a href=#{q'}>#{title talk}
+    <a class=show-av href="#">Show audio/video links
+  <div class=av>
+    <p class=audio>Audio:
+    <p class=video>Video:
+  <fieldset id=srt>
+    <legend>Available Subtitles
+    $if (length $ srtLang talk) > 1
+      $forall (lang, code) <- tail $ srtLang talk
+        <li data-lang=#{code}>#{lang}
+    $else 
+      <p>No subtitles available!
 
 <div id=download>Download
-<footer>
-    <div id=footer_right>
-        Ted2srt by #
-        <a href="http://rnons.info">
-            rnons
-        \ | #
-        <a href="https://github.com/rnons/ted2srt">
-            source

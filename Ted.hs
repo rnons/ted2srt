@@ -7,12 +7,15 @@ import Control.Monad
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
 import qualified Data.Aeson.Generic as G
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
+import Data.Conduit (($$+-))
 import Data.Data
+import qualified Data.HashMap.Strict as HM
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import Network.HTTP.Conduit (simpleHttp)
+import Network.HTTP.Conduit
 import System.Directory
 import System.IO
 import Text.HTML.DOM (parseLBS)
@@ -169,3 +172,14 @@ merge (a:as) (b:bs)
     | otherwise = a : b : merge as bs
 merge _      _      = []
 
+responseSize :: Text -> IO Float
+responseSize url = E.catch
+    (do req <- parseUrl $ T.unpack url
+        size <- withManager $ \manager -> do
+            res <- http req manager
+            let hdrs = responseHeaders res
+            responseBody res $$+- return ()
+            return $ HM.fromList hdrs HM.! "Content-Length"
+        return $ (read $ B8.unpack size) / 1024 / 1024)
+    (\e -> do print (e :: E.SomeException)
+              return 0)

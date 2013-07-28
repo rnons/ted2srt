@@ -6,10 +6,13 @@
 
 module Foundation where
 
+import Data.Maybe (maybe)
+import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Filesystem.Path.CurrentOS
 import System.Directory
 import Text.Jasmine (minifym)
+import Text.Julius (rawJS)
 import Yesod
 import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Static
@@ -26,6 +29,7 @@ mkYesod "Ted" [parseRoutes|
 /favicon.ico FaviconR GET
 / HomeR GET
 /download DownloadR GET
+/size SizeR POST
 |]
 
 instance Yesod Ted where
@@ -45,6 +49,16 @@ getHomeR = do
              talk' <- liftIO $ getTalk q'
              case talk' of
                   Just talk -> defaultLayout $ do
+                      let prefix = "http://download.ted.com/talks/" <> srtName talk 
+                          --audio = T.unpack (prefix <> ".mp3")
+                          audio = prefix <> ".mp3"
+                          v1500k = prefix <> "-1500k.mp4"
+                          v950k = prefix <> "-950k.mp4"
+                          v600k = prefix <> "-600k.mp4"
+                          v450k = prefix <> "-450k.mp4"
+                          v320k = prefix <> "-320k.mp4"
+                          v180k = prefix <> "-180k.mp4"
+                          v64k = prefix <> "-64k.mp4"
                       setTitle $ toHtml $ title talk
                       addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
                       $(widgetFile "result")
@@ -75,5 +89,11 @@ getDownloadR = do
                     sendFile typePlain p
                   _      -> redirect HomeR
          _                  -> redirect HomeR 
+
+postSizeR :: Handler Value
+postSizeR = do
+    url <- lookupPostParam "url"
+    size <- lift $ maybe (return 0) responseSize url
+    returnJson $ object $ ["size" .= size]
 
 $(staticFiles staticDir)
