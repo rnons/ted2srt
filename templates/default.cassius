@@ -64,6 +64,8 @@ body
     cursor: pointer
 
 .message
+    position: fixed
+    width: 100%
     text-align: center
     color: red
 

@@ -23,8 +23,9 @@ homeSpecs =
             htmlAllContain "#search_input" "q"
 
         yit "lookup available subtitles" $ do
-            let reqBuilder = addGetParam "q" "http://www.ted.com/talks/francis_collins_we_need_better_drugs_now.html"
-            request reqBuilder
+            get (HomeR, [ ("_hasdata", "")
+                        , ("q", "http://www.ted.com/talks/francis_collins_we_need_better_drugs_now.html")
+                        ])
             statusIs 200
             htmlCount "li" 23 
             htmlAllContain "#download" "Download"

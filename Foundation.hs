@@ -45,8 +45,8 @@ instance RenderMessage Ted FormMessage where
 talkForm :: Markup -> MForm (HandlerT Ted IO) (FormResult T.Text, Widget)
 talkForm = renderDivs $ areq talkUrlField ""
                                          { fsId = Just "search_input"
-                                         , fsAttrs = [ ("name", "q")
-                                                     , ("placeholder", "URL")
+                                         , fsName = Just "q"
+                                         , fsAttrs = [ ("placeholder", "URL")
                                                      , ("autofocus", "true")
                                                      ]
                                          } Nothing
