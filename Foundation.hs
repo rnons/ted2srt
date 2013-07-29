@@ -11,6 +11,7 @@ import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Filesystem.Path.CurrentOS
 import System.Directory
+import Text.Blaze.Internal (Markup)
 import Text.Jasmine (minifym)
 import Text.Julius (rawJS)
 import Yesod
@@ -38,14 +39,35 @@ instance Yesod Ted where
       where
         genFileName = base64md5
 
+instance RenderMessage Ted FormMessage where
+    renderMessage _ _ = defaultFormMessage
+
+talkForm :: Markup -> MForm (HandlerT Ted IO) (FormResult T.Text, Widget)
+talkForm = renderDivs $ areq talkUrlField ""
+                                         { fsId = Just "search_input"
+                                         , fsAttrs = [ ("name", "q")
+                                                     , ("placeholder", "URL")
+                                                     , ("autofocus", "true")
+                                                     ]
+                                         } Nothing
+  where
+    errorMessage :: T.Text
+    errorMessage = "Valid url is like this http://www.ted.com/talks/thomas_heatherwick.html"
+    
+    pattern = "http://www.ted.com/talks/"
+    talkUrlField = check validUrl textField
+    validUrl x
+        | pattern `T.isPrefixOf` x = Right x
+        | otherwise                = Left errorMessage
+
 getFaviconR :: MonadHandler m => m ()
 getFaviconR = sendFile "image/x-icon" "favicon.ico"
 
 getHomeR :: Handler Html
 getHomeR = do
-    q <- lookupGetParam "q"
-    case q of
-         Just q' -> do
+    ((result, widget), enctype) <- runFormGet talkForm
+    case result of
+         FormSuccess q' -> do
              talk' <- liftIO $ getTalk q'
              case talk' of
                   Just talk -> defaultLayout $ do
@@ -62,7 +84,10 @@ getHomeR = do
                       setTitle $ toHtml $ title talk
                       addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
                       $(widgetFile "result")
-                  _          -> redirect HomeR
+                  _          -> do
+                      let msg = "ERROR: " <> q' <> " is not a TED talk page!"
+                      setMessage $ toHtml msg
+                      redirect HomeR
          _       -> 
              defaultLayout $ do
                  setTitle "Ted2srt: Subtitles worth spreading"

@@ -63,6 +63,15 @@ body
     background-color: rgba(255, 43, 6, 0.7)
     cursor: pointer
 
+.message
+    text-align: center
+    color: red
+
+.errors
+    color: #424242
+    font-size: 12px
+    font-style: italic
+
 #main
     padding: 16px 16px
 

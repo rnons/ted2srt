@@ -44,21 +44,17 @@ data Talk = Talk
     , srtLag            :: Double
     } deriving Show
 
-getTalk uri
-    | pattern `T.isPrefixOf` uri = E.catch
-        (do body <- simpleHttp $ T.unpack uri
-            let cursor = fromDocument $ parseLBS body
-            return $ Just Talk { tid = talkIdTitle cursor "data-id"
-                               , title = talkIdTitle cursor "data-title"
-                               , srtLang = languageCodes cursor
-                               , srtName = mediaSlug body
-                               , srtLag = mediaPad body
-                               })
-        (\e -> do print (e :: E.SomeException)
-                  return Nothing)
-    | otherwise = return Nothing
-  where
-    pattern = "http://www.ted.com/talks/"
+getTalk uri = E.catch
+    (do body <- simpleHttp $ T.unpack uri
+        let cursor = fromDocument $ parseLBS body
+        return $ Just Talk { tid = talkIdTitle cursor "data-id"
+                           , title = talkIdTitle cursor "data-title"
+                           , srtLang = languageCodes cursor
+                           , srtName = mediaSlug body
+                           , srtLag = mediaPad body
+                           })
+    (\e -> do print (e :: E.SomeException)
+              return Nothing)
 
 talkIdTitle cursor name = attr name
   where

@@ -4,7 +4,7 @@
       :: TED -> [SRT]
   <form id=search_form method=GET action=@{HomeR}>
     <input id=search_button type=submit value=SRT>
-    <input id=search_input name=q type=text placeholder=URL autofocus=true>
+    ^{widget}
 <div id=main data-tid=#{tid talk} data-fname=#{srtName talk} data-lag=#{srtLag talk}>
   <p>Talk page: #
     <a href=#{q'}>#{title talk}
