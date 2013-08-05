@@ -5,5 +5,6 @@
 *.aes
 main
 *.srt
+*.vtt
 .hsenv
 static/tmp/

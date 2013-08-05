@@ -31,6 +31,8 @@ mkYesod "Ted" [parseRoutes|
 / HomeR GET
 /download DownloadR GET
 /size SizeR POST
+/play PlayR GET
+/watch WatchR GET
 |]
 
 instance Yesod Ted where
@@ -102,11 +104,10 @@ getDownloadR = do
     lag <- lookupGetParam "lag"
     case (tid, fname, lag) of
          (Just tid', Just fname', Just lag') -> do
-             let lagtime = floor $ read $ T.unpack lag'
-             path <- liftIO $ toSrt tid' lang fname' lagtime
+             let lagtime = read $ T.unpack lag'
+             path <- liftIO $ toSub $ Subtitle tid' lang fname' lagtime SRT
              case path of
                   Just p -> do
-                    liftIO $ print p
                     -- filename "srt/foo.srt" == "foo.srt"
                     let name = filename $ decodeString p
                     addHeader "Content-Disposition" $ 
@@ -115,10 +116,48 @@ getDownloadR = do
                   _      -> redirect HomeR
          _                  -> redirect HomeR 
 
+getPlayR :: Handler Value
+getPlayR = do
+    tid   <- lookupGetParam "tid"
+    lang  <- lookupGetParams "lang[]"
+    fname <- lookupGetParam "fname"
+    lag <- lookupGetParam "lag"
+    req <- getRequest
+    pwd <- liftIO getCurrentDirectory
+    case (tid, fname, lag) of
+         (Just tid', Just fname', Just lag') -> do
+             let lagtime = read $ T.unpack lag'
+             path <- liftIO $ toSub $ Subtitle tid' lang fname' lagtime VTT
+             case path of
+                  Just p -> do
+                    let vtt = drop (length pwd) p
+                    returnJson $ object ["subtitle" .= vtt]
+                  _      -> returnJson $ object ["subtitle" .= ("" :: T.Text)]
+         _                  -> returnJson $ object ["subtitle" .= ("" :: T.Text)]
+
+getWatchR :: Handler Html
+getWatchR = do
+    slug <- lookupGetParam "slug"
+    sub  <- lookupGetParam "subtitle"
+    case (slug, sub) of 
+         (Just slug', Just sub') -> do
+            let prefix = "http://download.ted.com/talks/" <> slug'
+                --audio = T.unpack (prefix <> ".mp3")
+                audio = prefix <> ".mp3"
+                v1500k = prefix <> "-1500k.mp4"
+                v950k = prefix <> "-950k.mp4"
+                v600k = prefix <> "-600k.mp4"
+                v450k = prefix <> "-450k.mp4"
+                v320k = prefix <> "-320k.mp4"
+                v180k = prefix <> "-180k.mp4"
+                v64k = prefix <> "-64k.mp4"
+            defaultLayout $ $(widgetFile "watch")
+         _             -> redirect HomeR
+
 postSizeR :: Handler Value
 postSizeR = do
     url <- lookupPostParam "url"
     size <- lift $ maybe (return 0) responseSize url
-    returnJson $ object $ ["size" .= size]
+    returnJson $ object ["size" .= size]
 
 $(staticFiles staticDir)

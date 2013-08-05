@@ -127,7 +127,8 @@ a:hover
     margin: 0 20px
     cursor: auto
 
-#download
+.button
+    border: 0px
     width: 100px
     margin: auto
     position: relative
@@ -137,7 +138,7 @@ a:hover
     font: bold 18px sans-serif
     text-align: center
 
-#download:hover
+.button:hover
     background-color: rgba(255, 43, 6, 0.8)
     cursor: pointer
 

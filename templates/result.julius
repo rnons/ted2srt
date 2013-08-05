@@ -25,6 +25,34 @@ $("#download").bind("click", function() {
     }
 });
 
+$("#watch").bind("click", function() {
+    var len = $("#main li.selected").length;
+    if (len === 0) {
+        alert("No language selected");
+    } else {
+        var tid = $("#main").data("tid");
+        var fname = $("#main").data("fname");
+        var lag = $("#main").data("lag");   
+        var lang = [];
+        $("#main li.selected").each(function(i){
+            lang.push($(this).data("lang"));
+        });
+        $.get("@{PlayR}", 
+              { 
+                tid: tid,
+                fname: fname,
+                lag : lag,
+                lang: lang }, 
+              function(data) {
+                console.log(data.fname);
+                var url = "/watch?slug=" + fname + 
+                          "&subtitle=" + data.subtitle;
+                console.log(url);
+                window.open(url);
+              });
+    }
+});
+
 $(document).ready(function () {
     var audio = "#{rawJS audio}";
     var v1500k = "#{rawJS v1500k}";
