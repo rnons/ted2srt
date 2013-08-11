@@ -1,6 +1,5 @@
 <center>
   <video autoplay controls preload="metadata">
-    <source src="#{v950k}" type="video/mp4">
     <source src="#{v600k}" type="video/mp4">
     <source src="#{v450k}" type="video/mp4">
     <track label="en" kind="subtitles" srclang="en" src="#{sub'}" default>

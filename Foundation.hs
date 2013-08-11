@@ -19,6 +19,7 @@ import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Static
 
 import Settings
+import Settings.StaticFiles
 import Ted
 
 data Ted = Ted
@@ -151,7 +152,9 @@ getWatchR = do
                 v320k = prefix <> "-320k.mp4"
                 v180k = prefix <> "-180k.mp4"
                 v64k = prefix <> "-64k.mp4"
-            defaultLayout $ $(widgetFile "watch")
+            defaultLayout $ do
+                addScript $ StaticR captionator_min_js
+                $(widgetFile "watch")
          _             -> redirect HomeR
 
 postSizeR :: Handler Value
@@ -159,5 +162,3 @@ postSizeR = do
     url <- lookupPostParam "url"
     size <- lift $ maybe (return 0) responseSize url
     returnJson $ object ["size" .= size]
-
-$(staticFiles staticDir)
