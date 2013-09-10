@@ -1,22 +1,22 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE OverloadedStrings      #-}
+{-# LANGUAGE QuasiQuotes            #-}
+{-# LANGUAGE TemplateHaskell        #-}
+{-# LANGUAGE TypeFamilies           #-}
 
 module Foundation where
 
-import Data.Maybe (maybe)
-import Data.Monoid ((<>))
+import           Data.Maybe (maybe)
+import           Data.Monoid ((<>))
 import qualified Data.Text as T
-import Filesystem.Path.CurrentOS
-import System.Directory
-import Text.Blaze.Internal (Markup)
-import Text.Jasmine (minifym)
-import Text.Julius (rawJS)
-import Yesod
-import Yesod.Default.Util (addStaticContentExternal)
-import Yesod.Static
+import           Filesystem.Path.CurrentOS
+import           System.Directory
+import           Text.Blaze.Internal (Markup)
+import           Text.Jasmine (minifym)
+import           Text.Julius (rawJS)
+import           Yesod
+import           Yesod.Default.Util (addStaticContentExternal)
+import           Yesod.Static
 
 import Settings
 import Settings.StaticFiles
@@ -93,8 +93,8 @@ getHomeR = do
                       redirect HomeR
          _       -> 
              defaultLayout $ do
-                 setTitle "Ted2srt: Subtitles worth spreading"
-                 toWidgetHead [hamlet| <meta name=description content="Download subtitles of TED talks. Choose from a list of all avialable languages. Download TED talks subtitles as srt files. You can even download subtitles of two languages as a single srt file! TED演讲双语字幕下载。">|]
+                 setTitle "Ted2srt: Download TED talks with two-language subtitles | Subtitles worth spreading"
+                 toWidgetHead [hamlet| <meta name=description content="Choose from all available subtitle languages, download as srt file. Combine two-language subtitles in to one file. Learn some english while watching TED talks. TED演讲双语字幕下载。">|]
                  $(widgetFile "homepage")
 
 getDownloadR :: Handler RepPlain

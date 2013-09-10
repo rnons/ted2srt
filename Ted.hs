@@ -1,41 +1,40 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE OverloadedStrings  #-}
 module Ted where
 
-import Control.Exception as E
-import Control.Monad
-import Control.Monad.IO.Class (liftIO)
-import Data.Aeson
-import qualified Data.Aeson.Generic as G
+import           Control.Exception as E
+import           Control.Monad
+import           Control.Monad.IO.Class (liftIO)
+import           Data.Aeson
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
-import Data.Conduit (($$+-))
-import Data.Data
+import           Data.Conduit (($$+-))
 import qualified Data.HashMap.Strict as HM
-import Data.Maybe
-import Data.Monoid ((<>))
-import Data.Text (Text)
-import qualified Data.Text as T
-import Network.HTTP.Conduit
-import System.Directory
-import System.IO
-import Text.HTML.DOM (parseLBS)
-import Text.Printf
-import Text.Regex.Posix ((=~))
-import Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
-                        ($//), (&|), (&//), (>=>))
+import           Data.Maybe
+import           Data.Monoid ((<>))
+import           Data.Text (Text)
+import           qualified Data.Text as T
+import           GHC.Generics (Generic)
+import           Network.HTTP.Conduit
+import           System.Directory
+import           System.IO
+import           Text.HTML.DOM (parseLBS)
+import           Text.Printf
+import           Text.Regex.Posix ((=~))
+import           Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
+                                  ($//), (&|), (&//), (>=>))
 import qualified Text.XML.Cursor as XC
 
 data Caption = Caption
     { captions :: [Item]
-    } deriving (Data, Typeable, Show)
+    } deriving (Generic, Show)
 
 data Item = Item
     { duration          :: Int
     , content           :: String
     , startOfParagraph  :: Bool
     , startTime         :: Int
-    } deriving (Data, Typeable, Show)
+    } deriving (Generic, Show)
 
 data Talk = Talk 
     { tid               :: Text
@@ -56,6 +55,8 @@ data Subtitle = Subtitle
     , fileType          :: SubtitleType
     } deriving Show
 
+instance FromJSON Caption
+instance FromJSON Item
 
 getTalk uri = E.catch
     (do body <- simpleHttp $ T.unpack uri
@@ -151,7 +152,7 @@ oneSub sub = do
            let url = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
                      <> talkId sub <> "/lang/" <> head (subLang sub)
            json <- simpleHttp url
-           let res = G.decode json :: Maybe Caption
+           let res = decode json :: Maybe Caption
            case res of
                 Just r -> do
                     h <- openFile path WriteMode

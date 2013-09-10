@@ -96,7 +96,7 @@ li:hover
     cursor: pointer
 
 li::first-letter
-    font-size: 105%
+    font-size: 120%
 a
     text-decoration: none
     color: #424242
