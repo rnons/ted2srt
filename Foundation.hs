@@ -8,6 +8,7 @@ module Foundation where
 
 import           Data.Maybe (maybe)
 import           Data.Monoid ((<>))
+import           Data.Text (Text)
 import qualified Data.Text as T
 import           Filesystem.Path.CurrentOS
 import           System.Directory
@@ -34,6 +35,7 @@ mkYesod "Ted" [parseRoutes|
 /size SizeR POST
 /play PlayR GET
 /watch WatchR GET
+/talks/#Text TalksR GET
 |]
 
 instance Yesod Ted where
@@ -70,32 +72,13 @@ getHomeR :: Handler Html
 getHomeR = do
     ((result, widget), enctype) <- runFormGet talkForm
     case result of
-         FormSuccess q' -> do
-             talk' <- liftIO $ getTalk q'
-             case talk' of
-                  Just talk -> defaultLayout $ do
-                      let prefix = "http://download.ted.com/talks/" <> srtName talk 
-                          --audio = T.unpack (prefix <> ".mp3")
-                          audio = prefix <> ".mp3"
-                          v1500k = prefix <> "-1500k.mp4"
-                          v950k = prefix <> "-950k.mp4"
-                          v600k = prefix <> "-600k.mp4"
-                          v450k = prefix <> "-450k.mp4"
-                          v320k = prefix <> "-320k.mp4"
-                          v180k = prefix <> "-180k.mp4"
-                          v64k = prefix <> "-64k.mp4"
-                      setTitle $ toHtml $ title talk
-                      addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
-                      $(widgetFile "result")
-                  _          -> do
-                      let msg = "ERROR: " <> q' <> " is not a TED talk page!"
-                      setMessage $ toHtml msg
-                      redirect HomeR
-         _       -> 
-             defaultLayout $ do
-                 setTitle "Ted2srt: Download TED talks with two-language subtitles | Subtitles worth spreading"
-                 toWidgetHead [hamlet| <meta name=description content="Choose from all available subtitle languages, download as srt file. Combine two-language subtitles in to one file. Learn some english while watching TED talks. TED演讲双语字幕下载。">|]
-                 $(widgetFile "homepage")
+         FormSuccess q -> redirect $ TalksR $ T.drop (T.length pattern) q
+         _       -> defaultLayout $ do
+             setTitle "Ted2srt: Download TED talks with two-language subtitles | Subtitles worth spreading"
+             toWidgetHead [hamlet| <meta name=description content="Choose from all available subtitle languages, download as srt file. Combine two-language subtitles in to one file. Learn some english while watching TED talks. TED演讲双语字幕下载。">|]
+             $(widgetFile "homepage")
+  where
+    pattern = "http://www.ted.com/talks/"
 
 getDownloadR :: Handler RepPlain
 getDownloadR = do
@@ -123,7 +106,7 @@ getPlayR = do
     lang  <- lookupGetParams "lang[]"
     fname <- lookupGetParam "fname"
     lag <- lookupGetParam "lag"
-    req <- getRequest
+    -- req <- getRequest
     pwd <- liftIO getCurrentDirectory
     case (tid, fname, lag) of
          (Just tid', Just fname', Just lag') -> do
@@ -156,6 +139,33 @@ getWatchR = do
                 addScript $ StaticR captionator_min_js
                 $(widgetFile "watch")
          _             -> redirect HomeR
+
+getTalksR :: Text -> Handler Html
+getTalksR url = do
+    ((result, widget), enctype) <- runFormGet talkForm
+    q' <- case result of
+         FormSuccess q -> return q
+         _             -> return $ T.concat ["http://www.ted.com/talks/", url]
+    talk' <- liftIO $ getTalk q'
+    case talk' of
+         Just talk -> defaultLayout $ do
+             let prefix = "http://download.ted.com/talks/" <> srtName talk 
+                 --audio = T.unpack (prefix <> ".mp3")
+                 audio = prefix <> ".mp3"
+                 v1500k = prefix <> "-1500k.mp4"
+                 v950k = prefix <> "-950k.mp4"
+                 v600k = prefix <> "-600k.mp4"
+                 v450k = prefix <> "-450k.mp4"
+                 v320k = prefix <> "-320k.mp4"
+                 v180k = prefix <> "-180k.mp4"
+                 v64k = prefix <> "-64k.mp4"
+             setTitle $ toHtml $ title talk
+             addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
+             $(widgetFile "talks")
+         _          -> do
+             let msg = "ERROR: " <> q' <> " is not a TED talk page!"
+             setMessage $ toHtml msg
+             redirect HomeR
 
 postSizeR :: Handler Value
 postSizeR = do
