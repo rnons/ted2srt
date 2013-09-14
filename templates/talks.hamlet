@@ -5,7 +5,7 @@
   <form id=search_form method=GET action=@{HomeR}>
     <input id=search_button type=submit value=SRT>
     ^{widget}
-<div id=main data-tid=#{tid talk} data-fname=#{srtName talk} data-lag=#{srtLag talk}>
+<div id=main>
   <p>Talk page: #
     <a href=#{q'}>#{title talk}
     <a class=show-av href="#">Show audio/video links
@@ -14,8 +14,8 @@
     <p class=video>Video:
   <fieldset id=srt>
     <legend>Available Subtitles
-    $if (length $ srtLang talk) > 1
-      $forall (lang, code) <- tail $ srtLang talk
+    $if (length $ subLang talk) > 1
+      $forall (lang, code) <- tail $ subLang talk
         <li data-lang=#{code}>#{lang}
     $else 
       <p>No subtitles available!

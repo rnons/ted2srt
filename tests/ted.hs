@@ -21,11 +21,11 @@ spec talk = do
             fmap title talk @?= Just "Francis Collins: We need better drugs -- now"
             
         it "available subtitles" $ do
-            let srtlist = fmap srtLang talk
-            fmap length srtlist @?= Just 24
+            let srtlist = fmap subLang talk
+            fmap length srtlist @?= Just 25
 
         it "mediaSlug" $ do
-            fmap srtName talk @?= Just "FrancisCollins_2012P"
+            fmap subName talk @?= Just "FrancisCollins_2012P"
 
         it "mediaPad" $ do
-            fmap srtLag talk @?= Just 15330.0
+            fmap subLag talk @?= Just 15330.0

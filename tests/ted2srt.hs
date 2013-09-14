@@ -24,8 +24,12 @@ homeSpecs =
 
         yit "lookup available subtitles" $ do
             get (HomeR, [ ("_hasdata", "")
-                        , ("q", "http://www.ted.com/talks/francis_collins_we_need_better_drugs_now.html")
+                        , ("q", "http://www.ted.com/talks/ken_robinson_says_schools_kill_creativity.html")
                         ])
+            statusIs 303
+
+        yit "get talks" $ do
+            get $ TalksR "ken_robinson_says_schools_kill_creativity.html"
             statusIs 200
-            htmlCount "li" 23 
+            htmlCount "li" 58 
             htmlAllContain "#download" "Download"

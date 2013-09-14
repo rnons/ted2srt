@@ -12,9 +12,9 @@ $("#download").bind("click", function() {
     if (len === 0) {
         alert("No language selected");
     } else {
-        var tid = $("#main").data("tid");
-        var fname = $("#main").data("fname");
-        var lag = $("#main").data("lag");   
+        var tid = "#{rawJS $ tid talk}";
+        var fname = "#{rawJS $ subName talk}";
+        var lag = "#{rawJS $ show $ subLag talk}";
         var url = "/download?tid=" + tid + 
                   "&fname=" + fname + "&lag=" + lag;
         $("#main li.selected").each(function(i){

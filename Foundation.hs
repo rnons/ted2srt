@@ -10,7 +10,7 @@ import           Data.Maybe (maybe)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           Filesystem.Path.CurrentOS
+import qualified Filesystem.Path.CurrentOS as FS
 import           System.Directory
 import           Text.Blaze.Internal (Markup)
 import           Text.Jasmine (minifym)
@@ -59,10 +59,9 @@ talkForm = renderDivs $ areq talkUrlField ""
     errorMessage :: T.Text
     errorMessage = "Valid url is like this http://www.ted.com/talks/thomas_heatherwick.html"
     
-    pattern = "http://www.ted.com/talks/"
     talkUrlField = check validUrl textField
     validUrl x
-        | pattern `T.isPrefixOf` x = Right x
+        | talkUrl `T.isPrefixOf` x = Right x
         | otherwise                = Left errorMessage
 
 getFaviconR :: MonadHandler m => m ()
@@ -72,13 +71,11 @@ getHomeR :: Handler Html
 getHomeR = do
     ((result, widget), enctype) <- runFormGet talkForm
     case result of
-         FormSuccess q -> redirect $ TalksR $ T.drop (T.length pattern) q
+         FormSuccess q -> redirect $ TalksR $ T.drop (T.length talkUrl) q
          _       -> defaultLayout $ do
              setTitle "Ted2srt: Download TED talks with two-language subtitles | Subtitles worth spreading"
              toWidgetHead [hamlet| <meta name=description content="Choose from all available subtitle languages, download as srt file. Combine two-language subtitles in to one file. Learn some english while watching TED talks. TED演讲双语字幕下载。">|]
              $(widgetFile "homepage")
-  where
-    pattern = "http://www.ted.com/talks/"
 
 getDownloadR :: Handler RepPlain
 getDownloadR = do
@@ -93,9 +90,9 @@ getDownloadR = do
              case path of
                   Just p -> do
                     -- filename "srt/foo.srt" == "foo.srt"
-                    let name = filename $ decodeString p
+                    let name = FS.filename $ FS.decodeString p
                     addHeader "Content-Disposition" $ 
-                        T.pack ("attachment; filename=" ++ encodeString name)
+                        T.pack ("attachment; filename=" ++ FS.encodeString name)
                     sendFile typePlain p
                   _      -> redirect HomeR
          _                  -> redirect HomeR 
@@ -125,8 +122,7 @@ getWatchR = do
     sub  <- lookupGetParam "subtitle"
     case (slug, sub) of 
          (Just slug', Just sub') -> do
-            let prefix = "http://download.ted.com/talks/" <> slug'
-                --audio = T.unpack (prefix <> ".mp3")
+            let prefix = downloadUrl <> slug'
                 audio = prefix <> ".mp3"
                 v1500k = prefix <> "-1500k.mp4"
                 v950k = prefix <> "-950k.mp4"
@@ -145,12 +141,11 @@ getTalksR url = do
     ((result, widget), enctype) <- runFormGet talkForm
     q' <- case result of
          FormSuccess q -> return q
-         _             -> return $ T.concat ["http://www.ted.com/talks/", url]
-    talk' <- liftIO $ getTalk q'
-    case talk' of
+         _             -> return $ T.concat [talkUrl, url]
+    mtalk <- liftIO $ getTalk q'
+    case mtalk of
          Just talk -> defaultLayout $ do
-             let prefix = "http://download.ted.com/talks/" <> srtName talk 
-                 --audio = T.unpack (prefix <> ".mp3")
+             let prefix = downloadUrl <> subName talk 
                  audio = prefix <> ".mp3"
                  v1500k = prefix <> "-1500k.mp4"
                  v950k = prefix <> "-950k.mp4"
@@ -172,3 +167,9 @@ postSizeR = do
     url <- lookupPostParam "url"
     size <- lift $ maybe (return 0) responseSize url
     returnJson $ object ["size" .= size]
+
+talkUrl :: Text
+talkUrl = "http://www.ted.com/talks/"
+
+downloadUrl :: Text
+downloadUrl = "http://download.ted.com/talks/"

@@ -21,6 +21,7 @@ import           System.IO
 import           Text.HTML.DOM (parseLBS)
 import           Text.Printf
 import           Text.Regex.Posix ((=~))
+import           Text.XML (Name)
 import           Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
                                   ($//), (&|), (&//), (>=>))
 import qualified Text.XML.Cursor as XC
@@ -39,43 +40,46 @@ data Item = Item
 data Talk = Talk 
     { tid               :: Text
     , title             :: Text
-    , srtLang           :: [(Text, Text)]
-    , srtName           :: String
-    , srtLag            :: Double
+    , subLang           :: [(Text, Text)]
+    , subName           :: Text
+    , subLag            :: Double
     } deriving Show
 
-data SubtitleType = SRT | VTT
+data FileType = SRT | VTT
     deriving (Show, Eq)
 
 data Subtitle = Subtitle
     { talkId            :: Text
-    , subLang           :: [Text]
-    , subName           :: Text
+    , language          :: [Text]
+    , filename           :: Text
     , timeLag           :: Double
-    , fileType          :: SubtitleType
+    , filetype          :: FileType
     } deriving Show
 
 instance FromJSON Caption
 instance FromJSON Item
 
+getTalk :: Text -> IO (Maybe Talk)
 getTalk uri = E.catch
     (do body <- simpleHttp $ T.unpack uri
         let cursor = fromDocument $ parseLBS body
         return $ Just Talk { tid = talkIdTitle cursor "data-id"
                            , title = talkIdTitle cursor "data-title"
-                           , srtLang = languageCodes cursor
-                           , srtName = mediaSlug body
-                           , srtLag = mediaPad body
+                           , subLang = languageCodes cursor
+                           , subName = mediaSlug body
+                           , subLag = mediaPad body
                            })
     (\e -> do print (e :: E.SomeException)
               return Nothing)
 
+talkIdTitle :: XC.Cursor -> Name -> Text
 talkIdTitle cursor name = attr name
   where
     cur = head $ cursor $// element "div" >=> attributeIs "id" "share_and_save"
     attr name = head $ attribute name cur
 
 {- List in the form of [("English", "en")] -}
+languageCodes :: XC.Cursor -> [(Text, Text)]
 languageCodes cursor = zip lang code
   where
     lang = cursor $// element "select" 
@@ -87,8 +91,8 @@ languageCodes cursor = zip lang code
                            &| attribute "value"
 
 {- File name when saved to local. -}
-mediaSlug :: L8.ByteString -> String
-mediaSlug body = last $ last r
+mediaSlug :: L8.ByteString -> Text
+mediaSlug body = T.pack $ last $ last r
   where
     pat = "mediaSlug\":\"([^\"]+)\"" :: String
     r = L8.unpack body =~ pat :: [[String]]
@@ -109,7 +113,7 @@ toSub sub
         let (s1, s2) = (head lang, last lang)
             path = T.unpack $ T.concat [ T.pack pwd
                                        , dir
-                                       , subName sub
+                                       , filename sub
                                        , "."
                                        , s1
                                        , "."
@@ -120,8 +124,8 @@ toSub sub
         if cached 
            then return $ Just path
            else do
-                p1 <- oneSub sub { subLang = [s1] }
-                p2 <- oneSub sub { subLang = [s2] }
+                p1 <- oneSub sub { language = [s1] }
+                p2 <- oneSub sub { language = [s2] }
                 case (p1, p2) of
                      (Just p1', Just p2') -> do
                          c1 <- readFile p1'
@@ -131,18 +135,19 @@ toSub sub
                          return $ Just path
                      _                    -> return Nothing
   where
-    lang = subLang sub
-    (dir, suffix) = if fileType sub == SRT 
+    lang = language sub
+    (dir, suffix) = if filetype sub == SRT 
                         then ("/static/srt/", ".srt")
                         else ("/static/vtt/", ".vtt")
 
+oneSub :: Subtitle -> IO (Maybe String)
 oneSub sub = do
     pwd <- getCurrentDirectory
     let path = T.unpack $ T.concat [ T.pack pwd
                                    , dir
-                                   , subName sub
+                                   , filename sub
                                    , "."
-                                   , head $ subLang sub
+                                   , head $ language sub
                                    , suffix
                                    ]
     cached <- doesFileExist path
@@ -150,23 +155,23 @@ oneSub sub = do
        then return $ Just path
        else do
            let url = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
-                     <> talkId sub <> "/lang/" <> head (subLang sub)
+                     <> talkId sub <> "/lang/" <> head (language sub)
            json <- simpleHttp url
            let res = decode json :: Maybe Caption
            case res of
                 Just r -> do
                     h <- openFile path WriteMode
-                    when (fileType sub == VTT) (hPutStrLn h "WEBVTT\n")
+                    when (filetype sub == VTT) (hPutStrLn h "WEBVTT\n")
                     forM_ (zip (captions $ fromJust res) [1,2..]) (ppr h)
                     hClose h
                     return $ Just path
                 Nothing -> 
                     return Nothing
   where
-    (dir, suffix) = if fileType sub == SRT 
+    (dir, suffix) = if filetype sub == SRT 
                         then ("/static/srt/", ".srt")
                         else ("/static/vtt/", ".vtt")
-    fmt = if fileType sub == SRT
+    fmt = if filetype sub == SRT
              then "%d\n%02d:%02d:%02d,%03d --> " ++
                   "%02d:%02d:%02d,%03d\n%s\n\n"
              else "%d\n%02d:%02d:%02d.%03d --> " ++
