@@ -30,9 +30,9 @@ $("#watch").bind("click", function() {
     if (len === 0) {
         alert("No language selected");
     } else {
-        var tid = $("#main").data("tid");
-        var fname = $("#main").data("fname");
-        var lag = $("#main").data("lag");   
+        var tid = "#{rawJS $ tid talk}";
+        var fname = "#{rawJS $ subName talk}";
+        var lag = "#{rawJS $ show $ subLag talk}";
         var lang = [];
         $("#main li.selected").each(function(i){
             lang.push($(this).data("lang"));
@@ -44,11 +44,10 @@ $("#watch").bind("click", function() {
                 lag : lag,
                 lang: lang }, 
               function(data) {
-                console.log(data.fname);
                 var url = "/watch?slug=" + fname + 
                           "&subtitle=" + data.subtitle;
                 console.log(url);
-                window.open(url);
+                location.href= url;
               });
     }
 });

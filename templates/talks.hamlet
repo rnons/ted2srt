@@ -22,4 +22,4 @@
 
 <center>
   <input id=download class=button value=Download />
-  <input id=watch class=button value=Watch />
+  <input id=watch class=button value=Watch title="Chrome only!"/>

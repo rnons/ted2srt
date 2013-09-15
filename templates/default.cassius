@@ -46,6 +46,7 @@ body
 
 #search_input:focus
     border-color: rgba(255, 43, 6, 0.7)
+    outline-width: 0
 
 #search_button
     float: right
