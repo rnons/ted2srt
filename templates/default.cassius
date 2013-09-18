@@ -75,6 +75,19 @@ body
     font-size: 12px
     font-style: italic
 
+#feature
+    top: 342px
+    position: relative
+    width: 470px
+    margin: auto
+
+#feature img
+    width: 100%
+    height: 100%
+
+.tile
+    position: absolute
+
 #main
     padding: 16px 16px
 

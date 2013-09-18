@@ -1,0 +1,6 @@
+Talk
+    tid Text
+    title Text
+    link Text
+    thumbnail Text
+    UniqueTalk tid

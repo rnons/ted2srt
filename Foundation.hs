@@ -10,6 +10,9 @@ import           Data.Maybe (maybe)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
+import           Database.Persist (PersistConfigPool)
+import           Database.Persist.Postgresql (PostgresConf)
+import           Database.Persist.Sql (SqlPersistT)
 import qualified Filesystem.Path.CurrentOS as FS
 import           System.Directory
 import           Text.Blaze.Internal (Markup)
@@ -19,12 +22,15 @@ import           Yesod
 import           Yesod.Default.Util (addStaticContentExternal)
 import           Yesod.Static
 
+import Model
 import Settings
 import Settings.StaticFiles
 import Ted
 
 data Ted = Ted
     { getStatic :: Static
+    , connPool :: PersistConfigPool PostgresConf
+    , persistConfig :: PostgresConf
     }
 
 mkYesod "Ted" [parseRoutes|
@@ -43,6 +49,10 @@ instance Yesod Ted where
         addStaticContentExternal minifym genFileName staticDir (StaticR . flip StaticRoute [])
       where
         genFileName = base64md5
+
+instance YesodPersist Ted where
+    type YesodPersistBackend Ted = SqlPersistT
+    runDB = defaultRunDB persistConfig connPool
 
 instance RenderMessage Ted FormMessage where
     renderMessage _ _ = defaultFormMessage
@@ -72,10 +82,17 @@ getHomeR = do
     ((result, widget), enctype) <- runFormGet talkForm
     case result of
          FormSuccess q -> redirect $ TalksR $ T.drop (T.length talkUrl) q
-         _       -> defaultLayout $ do
-             setTitle "Ted2srt: Download TED talks with two-language subtitles | Subtitles worth spreading"
-             toWidgetHead [hamlet| <meta name=description content="Choose from all available subtitle languages, download as srt file. Combine two-language subtitles in to one file. Learn some english while watching TED talks. TED演讲双语字幕下载。">|]
-             $(widgetFile "homepage")
+         _       -> do
+             talks <- runDB $ selectList [] [Desc TalkId]
+             let Entity _ t1 = talks !! 0
+                 Entity _ t2 = talks !! 1
+                 Entity _ t3 = talks !! 2
+                 Entity _ t4 = talks !! 3
+                 Entity _ t5 = talks !! 4
+             defaultLayout $ do
+                 setTitle "Ted2srt: Download TED talks with two-language subtitles | Subtitles worth spreading"
+                 toWidgetHead [hamlet| <meta name=description content="Choose from all available subtitle languages, download as srt file. Combine two-language subtitles in to one file. Learn some english while watching TED talks. TED演讲双语字幕下载。">|]
+                 $(widgetFile "homepage")
 
 getDownloadR :: Handler RepPlain
 getDownloadR = do
