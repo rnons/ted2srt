@@ -83,12 +83,7 @@ getHomeR = do
     case result of
          FormSuccess q -> redirect $ TalksR $ T.drop (T.length talkUrl) q
          _       -> do
-             talks <- runDB $ selectList [] [Desc TalkId]
-             let Entity _ t1 = talks !! 0
-                 Entity _ t2 = talks !! 1
-                 Entity _ t3 = talks !! 2
-                 Entity _ t4 = talks !! 3
-                 Entity _ t5 = talks !! 4
+             talks <- runDB $ selectList [] [Desc TalkId, LimitTo 5]
              defaultLayout $ do
                  setTitle "Ted2srt: Download TED talks with two-language subtitles | Subtitles worth spreading"
                  toWidgetHead [hamlet| <meta name=description content="Choose from all available subtitle languages, download as srt file. Combine two-language subtitles in to one file. Learn some english while watching TED talks. TED演讲双语字幕下载。">|]
