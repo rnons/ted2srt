@@ -6,11 +6,9 @@
 
 module Foundation where
 
-import           Data.Maybe (maybe)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           Database.Persist (PersistConfigPool)
 import           Database.Persist.Postgresql (PostgresConf)
 import           Database.Persist.Sql (SqlPersistT)
 import qualified Filesystem.Path.CurrentOS as FS
@@ -24,7 +22,6 @@ import           Yesod.Static
 
 import Model
 import Settings
-import Settings.StaticFiles
 import Ted
 
 data Ted = Ted
@@ -128,6 +125,8 @@ getPlayR = do
                   _      -> returnJson $ object ["subtitle" .= ("" :: T.Text)]
          _                  -> returnJson $ object ["subtitle" .= ("" :: T.Text)]
 
+-- Using video.js to play video/mp4 with captions.
+-- https://github.com/videojs/video.js/
 getWatchR :: Handler Html
 getWatchR = do
     slug <- lookupGetParam "slug"
@@ -144,7 +143,8 @@ getWatchR = do
                 v180k = prefix <> "-180k.mp4"
                 v64k = prefix <> "-64k.mp4"
             defaultLayout $ do
-                addScript $ StaticR captionator_min_js
+                addStylesheetRemote "//vjs.zencdn.net/4.1/video-js.css"
+                addScriptRemote "//vjs.zencdn.net/4.1/video.js"
                 $(widgetFile "watch")
          _             -> redirect HomeR
 

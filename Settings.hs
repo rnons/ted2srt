@@ -14,6 +14,7 @@ staticDir :: FilePath
 staticDir = "static"
 
 staticSite :: IO Static
+cssFile, jssFile :: FilePath -> Q Exp
 #if PRODUCTION 
 staticSite = static staticDir
 cssFile = cassiusFile

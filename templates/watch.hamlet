@@ -1,6 +1,6 @@
 <center>
-  <video autoplay controls preload="metadata">
+  <video class="video-js vjs-default-skin" controls autoplay preload="auto" data-setup="" width=560 height=320>  
     <source src="#{v600k}" type="video/mp4">
     <source src="#{v450k}" type="video/mp4">
-    <track label="en" kind="subtitles" srclang="en" src="#{sub'}" default>
+    <track label="English" kind="captions" srclang="en" src="#{sub'}" default>
 

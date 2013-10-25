@@ -4,7 +4,6 @@ module Ted where
 
 import           Control.Exception as E
 import           Control.Monad
-import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
@@ -23,7 +22,7 @@ import           Text.Printf
 import           Text.Regex.Posix ((=~))
 import           Text.XML (Name)
 import           Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
-                                  ($//), (&|), (&//), (>=>))
+                                  ($//), (&|), (&//))
 import qualified Text.XML.Cursor as XC
 
 data Caption = Caption
