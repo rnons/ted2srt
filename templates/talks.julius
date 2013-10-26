@@ -7,7 +7,7 @@ $("#main li").bind("click", function() {
     }
 });
 
-$("#download").bind("click", function() {
+$(".download").bind("click", function() {
     var len = $("#main li.selected").length;
     if (len === 0) {
         alert("No language selected");
@@ -15,7 +15,7 @@ $("#download").bind("click", function() {
         var tid = "#{rawJS $ tid talk}";
         var fname = "#{rawJS $ subName talk}";
         var lag = "#{rawJS $ show $ subLag talk}";
-        var url = "/download?tid=" + tid + 
+        var url = "/download?tid=" + tid + "&type=" + this.id +
                   "&fname=" + fname + "&lag=" + lag;
         $("#main li.selected").each(function(i){
             url += "&lang=" + $(this).data("lang");

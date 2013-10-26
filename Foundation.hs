@@ -92,10 +92,14 @@ getDownloadR = do
     lang  <- lookupGetParams "lang"
     fname <- lookupGetParam "fname"
     lag <- lookupGetParam "lag"
-    case (tid, fname, lag) of
-         (Just tid', Just fname', Just lag') -> do
+    type_   <- lookupGetParam "type"
+    case (tid, fname, lag, type_) of
+         (Just tid', Just fname', Just lag', Just type') -> do
              let lagtime = read $ T.unpack lag'
-             path <- liftIO $ toSub $ Subtitle tid' lang fname' lagtime SRT
+             path <- case type' of
+                "srt" -> liftIO $ toSub $ Subtitle tid' lang fname' lagtime SRT
+                "txt" -> liftIO $ toSub $ Subtitle tid' lang fname' lagtime TXT
+                _     -> return Nothing
              case path of
                   Just p -> do
                     -- filename "srt/foo.srt" == "foo.srt"

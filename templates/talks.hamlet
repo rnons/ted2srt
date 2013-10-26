@@ -35,5 +35,5 @@
         <a href="#{v320k}">Low Quality
     <h4>Subtitle
     <ul>
-      <li>Text
-      <li id=download>SRT
+      <li id=txt class=download>Text
+      <li id=srt class=download>SRT

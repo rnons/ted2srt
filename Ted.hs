@@ -8,11 +8,13 @@ import           Data.Aeson
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Conduit (($$+-))
+import           Data.Conduit.Binary (sinkFile)
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import           qualified Data.Text as T
+import           qualified Data.Text.IO as T
 import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit
 import           System.Directory
@@ -44,7 +46,7 @@ data Talk = Talk
     , subLag            :: Double
     } deriving Show
 
-data FileType = SRT | VTT
+data FileType = SRT | VTT | TXT
     deriving (Show, Eq)
 
 data Subtitle = Subtitle
@@ -106,7 +108,7 @@ mediaPad body = read t * 1000.0
 
 toSub :: Subtitle -> IO (Maybe String)
 toSub sub 
-    | length lang == 1 = oneSub sub
+    | length lang == 1 = func sub
     | length lang == 2 = do
         pwd <- getCurrentDirectory
         let (s1, s2) = (head lang, last lang)
@@ -123,8 +125,8 @@ toSub sub
         if cached 
            then return $ Just path
            else do
-                p1 <- oneSub sub { language = [s1] }
-                p2 <- oneSub sub { language = [s2] }
+                p1 <- func sub { language = [s1] }
+                p2 <- func sub { language = [s2] }
                 case (p1, p2) of
                      (Just p1', Just p2') -> do
                          c1 <- readFile p1'
@@ -135,9 +137,10 @@ toSub sub
                      _                    -> return Nothing
   where
     lang = language sub
-    (dir, suffix) = if filetype sub == SRT 
-                        then ("/static/srt/", ".srt")
-                        else ("/static/vtt/", ".vtt")
+    (dir, suffix, func) = case filetype sub of
+        SRT -> ("/static/srt/", ".srt", oneSub)
+        VTT -> ("/static/vtt/", ".vtt", oneSub)
+        TXT -> ("/static/txt/", ".txt", oneTxt)
 
 oneSub :: Subtitle -> IO (Maybe String)
 oneSub sub = do
@@ -187,6 +190,34 @@ oneSub sub = do
             es = et `div` 1000 `mod` 60
             ems = et `mod` 1000
         hPrintf h fmt (i::Int) sh sm ss sms eh em es ems (content c)
+
+oneTxt :: Subtitle -> IO (Maybe String)
+oneTxt sub = do
+    pwd <- getCurrentDirectory
+    let path = T.unpack $ T.concat [ T.pack pwd
+                                   , dir
+                                   , filename sub
+                                   , "."
+                                   , head $ language sub
+                                   , suffix
+                                   ]
+    cached <- doesFileExist path
+    if cached 
+       then return $ Just path
+       else do
+           let url = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
+                     <> talkId sub <> "/lang/" <> head (language sub)
+                     <> "/format/html"
+           res <- simpleHttp url
+           let cursor = fromDocument $ parseLBS res
+               con = cursor $// element "p" &// XC.content
+               txt = filter (`notElem` ["\n", "\n\t\t\t\t\t"]) con
+               txt' = map (\t -> if t == "\n\t\t\t" then "\n\n" else t)
+                          txt
+           T.writeFile path $ T.concat txt'
+           return $ Just path
+  where
+    (dir, suffix) = ("/static/txt/", ".txt")
 
 -- | Merge srt files of two language line by line. However,
 -- one line in srt_1 may correspond to two lines in srt_2, or vice versa.
