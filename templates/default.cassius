@@ -1,5 +1,9 @@
 body 
+    font-size: 16px
     margin: 0
+
+h3
+    color: #3f3f3f
 
 #logo_homepage
     font: bold 30px sans-serif
@@ -118,29 +122,40 @@ body
     width: 100%
     height: 100%
 
-#main
-    padding: 16px 16px
-
-#main .selected
-    background-color: rgba(255, 43, 6, 0.9)
-    color: #fff
-
 fieldset
     border: 1.5px solid #727272
     padding: 20px 40px
     margin-top: 20px
 
-li
-    width: 200px
-    padding: 5px 0
-    display: inline-block
+legend
+    color: #3f3f3f
+    font-weight: bold
+
+#main
+    position: absolute;
+    left: 21px;
+    right: 250px;
+    padding: 16px 16px
+
+li 
+    color: #424242
 
 li:hover
     color: #ff2b06
     cursor: pointer
 
-li::first-letter
+#main li
+    width: 200px
+    padding: 5px 0
+    display: inline-block
+
+#main li::first-letter
     font-size: 120%
+
+#main .selected
+    background-color: rgba(255, 43, 6, 0.9)
+    color: #fff
+
 a
     text-decoration: none
     color: #424242
@@ -148,43 +163,35 @@ a
 a:hover
     color: #ff2b06
 
-.show-av
-    background: #EEEEEE
-    color: #777777
-    font-size: 12px
-
-.av 
-    display: none
-    font-size: 12px
-
-.av a
-    color: red
-
-.av a:hover
-    text-decoration: underline
-
-.av p
-    margin: 0 
-
-.av li
-    width: 150px
-    margin: 0 20px
-    cursor: auto
-
 .button
     border: 0px
     width: 100px
-    margin: auto
+    margin: 20px auto
     position: relative
     padding: 10px 16px
     background-color: rgba(255, 43, 6, 1.0)
     color: #ffffff
-    font: bold 18px sans-serif
+    font: bold 16px sans-serif
     text-align: center
 
 .button:hover
     background-color: rgba(255, 43, 6, 0.8)
     cursor: pointer
+
+#sidepane 
+    position: absolute
+    right: 0px
+    width: 200px
+    height: 100%
+    background: #eeeeee
+    padding: 12px 12px 0 32px
+
+#sidepane ul
+    padding-left: 20px
+
+#sidepane li
+    padding: 5px 0
+    list-style-type: none
 
 footer
     border-top: 1px solid #a2a2a2

@@ -5,21 +5,35 @@
   <form id=search_form method=GET action=@{HomeR}>
     <input id=search_button type=submit value=SRT>
     ^{widget}
-<div id=main>
-  <p>Talk page: #
-    <a href=#{q'}>#{title talk}
-    <a class=show-av href="#">Show audio/video links
-  <div class=av>
-    <p class=audio>Audio:
-    <p class=video>Video:
-  <fieldset id=srt>
-    <legend>Available Subtitles
-    $if (length $ subLang talk) > 1
-      $forall (lang, code) <- tail $ subLang talk
-        <li data-lang=#{code}>#{lang}
-    $else 
-      <p>No subtitles available!
-
-<center>
-  <input id=download class=button value=Download />
-  <input id=watch class=button value=Watch title="Chrome only!"/>
+<div id=container>
+  <div id=main>
+    <p>Talk page: #
+      <a href=#{q'}>#{title talk}
+    <fieldset id=srt>
+      <legend>Available Subtitles
+      $if (length $ subLang talk) > 1
+        $forall (lang, code) <- tail $ subLang talk
+          <li data-lang=#{code}>#{lang}
+      $else 
+        <p>No subtitles available!
+    <center>
+      <input id=watch class=button value=Watch>
+  <div id=sidepane>
+    <h4>Audio
+    <ul>
+      <li>
+        <a href="#{audio}">MP3
+    <h4>Video
+    <ul>
+      <li>
+        <a href="#{v1500k}">Highest Quality
+      <li>
+        <a href="#{v950k}">High Quality
+      <li>
+        <a href="#{v600k}">Middle Quality
+      <li>
+        <a href="#{v320k}">Low Quality
+    <h4>Subtitle
+    <ul>
+      <li>Text
+      <li id=download>SRT
