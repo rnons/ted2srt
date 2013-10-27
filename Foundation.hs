@@ -6,6 +6,7 @@
 
 module Foundation where
 
+import qualified Control.Exception.Lifted as E
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
@@ -35,7 +36,6 @@ mkYesod "Ted" [parseRoutes|
 /favicon.ico FaviconR GET
 / HomeR GET
 /download DownloadR GET
-/size SizeR POST
 /play PlayR GET
 /watch WatchR GET
 /talks/#Text TalksR GET
@@ -74,16 +74,23 @@ talkForm = renderDivs $ areq talkUrlField ""
 getFaviconR :: MonadHandler m => m ()
 getFaviconR = sendFile "image/x-icon" "favicon.ico"
 
+-- Homepage consists talkForm and talkTile
+-- Input valid TED talk page url into talkForm, all avialable subtitles
+-- will be returned.
+-- talkTile displays five recent talks. There is a cron job running per 12
+-- hours to fetch the recent talks. (fetch.hs)
 getHomeR :: Handler Html
 getHomeR = do
     ((result, widget), enctype) <- runFormGet talkForm
     case result of
          FormSuccess q -> redirect $ TalksR $ T.drop (T.length talkUrl) q
          _       -> do
-             talks <- runDB $ selectList [] [Desc TalkId, LimitTo 5]
+             talks <- E.catch (runDB $ selectList [] [Desc TalkId, LimitTo 5])
+                              (\e -> liftIO $ print (e :: E.SomeException) >> 
+                               return [])
              defaultLayout $ do
-                 setTitle "Ted2srt: Download TED talks with two-language subtitles | Subtitles worth spreading"
-                 toWidgetHead [hamlet| <meta name=description content="Choose from all available subtitle languages, download as srt file. Combine two-language subtitles in to one file. Learn some english while watching TED talks. TED演讲双语字幕下载。">|]
+                 setTitle "Ted2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
+                 toWidgetHead [hamlet| <meta name=description content="Find out all available subtitle languages, download as plain text or srt file. Watch TED talks with bilingual subtitle. TED演讲双语字幕下载。">|]
                  $(widgetFile "homepage")
 
 getDownloadR :: Handler RepPlain
@@ -127,7 +134,7 @@ getPlayR = do
                     let vtt = drop (length pwd) p
                     returnJson $ object ["subtitle" .= vtt]
                   _      -> returnJson $ object ["subtitle" .= ("" :: T.Text)]
-         _                  -> returnJson $ object ["subtitle" .= ("" :: T.Text)]
+         _  -> returnJson $ object ["subtitle" .= ("" :: T.Text)]
 
 -- Using video.js to play video/mp4 with captions.
 -- https://github.com/videojs/video.js/
@@ -170,19 +177,13 @@ getTalksR url = do
                  v320k = prefix <> "-320k.mp4"
                  v180k = prefix <> "-180k.mp4"
                  v64k = prefix <> "-64k.mp4"
-             setTitle $ toHtml $ title talk
+             setTitle $ toHtml $ title talk `T.append` " | Subtitle on ted2srt.org"
              addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
              $(widgetFile "talks")
          _          -> do
              let msg = "ERROR: " <> q' <> " is not a TED talk page!"
              setMessage $ toHtml msg
              redirect HomeR
-
-postSizeR :: Handler Value
-postSizeR = do
-    url <- lookupPostParam "url"
-    size <- lift $ maybe (return 0) responseSize url
-    returnJson $ object ["size" .= size]
 
 talkUrl :: Text
 talkUrl = "http://www.ted.com/talks/"

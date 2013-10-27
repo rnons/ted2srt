@@ -27,27 +27,27 @@ $(".download").bind("click", function() {
 
 $("#watch").bind("click", function() {
     var len = $("#main li.selected").length;
-    if (len === 0) {
-        alert("No language selected");
-    } else {
-        var tid = "#{rawJS $ tid talk}";
-        var fname = "#{rawJS $ subName talk}";
-        var lag = "#{rawJS $ show $ subLag talk}";
-        var lang = [];
-        $("#main li.selected").each(function(i){
-            lang.push($(this).data("lang"));
-        });
-        $.get("@{PlayR}", 
-              { 
-                tid: tid,
-                fname: fname,
-                lag : lag,
-                lang: lang }, 
-              function(data) {
-                var url = "/watch?slug=" + fname + 
-                          "&subtitle=" + data.subtitle;
-                console.log(url);
-                location.href= url;
-              });
-    }
+    var tid = "#{rawJS $ tid talk}";
+    var fname = "#{rawJS $ subName talk}";
+    var lag = "#{rawJS $ show $ subLag talk}";
+    var lang = [];
+    $("#main li.selected").each(function(i){
+        lang.push($(this).data("lang"));
+    });
+
+    // When no languaged is selected, default to english
+    if (lang.length === 0)
+        lang = ["en"];
+    $.get("@{PlayR}", 
+          { 
+            tid: tid,
+            fname: fname,
+            lag : lag,
+            lang: lang }, 
+          function(data) {
+            var url = "/watch?slug=" + fname + 
+                      "&subtitle=" + data.subtitle;
+            console.log(url);
+            location.href= url;
+          });
 });

@@ -135,6 +135,7 @@ toSub sub
                          writeFile path content
                          return $ Just path
                      _                    -> return Nothing
+    | otherwise = return Nothing
   where
     lang = language sub
     (dir, suffix, func) = case filetype sub of
@@ -158,17 +159,20 @@ oneSub sub = do
        else do
            let url = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
                      <> talkId sub <> "/lang/" <> head (language sub)
-           json <- simpleHttp url
-           let res = decode json :: Maybe Caption
-           case res of
-                Just r -> do
-                    h <- openFile path WriteMode
-                    when (filetype sub == VTT) (hPutStrLn h "WEBVTT\n")
-                    forM_ (zip (captions $ fromJust res) [1,2..]) (ppr h)
-                    hClose h
-                    return $ Just path
-                Nothing -> 
-                    return Nothing
+           E.catch (do
+               json <- simpleHttp url
+               let res = decode json :: Maybe Caption
+               case res of
+                    Just r -> do
+                        h <- openFile path WriteMode
+                        when (filetype sub == VTT) (hPutStrLn h "WEBVTT\n")
+                        forM_ (zip (captions $ fromJust res) [1,2..]) (ppr h)
+                        hClose h
+                        return $ Just path
+                    Nothing -> 
+                        return Nothing)
+               (\e -> do print (e :: E.SomeException)
+                         return Nothing)
   where
     (dir, suffix) = if filetype sub == SRT 
                         then ("/static/srt/", ".srt")

@@ -17,7 +17,7 @@
       $else 
         <p>No subtitles available!
     <center>
-      <input id=watch class=button value=Watch>
+      <div id=watch class=button>Watch
   <div id=sidepane>
     <h4>Audio
     <ul>
