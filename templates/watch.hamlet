@@ -1,5 +1,5 @@
 <center>
-  <video class="video-js vjs-default-skin" controls autoplay preload="auto" data-setup="" width=700 height=400>  
+  <video class="video-js vjs-default-skin" controls autoplay preload="auto" data-setup="customControlsOnMobile: true" width=700 height=400>  
     <source src="#{v450k}" type="video/mp4">
     $if not $ T.null sub'
         <track label="English" kind="captions" srclang="en" src="#{sub'}" default>

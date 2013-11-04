@@ -6,6 +6,7 @@
 main
 *.srt
 *.vtt
+*.txt
 .hsenv
 static/tmp/
 config/postgresql.yml
