@@ -47,6 +47,24 @@ instance Yesod Ted where
       where
         genFileName = base64md5
 
+    -- Override defaultLayout to apply default.cassius to all pages.
+    defaultLayout widget = do
+        pc <- widgetToPageContent $ do 
+            widget
+            $(widgetFile "default")
+        giveUrlRenderer
+            [hamlet|
+                $doctype 5
+                <html>
+                    <head>
+                        <title>#{pageTitle pc}
+                        <meta charset=utf-8>
+                        ^{pageHead pc}
+                    <body>
+                        <article>
+                            ^{pageBody pc}
+            |]
+
 instance YesodPersist Ted where
     type YesodPersistBackend Ted = SqlPersistT
     runDB = defaultRunDB persistConfig connPool
