@@ -154,8 +154,7 @@ getWatchR = do
                 v180k = prefix <> "-180k.mp4"
                 v64k = prefix <> "-64k.mp4"
             defaultLayout $ do
-                addStylesheetRemote "//vjs.zencdn.net/4.1/video-js.css"
-                addScriptRemote "//vjs.zencdn.net/4.1/video.js"
+                addScriptRemote "http://jwpsrv.com/library/_trNSDy3EeO49hIxOQfUww.js"
                 $(widgetFile "watch")
          _             -> redirect HomeR
 

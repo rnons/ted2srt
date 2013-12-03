@@ -1,0 +1,18 @@
+jwplayer("jwPlayer").setup({
+    playlist: [{
+        sources: [
+            { file: "#{rawJS v450k}", label: "Normal", type: "mp4" },
+            { file: "#{rawJS v600k}", label: "Middle" },
+            { file: "#{rawJS v950k}", label: "High" }
+        ],
+        tracks: [{ 
+            file: "#{rawJS sub'}", 
+            label: "English",
+            kind: "captions",
+            "default": true 
+        }],
+    }],
+    autostart: true,
+    width: "100%",
+    aspectratio: "16:9"
+});

@@ -178,6 +178,11 @@ a:hover
     background-color: rgba(255, 43, 6, 0.8)
     cursor: pointer
 
+#container
+    width: 80%
+    margin: 0 auto
+    max-width: 800px
+
 #sidepane 
     position: absolute
     right: 0px
