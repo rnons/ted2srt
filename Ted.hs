@@ -27,6 +27,8 @@ import           Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
                                   ($//), (&|), (&//))
 import qualified Text.XML.Cursor as XC
 
+import qualified Ted.Types
+
 data Caption = Caption
     { captions :: [Item]
     } deriving (Generic, Show)
@@ -244,3 +246,23 @@ responseSize url = E.catch
         return $ read (B8.unpack size) / 1024 / 1024)
     (\e -> do print (e :: E.SomeException)
               return 0)
+
+queryTalk :: Int -> IO Ted.Types.Talk
+queryTalk tid = do
+    res <- simpleHttp rurl
+    case eitherDecode res of
+        Right r -> return $ Ted.Types.talk r
+        Left er -> error er
+
+  where
+    rurl = "https://api.ted.com/v1/talks/" ++ show tid ++
+           ".json?api-key=2a9uggd876y5qua7ydghfzrq"
+
+-- "languages": { "en": { "name": "English", "native": true } }
+talkLanguages :: Ted.Types.Talk -> [(Text, Text)]
+talkLanguages talk = zip langCode langName
+  where
+    Object langs = Ted.Types.languages talk
+    langCode = HM.keys langs
+    langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name")) 
+                   (HM.elems langs)
