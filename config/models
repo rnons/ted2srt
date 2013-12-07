@@ -3,4 +3,5 @@ Talk
     title Text
     link Text
     thumbnail Text
+    mediaPad Double
     UniqueTalk tid

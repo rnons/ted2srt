@@ -8,7 +8,6 @@ import           Data.Aeson
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Conduit (($$+-))
-import           Data.Conduit.Binary (sinkFile)
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe
 import           Data.Monoid ((<>))
@@ -22,7 +21,6 @@ import           System.IO
 import           Text.HTML.DOM (parseLBS)
 import           Text.Printf
 import           Text.Regex.Posix ((=~))
-import           Text.XML (Name)
 import           Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
                                   ($//), (&|), (&//))
 import qualified Text.XML.Cursor as XC
@@ -40,14 +38,6 @@ data Item = Item
     , startTime         :: Int
     } deriving (Generic, Show)
 
-data Talk = Talk 
-    { tid               :: Text
-    , title             :: Text
-    , subLang           :: [(Text, Text)]
-    , subName           :: Text
-    , subLag            :: Double
-    } deriving Show
-
 data FileType = SRT | VTT | TXT
     deriving (Show, Eq)
 
@@ -61,52 +51,6 @@ data Subtitle = Subtitle
 
 instance FromJSON Caption
 instance FromJSON Item
-
-getTalk :: Text -> IO (Maybe Talk)
-getTalk uri = E.catch
-    (do body <- simpleHttp $ T.unpack uri
-        let cursor = fromDocument $ parseLBS body
-        return $ Just Talk { tid = talkIdTitle cursor "data-id"
-                           , title = talkIdTitle cursor "data-title"
-                           , subLang = languageCodes cursor
-                           , subName = mediaSlug body
-                           , subLag = mediaPad body
-                           })
-    (\e -> do print (e :: E.SomeException)
-              return Nothing)
-
-talkIdTitle :: XC.Cursor -> Name -> Text
-talkIdTitle cursor name = attr name
-  where
-    cur = head $ cursor $// element "div" >=> attributeIs "id" "share_and_save"
-    attr name = head $ attribute name cur
-
-{- List in the form of [("English", "en")] -}
-languageCodes :: XC.Cursor -> [(Text, Text)]
-languageCodes cursor = zip lang code
-  where
-    lang = cursor $// element "select" 
-                  >=> attributeIs "name" "languageCode" 
-                  &// element "option" &// XC.content
-    code = concat $ cursor $// element "select" 
-                           >=> attributeIs "name" "languageCode" 
-                           &// element "option"
-                           &| attribute "value"
-
-{- File name when saved to local. -}
-mediaSlug :: L8.ByteString -> Text
-mediaSlug body = T.pack $ last $ last r
-  where
-    pat = "mediaSlug\":\"([^\"]+)\"" :: String
-    r = L8.unpack body =~ pat :: [[String]]
-
-{- Time lag in miliseconds. -}
-mediaPad :: L8.ByteString -> Double
-mediaPad body = read t * 1000.0
-  where
-    pat = "mediaPad\":(.+)}" :: String
-    r = L8.unpack body =~ pat :: [[String]]
-    t = last $ last r
 
 toSub :: Subtitle -> IO (Maybe String)
 toSub sub 
@@ -266,3 +210,19 @@ talkLanguages talk = zip langCode langName
     langCode = HM.keys langs
     langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name")) 
                    (HM.elems langs)
+
+getMediaPad :: Text -> IO Double
+getMediaPad rurl = E.catch
+    (do body <- simpleHttp $ T.unpack rurl
+        return $ mediaPad body
+    )
+    (\e -> do error $ show (e :: E.SomeException))
+
+-- TED talk videos begin with different versions of TED promos. 
+-- To keep sync, add time delay (in milliseconds) to subtitles.
+mediaPad :: L8.ByteString -> Double
+mediaPad body = read t * 1000.0
+  where
+    pat = "mediaPad\":(.+)}" :: String
+    r = L8.unpack body =~ pat :: [[String]]
+    t = last $ last r

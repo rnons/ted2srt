@@ -1,10 +1,10 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-import           Control.Monad (forM_, void)
+import           Control.Monad (forM, forM_)
 import           Data.Aeson (Result(..), fromJSON)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.HashMap.Strict as M
-import           Data.List (zipWith4)
+import           Data.List (zipWith5)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Yaml
@@ -15,6 +15,7 @@ import           Text.HTML.DOM (parseLBS)
 import           Text.XML.Cursor
 
 import Model
+import Ted (getMediaPad)
 
 data Database = Database 
     { user      :: String
@@ -55,27 +56,31 @@ main = do
     config <- loadYaml "config/postgresql.yml"
     let db = parseYaml "Production" config :: Database
     connStr <- mkConnStr db
-    res <- simpleHttp url
+    res <- simpleHttp rurl
     let cursor = fromDocument $ parseLBS res
-        talks = take 20 $ zipWith4 Talk  (parseTids cursor)
+        talks = take 20 $ zipWith5 Talk  (parseTids cursor)
                                          (parseTitles cursor)
                                          (parseLinks cursor)
                                          (parsePics cursor)
+                                         (repeat 0)
+    talks' <- forM talks $ \t -> do
+        timelag <- getMediaPad $ talkLink t
+        return t { talkMediaPad = timelag }
 
     withPostgresqlPool connStr (poolsize db) $ \pool ->
         flip runSqlPersistMPool pool $ do
             runMigration migrateAll
-            forM_ (reverse talks) $ \t -> insertUnique t
+            forM_ (reverse talks') $ \t -> insertUnique t
 
   where
-    url = "http://feeds.feedburner.com/tedtalks_video"
+    rurl = "http://feeds.feedburner.com/tedtalks_video"
     
     -- 105 tids
     parseTids cur = cur $// element "jwplayer:talkId" &// content
     -- 106 titles
     parseTitles cur = tail $ cur $// element "itunes:subtitle" &// content
     -- 105 links
-    parseLinks cur = map rewriteUrl $ cur $// element "feedburner:origLink" &// content
+    parseLinks cur = cur $// element "feedburner:origLink" &// content
     -- 106 thumbnails
     parsePics cur = map smallPic $ tail $ concat $ 
                     cur $// element "media:thumbnail" &| attribute "url"
