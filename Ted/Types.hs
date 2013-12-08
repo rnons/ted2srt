@@ -64,3 +64,14 @@ data Sp = Sp
     } deriving (Generic, Show)
 instance FromJSON Sp where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 3 }
+
+data SubTalk = SubTalk 
+    { tid               :: Int
+    , title             :: Text
+    , intro             :: Text
+    , link              :: Text
+    , subLang           :: [(Text, Text)]
+    , subName           :: Text
+    , subLag            :: Double
+    } deriving Show
+

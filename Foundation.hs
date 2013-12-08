@@ -13,6 +13,7 @@ import qualified Data.Text as T
 import           Database.Persist.Postgresql (PostgresConf)
 import           Database.Persist.Sql (SqlPersistT)
 import qualified Filesystem.Path.CurrentOS as FS
+import           Prelude hiding (id)
 import           System.Directory
 import           Text.Blaze.Internal (Markup)
 import           Text.Jasmine (minifym)
@@ -24,6 +25,8 @@ import           Yesod.Static
 import Model
 import Settings
 import Ted
+import Ted.Types
+import Ted.Fallback
 
 data Ted = Ted
     { getStatic :: Static
@@ -103,7 +106,7 @@ getHomeR = do
     case result of
          FormSuccess q -> redirect $ TalksR $ T.drop (T.length talkUrl) q
          _       -> do
-             talks <- E.catch (runDB $ selectList [] [Desc TalkId, LimitTo 5])
+             talks <- E.catch (runDB $ selectList [] [Desc TalkTid, LimitTo 5])
                               (\e -> liftIO $ print (e :: E.SomeException) >> 
                                return [])
              defaultLayout $ do
@@ -182,25 +185,60 @@ getTalksR url = do
     q' <- case result of
          FormSuccess q -> return q
          _             -> return $ T.concat [talkUrl, url]
-    mtalk <- liftIO $ getTalk q'
+    mtalk <- runDB $ selectFirst [TalkLink ==. url] []
     case mtalk of
-         Just talk -> defaultLayout $ do
-             let prefix = downloadUrl <> subName talk 
-                 audio = prefix <> ".mp3"
-                 v1500k = prefix <> "-1500k.mp4"
-                 v950k = prefix <> "-950k.mp4"
-                 v600k = prefix <> "-600k.mp4"
-                 v450k = prefix <> "-450k.mp4"
-                 v320k = prefix <> "-320k.mp4"
-                 v180k = prefix <> "-180k.mp4"
-                 v64k = prefix <> "-64k.mp4"
-             setTitle $ toHtml $ title talk `T.append` " | Subtitle on ted2srt.org"
-             addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
-             $(widgetFile "talks")
-         _          -> do
-             let msg = "ERROR: " <> q' <> " is not a TED talk page!"
-             setMessage $ toHtml msg
-             redirect HomeR
+        Just (Entity _ talk') -> do
+            tedtalk <- liftIO $ queryTalk $ talkTid talk'
+            let stalk = SubTalk { tid = id tedtalk
+                              , title = name tedtalk
+                              , intro = description tedtalk
+                              , link = T.concat [talkUrl, slug tedtalk, ".html"]
+                              , subLang = talkLanguages tedtalk
+                              , subName = talkMediaSlug talk'
+                              , subLag = talkMediaPad talk'
+                              }
+            layout stalk widget    
+        _          -> do
+            mtalk' <- liftIO $ getTalk q'
+            case mtalk' of
+                Just talk' -> do
+                    tedtalk <- liftIO $ queryTalk $ tid talk'
+                    (slug, pad) <- liftIO $ getSlugAndPad $ link talk'
+                    let stalk = SubTalk { tid = id tedtalk
+                                      , title = name tedtalk
+                                      , intro = description tedtalk
+                                      , link = link talk'
+                                      , subLang = talkLanguages tedtalk
+                                      , subName = slug
+                                      , subLag = pad
+                                      }
+                        dbtalk = Model.Talk { talkTid = id tedtalk
+                                      , talkTitle = name tedtalk
+                                      , talkLink = link talk'
+                                      , talkThumbnail = talkImage tedtalk
+                                      , talkMediaSlug = slug
+                                      , talkMediaPad = pad
+                                      }
+                    runDB $ insertUnique dbtalk
+                    layout stalk widget
+                _         -> do
+                    let msg = "ERROR: " <> q' <> " is not a TED talk page!"
+                    setMessage $ toHtml msg
+                    redirect HomeR
+  where
+    layout talk widget = defaultLayout $ do
+        let prefix = downloadUrl <> subName talk 
+            audio = prefix <> ".mp3"
+            v1500k = prefix <> "-1500k.mp4"
+            v950k = prefix <> "-950k.mp4"
+            v600k = prefix <> "-600k.mp4"
+            v450k = prefix <> "-450k.mp4"
+            v320k = prefix <> "-320k.mp4"
+            v180k = prefix <> "-180k.mp4"
+            v64k = prefix <> "-64k.mp4"
+        setTitle $ toHtml $ title talk `T.append` " | Subtitle on ted2srt.org"
+        addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
+        $(widgetFile "talks")
 
 talkUrl :: Text
 talkUrl = "http://www.ted.com/talks/"

@@ -8,11 +8,11 @@
 <div id=container>
   <div id=main>
     <p>Talk page: #
-      <a href=#{q'}>#{title talk}
+      <a href=#{link talk}>#{title talk}
     <fieldset id=srt>
       <legend>Available Subtitles
       $if (length $ subLang talk) > 1
-        $forall (lang, code) <- tail $ subLang talk
+        $forall (code, lang) <- tail $ subLang talk
           <li data-lang=#{code}>#{lang}
       $else 
         <p>No subtitles available!

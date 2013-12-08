@@ -1,7 +1,8 @@
 Talk
-    tid Text
+    tid Int
     title Text
     link Text
     thumbnail Text
+    mediaSlug Text
     mediaPad Double
     UniqueTalk tid

@@ -25,7 +25,8 @@ import           Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
                                   ($//), (&|), (&//))
 import qualified Text.XML.Cursor as XC
 
-import qualified Ted.Types
+import Ted.Fallback
+import Ted.Types
 
 data Caption = Caption
     { captions :: [Item]
@@ -211,18 +212,12 @@ talkLanguages talk = zip langCode langName
     langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name")) 
                    (HM.elems langs)
 
-getMediaPad :: Text -> IO Double
-getMediaPad rurl = E.catch
+talkImage :: Ted.Types.Talk -> Text
+talkImage talk = url $ image (images talk !! 1)
+
+getSlugAndPad :: Text -> IO (Text, Double)
+getSlugAndPad rurl = E.catch
     (do body <- simpleHttp $ T.unpack rurl
-        return $ mediaPad body
+        return (mediaSlug body, mediaPad body)
     )
     (\e -> do error $ show (e :: E.SomeException))
-
--- TED talk videos begin with different versions of TED promos. 
--- To keep sync, add time delay (in milliseconds) to subtitles.
-mediaPad :: L8.ByteString -> Double
-mediaPad body = read t * 1000.0
-  where
-    pat = "mediaPad\":(.+)}" :: String
-    r = L8.unpack body =~ pat :: [[String]]
-    t = last $ last r

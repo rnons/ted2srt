@@ -4,7 +4,7 @@ import           Control.Monad (forM, forM_)
 import           Data.Aeson (Result(..), fromJSON)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.HashMap.Strict as M
-import           Data.List (zipWith5)
+import           Data.List (zipWith6)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Yaml
@@ -15,7 +15,7 @@ import           Text.HTML.DOM (parseLBS)
 import           Text.XML.Cursor
 
 import Model
-import Ted (getMediaPad)
+import Ted (getSlugAndPad)
 
 data Database = Database 
     { user      :: String
@@ -58,14 +58,15 @@ main = do
     connStr <- mkConnStr db
     res <- simpleHttp rurl
     let cursor = fromDocument $ parseLBS res
-        talks = take 20 $ zipWith5 Talk  (parseTids cursor)
+        talks = take 20 $ zipWith6 Talk  (parseTids cursor)
                                          (parseTitles cursor)
                                          (parseLinks cursor)
                                          (parsePics cursor)
+                                         (repeat "")
                                          (repeat 0)
     talks' <- forM talks $ \t -> do
-        timelag <- getMediaPad $ talkLink t
-        return t { talkMediaPad = timelag }
+        (slug, pad) <- getSlugAndPad $ talkLink t
+        return t { talkMediaSlug = slug, talkMediaPad = pad }
 
     withPostgresqlPool connStr (poolsize db) $ \pool ->
         flip runSqlPersistMPool pool $ do
@@ -76,7 +77,7 @@ main = do
     rurl = "http://feeds.feedburner.com/tedtalks_video"
     
     -- 105 tids
-    parseTids cur = cur $// element "jwplayer:talkId" &// content
+    parseTids cur = map (read . T.unpack) $ cur $// element "jwplayer:talkId" &// content
     -- 106 titles
     parseTitles cur = tail $ cur $// element "itunes:subtitle" &// content
     -- 105 links
