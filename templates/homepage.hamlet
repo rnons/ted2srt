@@ -4,7 +4,7 @@
     <input id=search_button type=submit value=SRT>
     ^{widget}
 <div id=feature>
-    $forall Entity _ talk <- talks
+    $forall talk <- talks
         <div class=tile title="#{talkTitle talk}">
             <a href="#{talkLink talk}">
                 <img src="#{talkThumbnail talk}">

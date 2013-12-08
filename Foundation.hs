@@ -104,15 +104,21 @@ getHomeR :: Handler Html
 getHomeR = do
     ((result, widget), enctype) <- runFormGet talkForm
     case result of
-         FormSuccess q -> redirect $ TalksR $ T.drop (T.length talkUrl) q
-         _       -> do
-             talks <- E.catch (runDB $ selectList [] [Desc TalkTid, LimitTo 5])
+        FormSuccess q -> redirect $ TalksR $ T.drop (T.length talkUrl) q
+        _       -> do
+            talks' <- E.catch (runDB $ selectList [] [Desc TalkTid, LimitTo 5])
                               (\e -> liftIO $ print (e :: E.SomeException) >> 
                                return [])
-             defaultLayout $ do
-                 setTitle "Ted2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
-                 toWidgetHead [hamlet| <meta name=description content="Find out all available subtitle languages, download as plain text or srt file. Watch TED talks with bilingual subtitle. TED演讲双语字幕下载。">|]
-                 $(widgetFile "homepage")
+            let talks = flip map talks' $ \(Entity _ t) ->
+                    t { talkLink = rewriteUrl $ talkLink t }
+            defaultLayout $ do
+                setTitle "Ted2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
+                toWidgetHead [hamlet| <meta name=description content="Find out all available subtitle languages, download as plain text or srt file. Watch TED talks with bilingual subtitle. TED演讲双语字幕下载。">|]
+                $(widgetFile "homepage")
+  where
+    -- substitute ted.com to ted2srt.org  e.g.
+    -- http://www.ted.com/talks/marla_spivak_why_bees_are_disappearing.html
+    rewriteUrl url = "http://ted2srt.org" `T.append` T.drop 18 url
 
 getDownloadR :: Handler RepPlain
 getDownloadR = do
@@ -165,15 +171,10 @@ getWatchR = do
     sub  <- lookupGetParam "subtitle"
     case (slug, sub) of 
          (Just slug', Just sub') -> do
-            let prefix = downloadUrl <> slug'
-                audio = prefix <> ".mp3"
-                v1500k = prefix <> "-1500k.mp4"
-                v950k = prefix <> "-950k.mp4"
-                v600k = prefix <> "-600k.mp4"
-                v450k = prefix <> "-450k.mp4"
-                v320k = prefix <> "-320k.mp4"
-                v180k = prefix <> "-180k.mp4"
-                v64k = prefix <> "-64k.mp4"
+            let mu = mediaUrl slug'
+                v950k = mu "950k"
+                v600k = mu "600k"
+                v450k = mu "450k"
             defaultLayout $ do
                 addScriptRemote "http://jwpsrv.com/library/_trNSDy3EeO49hIxOQfUww.js"
                 $(widgetFile "watch")
@@ -229,13 +230,11 @@ getTalksR url = do
     layout talk widget = defaultLayout $ do
         let prefix = downloadUrl <> subName talk 
             audio = prefix <> ".mp3"
-            v1500k = prefix <> "-1500k.mp4"
-            v950k = prefix <> "-950k.mp4"
-            v600k = prefix <> "-600k.mp4"
-            v450k = prefix <> "-450k.mp4"
-            v320k = prefix <> "-320k.mp4"
-            v180k = prefix <> "-180k.mp4"
-            v64k = prefix <> "-64k.mp4"
+            mu = mediaUrl $ subName talk
+            v1500k = mu "1500k"
+            v950k = mu "950k"
+            v600k = mu "600k"
+            v320k = mu "320k"
         setTitle $ toHtml $ title talk `T.append` " | Subtitle on ted2srt.org"
         addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
         $(widgetFile "talks")
@@ -245,3 +244,8 @@ talkUrl = "http://www.ted.com/talks/"
 
 downloadUrl :: Text
 downloadUrl = "http://download.ted.com/talks/"
+
+-- Available quality: 1500k, 950k, 600k, 450k, 320k, 180k, 64k
+mediaUrl :: Text -> Text -> Text
+mediaUrl mediaSlug quality =
+  downloadUrl <> mediaSlug <> "-" <> quality <> ".mp4"

@@ -8,8 +8,7 @@ import Settings
 main :: IO ()
 main = do
     s <- staticSite
-    hspec $ do
-        yesodSpec (Ted s) homeSpecs
+    hspec $ yesodSpec (Ted s) homeSpecs
 
 type Specs = YesodSpec Ted
 

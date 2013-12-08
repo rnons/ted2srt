@@ -89,7 +89,3 @@ main = do
     -- use 240x180.jpg instead of 480x360.jpg  e.g.
     -- http://images.ted.com/images/ted/c58cf2dbb9f8843b91eb2228caf27974b5f428de_480x360.jpg
     smallPic url = (T.reverse. T.drop 11 . T.reverse) url `T.append` "240x180.jpg"
-    
-    -- substitute ted.com to ted2srt.org  e.g.
-    -- http://www.ted.com/talks/marla_spivak_why_bees_are_disappearing.html
-    rewriteUrl url = "http://ted2srt.org" `T.append` T.drop 18 url

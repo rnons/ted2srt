@@ -92,14 +92,7 @@ toSub sub
 
 oneSub :: Subtitle -> IO (Maybe String)
 oneSub sub = do
-    pwd <- getCurrentDirectory
-    let path = T.unpack $ T.concat [ T.pack pwd
-                                   , dir
-                                   , filename sub
-                                   , "."
-                                   , head $ language sub
-                                   , suffix
-                                   ]
+    path <- subtitlePath sub
     cached <- doesFileExist path
     if cached 
        then return $ Just path
@@ -121,9 +114,6 @@ oneSub sub = do
                (\e -> do print (e :: E.SomeException)
                          return Nothing)
   where
-    (dir, suffix) = if filetype sub == SRT 
-                        then ("/static/srt/", ".srt")
-                        else ("/static/vtt/", ".vtt")
     fmt = if filetype sub == SRT
              then "%d\n%02d:%02d:%02d,%03d --> " ++
                   "%02d:%02d:%02d,%03d\n%s\n\n"
@@ -144,14 +134,7 @@ oneSub sub = do
 
 oneTxt :: Subtitle -> IO (Maybe String)
 oneTxt sub = do
-    pwd <- getCurrentDirectory
-    let path = T.unpack $ T.concat [ T.pack pwd
-                                   , dir
-                                   , filename sub
-                                   , "."
-                                   , head $ language sub
-                                   , suffix
-                                   ]
+    path <- subtitlePath sub
     cached <- doesFileExist path
     if cached 
        then return $ Just path
@@ -167,8 +150,6 @@ oneTxt sub = do
                           txt
            T.writeFile path $ T.concat txt'
            return $ Just path
-  where
-    (dir, suffix) = ("/static/txt/", ".txt")
 
 -- | Merge srt files of two language line by line. However,
 -- one line in srt_1 may correspond to two lines in srt_2, or vice versa.
@@ -179,6 +160,23 @@ merge (a:as) (b:bs)
     | b == ""   = a : merge as (b:bs)
     | otherwise = a : b : merge as bs
 merge _      _      = []
+
+subtitlePath :: Subtitle -> IO String
+subtitlePath sub = 
+    case filetype sub of
+        SRT -> path ("/static/srt/", ".srt")
+        VTT -> path ("/static/vtt/", ".vtt")
+        TXT -> path ("/static/txt/", ".txt")
+  where
+    path (dir, suffix) = do
+        pwd <- getCurrentDirectory
+        return $ T.unpack $ T.concat [ T.pack pwd
+                                     , dir
+                                     , filename sub
+                                     , "."
+                                     , head $ language sub
+                                     , suffix
+                                     ]
 
 responseSize :: Text -> IO Float
 responseSize url = E.catch
@@ -220,4 +218,4 @@ getSlugAndPad rurl = E.catch
     (do body <- simpleHttp $ T.unpack rurl
         return (mediaSlug body, mediaPad body)
     )
-    (\e -> do error $ show (e :: E.SomeException))
+    (\e -> error $ show (e :: E.SomeException))

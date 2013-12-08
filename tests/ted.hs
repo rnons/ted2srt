@@ -13,7 +13,7 @@ main = do
     hspec $ spec talk
 
 spec :: Maybe Talk -> Spec
-spec talk = do 
+spec talk =
     describe "Ted.hs tests" $ do
         it "talk id" $
             fmap tid talk  @?= Just "1696"
@@ -24,8 +24,8 @@ spec talk = do
             let srtlist = fmap subLang talk
             fmap length srtlist @?= Just 25
 
-        it "mediaSlug" $ do
+        it "mediaSlug" $
             fmap subName talk @?= Just "FrancisCollins_2012P"
 
-        it "mediaPad" $ do
+        it "mediaPad" $
             fmap subLag talk @?= Just 15330.0
