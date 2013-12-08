@@ -12,26 +12,28 @@ data QueryTalk = QueryTalk
 instance FromJSON QueryTalk
 
 data Talk = Talk
-    { id            :: Int
-    , name          :: Text
-    , description   :: Text
-    , slug          :: Text
-    , recorded_at   :: Text
-    , published_at  :: Text
-    , updated_at    :: Text
-    , viewed_count  :: Int
-    , images        :: [Image]
-    , languages     :: Value
-    , tags          :: [Tag]
-    , themes        :: [Theme]
-    , speakers      :: [Speaker]
+    { _id            :: Int
+    , _name          :: Text
+    , _description   :: Text
+    , _slug          :: Text
+    , _recorded_at   :: Text
+    , _published_at  :: Text
+    , _updated_at    :: Text
+    , _viewed_count  :: Int
+    , _images        :: [Image]
+    , _languages     :: Value
+    , _tags          :: [Tag]
+    , _themes        :: [Theme]
+    , _speakers      :: [Speaker]
     } deriving (Generic, Show)
-instance FromJSON Talk
+instance FromJSON Talk where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 
 data Image = Image
-    { image         :: Img
+    { _image         :: Img
     } deriving (Generic, Show)
-instance FromJSON Image
+instance FromJSON Image where
+    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
 data Img = Img
     { size          :: Text
     , url           :: Text
@@ -66,12 +68,13 @@ instance FromJSON Sp where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 3 }
 
 data SubTalk = SubTalk 
-    { tid               :: Int
-    , title             :: Text
-    , intro             :: Text
+    { id               :: Int
+    , name             :: Text
+    , image         :: Text
+    , description             :: Text
     , link              :: Text
-    , subLang           :: [(Text, Text)]
-    , subName           :: Text
+    , languages           :: [(Text, Text)]
+    , subSlug           :: Text
     , subLag            :: Double
     } deriving Show
 

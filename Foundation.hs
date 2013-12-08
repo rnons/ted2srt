@@ -18,15 +18,16 @@ import           System.Directory
 import           Text.Blaze.Internal (Markup)
 import           Text.Jasmine (minifym)
 import           Text.Julius (rawJS)
-import           Yesod
+import           Yesod hiding (languages)
 import           Yesod.Default.Util (addStaticContentExternal)
 import           Yesod.Static
 
 import Model
 import Settings
 import Ted
-import Ted.Types
-import Ted.Fallback
+import Ted.Types (Talk(..), SubTalk(..))
+import Ted.Fallback (getTalk)
+
 
 data Ted = Ted
     { getStatic :: Static
@@ -75,7 +76,7 @@ instance YesodPersist Ted where
 instance RenderMessage Ted FormMessage where
     renderMessage _ _ = defaultFormMessage
 
-talkForm :: Markup -> MForm (HandlerT Ted IO) (FormResult T.Text, Widget)
+talkForm :: Markup -> MForm (HandlerT Ted IO) (FormResult Text, Widget)
 talkForm = renderDivs $ areq talkUrlField ""
                                          { fsId = Just "search_input"
                                          , fsName = Just "q"
@@ -84,7 +85,7 @@ talkForm = renderDivs $ areq talkUrlField ""
                                                      ]
                                          } Nothing
   where
-    errorMessage :: T.Text
+    errorMessage :: Text
     errorMessage = "Valid url is like this http://www.ted.com/talks/thomas_heatherwick.html"
     
     talkUrlField = check validUrl textField
@@ -118,7 +119,7 @@ getHomeR = do
   where
     -- substitute ted.com to ted2srt.org  e.g.
     -- http://www.ted.com/talks/marla_spivak_why_bees_are_disappearing.html
-    rewriteUrl url = "http://ted2srt.org" `T.append` T.drop 18 url
+    rewriteUrl url = "http://ted2srt.org" <> T.drop 18 url
 
 getDownloadR :: Handler RepPlain
 getDownloadR = do
@@ -137,9 +138,9 @@ getDownloadR = do
              case path of
                   Just p -> do
                     -- filename "srt/foo.srt" == "foo.srt"
-                    let name = FS.filename $ FS.decodeString p
+                    let fn = FS.filename $ FS.decodeString p
                     addHeader "Content-Disposition" $ 
-                        T.pack ("attachment; filename=" ++ FS.encodeString name)
+                        T.pack ("attachment; filename=" ++ FS.encodeString fn)
                     sendFile typePlain p
                   _      -> redirect HomeR
          _                  -> redirect HomeR 
@@ -160,8 +161,8 @@ getPlayR = do
                   Just p -> do
                     let vtt = drop (length pwd) p
                     returnJson $ object ["subtitle" .= vtt]
-                  _      -> returnJson $ object ["subtitle" .= ("" :: T.Text)]
-         _  -> returnJson $ object ["subtitle" .= ("" :: T.Text)]
+                  _      -> returnJson $ object ["subtitle" .= ("" :: Text)]
+         _  -> returnJson $ object ["subtitle" .= ("" :: Text)]
 
 -- Using video.js to play video/mp4 with captions.
 -- https://github.com/videojs/video.js/
@@ -182,60 +183,51 @@ getWatchR = do
 
 getTalksR :: Text -> Handler Html
 getTalksR url = do
-    ((result, widget), enctype) <- runFormGet talkForm
+    ((result, widget), _) <- runFormGet talkForm
     q' <- case result of
          FormSuccess q -> return q
-         _             -> return $ T.concat [talkUrl, url]
+         _             -> return $ talkUrl <> url
     mtalk <- runDB $ selectFirst [TalkLink ==. url] []
     case mtalk of
         Just (Entity _ talk') -> do
             tedtalk <- liftIO $ queryTalk $ talkTid talk'
-            let stalk = SubTalk { tid = id tedtalk
-                              , title = name tedtalk
-                              , intro = description tedtalk
-                              , link = T.concat [talkUrl, slug tedtalk, ".html"]
-                              , subLang = talkLanguages tedtalk
-                              , subName = talkMediaSlug talk'
-                              , subLag = talkMediaPad talk'
-                              }
+            let stalk = SubTalk { id = _id tedtalk
+                                , name = _name tedtalk
+                                , image = talkImg tedtalk
+                                , description = _description tedtalk
+                                , link = talkUrl <> _slug tedtalk <> ".html"
+                                , languages = talkLanguages tedtalk
+                                , subSlug = talkMediaSlug talk'
+                                , subLag = talkMediaPad talk'
+                                }
             layout stalk widget    
         _          -> do
             mtalk' <- liftIO $ getTalk q'
             case mtalk' of
-                Just talk' -> do
-                    tedtalk <- liftIO $ queryTalk $ tid talk'
-                    (slug, pad) <- liftIO $ getSlugAndPad $ link talk'
-                    let stalk = SubTalk { tid = id tedtalk
-                                      , title = name tedtalk
-                                      , intro = description tedtalk
-                                      , link = link talk'
-                                      , subLang = talkLanguages tedtalk
-                                      , subName = slug
-                                      , subLag = pad
-                                      }
-                        dbtalk = Model.Talk { talkTid = id tedtalk
-                                      , talkTitle = name tedtalk
-                                      , talkLink = link talk'
-                                      , talkThumbnail = talkImage tedtalk
-                                      , talkMediaSlug = slug
-                                      , talkMediaPad = pad
-                                      }
+                Just talk -> do
+                    let dbtalk = Model.Talk { talkTid = id talk
+                                            , talkTitle = name talk
+                                            , talkLink = link talk
+                                            , talkImage = image talk
+                                            , talkMediaSlug = subSlug talk
+                                            , talkMediaPad = subLag talk
+                                            }
                     runDB $ insertUnique dbtalk
-                    layout stalk widget
+                    layout talk widget
                 _         -> do
                     let msg = "ERROR: " <> q' <> " is not a TED talk page!"
                     setMessage $ toHtml msg
                     redirect HomeR
   where
     layout talk widget = defaultLayout $ do
-        let prefix = downloadUrl <> subName talk 
+        let prefix = downloadUrl <> subSlug talk 
             audio = prefix <> ".mp3"
-            mu = mediaUrl $ subName talk
+            mu = mediaUrl $ subSlug talk
             v1500k = mu "1500k"
             v950k = mu "950k"
             v600k = mu "600k"
             v320k = mu "320k"
-        setTitle $ toHtml $ title talk `T.append` " | Subtitle on ted2srt.org"
+        setTitle $ toHtml $ name talk <> " | Subtitle on ted2srt.org"
         addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
         $(widgetFile "talks")
 
@@ -247,5 +239,5 @@ downloadUrl = "http://download.ted.com/talks/"
 
 -- Available quality: 1500k, 950k, 600k, 450k, 320k, 180k, 64k
 mediaUrl :: Text -> Text -> Text
-mediaUrl mediaSlug quality =
-  downloadUrl <> mediaSlug <> "-" <> quality <> ".mp4"
+mediaUrl part quality =
+  downloadUrl <> part <> "-" <> quality <> ".mp4"

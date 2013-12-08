@@ -15,7 +15,8 @@ import           Text.HTML.DOM (parseLBS)
 import           Text.XML.Cursor
 
 import Model
-import Ted (getSlugAndPad)
+import Ted.Fallback (getSlugAndPad)
+
 
 data Database = Database 
     { user      :: String

@@ -6,31 +6,28 @@ import           Control.Exception as E
 import           Control.Monad
 import           Data.Aeson
 import qualified Data.ByteString.Char8 as B8
-import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Conduit (($$+-))
 import qualified Data.HashMap.Strict as HM
-import           Data.Maybe
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import           qualified Data.Text as T
 import           qualified Data.Text.IO as T
 import           GHC.Generics (Generic)
-import           Network.HTTP.Conduit
+import           Network.HTTP.Conduit hiding (path)
 import           System.Directory
 import           System.IO
 import           Text.HTML.DOM (parseLBS)
 import           Text.Printf
-import           Text.Regex.Posix ((=~))
-import           Text.XML.Cursor (attribute, attributeIs, element, fromDocument,
-                                  ($//), (&|), (&//))
+import           Text.XML.Cursor (element, fromDocument, ($//), (&//))
 import qualified Text.XML.Cursor as XC
 
-import Ted.Fallback
 import Ted.Types
+
 
 data Caption = Caption
     { captions :: [Item]
     } deriving (Generic, Show)
+instance FromJSON Caption
 
 data Item = Item
     { duration          :: Int
@@ -38,6 +35,7 @@ data Item = Item
     , startOfParagraph  :: Bool
     , startTime         :: Int
     } deriving (Generic, Show)
+instance FromJSON Item
 
 data FileType = SRT | VTT | TXT
     deriving (Show, Eq)
@@ -50,8 +48,29 @@ data Subtitle = Subtitle
     , filetype          :: FileType
     } deriving Show
 
-instance FromJSON Caption
-instance FromJSON Item
+queryTalk :: Int -> IO Talk
+queryTalk tid = do
+    res <- simpleHttp rurl
+    case eitherDecode res of
+        Right r -> return $ talk r
+        Left er -> error er
+
+  where
+    rurl = "https://api.ted.com/v1/talks/" ++ show tid ++
+           ".json?api-key=2a9uggd876y5qua7ydghfzrq"
+
+-- "languages": { "en": { "name": "English", "native": true } }
+talkLanguages :: Talk -> [(Text, Text)]
+talkLanguages t = zip langCode langName
+  where
+    Object langs = _languages t
+    langCode = HM.keys langs
+    langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name")) 
+                   (HM.elems langs)
+
+-- "images": { ["image": { "size": , "url": }] }
+talkImg :: Talk -> Text
+talkImg t = url $ _image (_images t !! 1)
 
 toSub :: Subtitle -> IO (Maybe String)
 toSub sub 
@@ -78,8 +97,8 @@ toSub sub
                      (Just p1', Just p2') -> do
                          c1 <- readFile p1'
                          c2 <- readFile p2'
-                         let content = unlines $ merge (lines c1) (lines c2)
-                         writeFile path content
+                         let merged = unlines $ merge (lines c1) (lines c2)
+                         writeFile path merged
                          return $ Just path
                      _                    -> return Nothing
     | otherwise = return Nothing
@@ -97,16 +116,16 @@ oneSub sub = do
     if cached 
        then return $ Just path
        else do
-           let url = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
+           let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
                      <> talkId sub <> "/lang/" <> head (language sub)
            E.catch (do
-               json <- simpleHttp url
-               let res = decode json :: Maybe Caption
-               case res of
+               res <- simpleHttp rurl
+               let decoded = decode res :: Maybe Caption
+               case decoded of
                     Just r -> do
                         h <- openFile path WriteMode
                         when (filetype sub == VTT) (hPutStrLn h "WEBVTT\n")
-                        forM_ (zip (captions $ fromJust res) [1,2..]) (ppr h)
+                        forM_ (zip (captions r) [1,2..]) (ppr h)
                         hClose h
                         return $ Just path
                     Nothing -> 
@@ -139,10 +158,10 @@ oneTxt sub = do
     if cached 
        then return $ Just path
        else do
-           let url = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
+           let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
                      <> talkId sub <> "/lang/" <> head (language sub)
                      <> "/format/html"
-           res <- simpleHttp url
+           res <- simpleHttp rurl
            let cursor = fromDocument $ parseLBS res
                con = cursor $// element "p" &// XC.content
                txt = filter (`notElem` ["\n", "\n\t\t\t\t\t"]) con
@@ -161,6 +180,7 @@ merge (a:as) (b:bs)
     | otherwise = a : b : merge as bs
 merge _      _      = []
 
+-- Construct file path according to filetype.
 subtitlePath :: Subtitle -> IO String
 subtitlePath sub = 
     case filetype sub of
@@ -179,43 +199,13 @@ subtitlePath sub =
                                      ]
 
 responseSize :: Text -> IO Float
-responseSize url = E.catch
-    (do req <- parseUrl $ T.unpack url
-        size <- withManager $ \manager -> do
+responseSize rurl = E.catch
+    (do req <- parseUrl $ T.unpack rurl
+        filesize <- withManager $ \manager -> do
             res <- http req manager
             let hdrs = responseHeaders res
             responseBody res $$+- return ()
             return $ HM.fromList hdrs HM.! "Content-Length"
-        return $ read (B8.unpack size) / 1024 / 1024)
+        return $ read (B8.unpack filesize) / 1024 / 1024)
     (\e -> do print (e :: E.SomeException)
               return 0)
-
-queryTalk :: Int -> IO Ted.Types.Talk
-queryTalk tid = do
-    res <- simpleHttp rurl
-    case eitherDecode res of
-        Right r -> return $ Ted.Types.talk r
-        Left er -> error er
-
-  where
-    rurl = "https://api.ted.com/v1/talks/" ++ show tid ++
-           ".json?api-key=2a9uggd876y5qua7ydghfzrq"
-
--- "languages": { "en": { "name": "English", "native": true } }
-talkLanguages :: Ted.Types.Talk -> [(Text, Text)]
-talkLanguages talk = zip langCode langName
-  where
-    Object langs = Ted.Types.languages talk
-    langCode = HM.keys langs
-    langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name")) 
-                   (HM.elems langs)
-
-talkImage :: Ted.Types.Talk -> Text
-talkImage talk = url $ image (images talk !! 1)
-
-getSlugAndPad :: Text -> IO (Text, Double)
-getSlugAndPad rurl = E.catch
-    (do body <- simpleHttp $ T.unpack rurl
-        return (mediaSlug body, mediaPad body)
-    )
-    (\e -> error $ show (e :: E.SomeException))

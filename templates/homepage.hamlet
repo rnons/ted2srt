@@ -7,7 +7,7 @@
     $forall talk <- talks
         <div class=tile title="#{talkTitle talk}">
             <a href="#{talkLink talk}">
-                <img src="#{talkThumbnail talk}">
+                <img src="#{talkImage talk}">
 <footer>
     <div id=footer_right>
         Ted2srt by #
