@@ -14,6 +14,7 @@ import           qualified Data.Text as T
 import           qualified Data.Text.IO as T
 import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit hiding (path)
+import           Network.HTTP.Types (urlEncode)
 import           System.Directory
 import           System.IO
 import           Text.HTML.DOM (parseLBS)
@@ -71,6 +72,17 @@ talkLanguages t = zip langCode langName
 -- "images": { ["image": { "size": , "url": }] }
 talkImg :: Talk -> Text
 talkImg t = url $ _image (_images t !! 1)
+
+searchTalk :: B8.ByteString -> IO [SearchTalk]
+searchTalk q = do
+    res <- simpleHttp rurl
+    case eitherDecode res of
+        Right r -> return $ map _talk (results r)
+        Left er -> error er
+  where
+    query = B8.unpack $ urlEncode True q
+    rurl = "https://api.ted.com/v1/search.json?q=" ++ query ++
+           "&categories=talks&api-key=2a9uggd876y5qua7ydghfzrq"
 
 toSub :: Subtitle -> IO (Maybe String)
 toSub sub 
