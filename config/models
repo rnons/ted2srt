@@ -1,6 +1,7 @@
 Talk
     tid Int
     title Text
+    description Text
     link Text
     image Text
     mediaSlug Text

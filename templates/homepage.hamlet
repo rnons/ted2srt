@@ -1,15 +1,15 @@
-<div id=logo_homepage>
+<div #logo_homepage>
     :: TED -> [SRT]
-<form id=search_form_homepage method=GET action=@{HomeR}>
-    <input id=search_button type=submit value=SRT>
-    ^{widget}
-<div id=feature>
+<form #search_form_homepage method=GET action=@{HomeR}>
+    <input #search_button type=submit value=SRT>
+    <input #search_input name=q type=textfield required placeholder="Talk url or Keywords">
+<div #feature>
     $forall talk <- talks
-        <div class=tile title="#{talkTitle talk}">
+        <div .tile title="#{talkTitle talk}">
             <a href="#{talkLink talk}">
                 <img src="#{talkImage talk}">
 <footer>
-    <div id=footer_right>
+    <div #footer_right>
         Ted2srt by #
         <a href="https://gittip.com/rnons">
             rnons

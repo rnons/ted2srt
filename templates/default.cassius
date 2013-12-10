@@ -216,3 +216,29 @@ footer a
 
 footer a:hover
     color: #424242
+
+.talk-list
+    width: 90%
+    min-width: 800px
+    margin-left: 35px
+
+.talk
+    margin: 20px 0
+    height: 85px
+
+.talk a
+    color: #ff2b06
+
+.title
+    padding: 0 20px
+    overflow: hidden
+    height: 25px
+
+.img
+    position: relative
+    float: left
+
+.intro
+    padding: 0 20px
+    overflow: hidden
+    height: 60px

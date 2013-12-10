@@ -1,15 +1,8 @@
-<div id=topbar>
-  <a href=@{HomeR}>
-    <div id=logo>
-      :: TED -> [SRT]
-  <form id=search_form method=GET action=@{HomeR}>
-    <input id=search_button type=submit value=SRT>
-    ^{widget}
-<div id=container>
-  <div id=main>
+<div #container>
+  <div #main>
     <p>Talk page: #
       <a href=#{link talk}>#{name talk}
-    <fieldset id=srt>
+    <fieldset #srt>
       <legend>Available Subtitles
       $if (length $ languages talk) > 1
         $forall (code, lang) <- tail $ languages talk
@@ -17,8 +10,8 @@
       $else 
         <p>No subtitles available!
     <center>
-      <div id=watch class=button>Watch
-  <div id=sidepane>
+      <div #watch .button>Watch
+  <div #sidepane>
     <h4>Audio
     <ul>
       <li>
@@ -35,5 +28,5 @@
         <a href="#{v320k}">Low Quality
     <h4>Subtitle
     <ul>
-      <li id=txt class=download>Text
-      <li id=srt class=download>SRT
+      <li #txt .download>Text
+      <li #srt .download>SRT
