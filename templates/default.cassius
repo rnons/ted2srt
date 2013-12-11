@@ -232,7 +232,7 @@ footer a:hover
 .title
     padding: 0 20px
     overflow: hidden
-    height: 25px
+    height: 21px
 
 .img
     position: relative
@@ -241,4 +241,5 @@ footer a:hover
 .intro
     padding: 0 20px
     overflow: hidden
-    height: 60px
+    height: 64px
+    font-size: 14px

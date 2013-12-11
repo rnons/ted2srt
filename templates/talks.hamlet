@@ -1,7 +1,13 @@
 <div #container>
   <div #main>
-    <p>Talk page: #
-      <a href=#{link talk}>#{name talk}
+    <div .talk title="#{name talk}">
+      <div .img>
+        <a href="#{link talk}">
+          <img src="#{img113x85 $ image talk}">
+      <div .title>
+        <a href="#{link talk}">#{name talk}
+      <div .intro>
+        <span>#{preEscapedText $ description talk}
     <fieldset #srt>
       <legend>Available Subtitles
       $if (length $ languages talk) > 1
