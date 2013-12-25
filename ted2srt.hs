@@ -2,9 +2,11 @@ import           Control.Monad.Logger (runLoggingT)
 import           Database.Persist (loadConfig, applyEnv, createPoolConfig, runPool)
 import           Database.Persist.Postgresql (PostgresConf)
 import           Database.Persist.Sql (runMigration)
-import           System.Log.FastLogger (mkLogger)
-import           System.IO (stdout)
+import           GHC.IO.FD (stdout)
+import           Network.Wai.Logger (clockDateCacher)
+import           System.Log.FastLogger (newLoggerSet, defaultBufSize)
 import           Yesod (warp, messageLoggerSource)
+import           Yesod.Core.Types (Logger (Logger))
 import           Yesod.Default.Config (withYamlEnvironment, DefaultEnv(..))
 
 import Foundation (Ted(..))
@@ -17,8 +19,10 @@ main = do
     dbconf <- withYamlEnvironment "config/postgresql.yml" Production
               loadConfig >>= applyEnv
     p <- createPoolConfig (dbconf :: PostgresConf)
-    logger <- mkLogger True stdout
-    let foundation = Ted s p dbconf
+    loggerSet <- newLoggerSet defaultBufSize stdout
+    (getter, _) <- clockDateCacher
+    let logger = Logger loggerSet getter
+        foundation = Ted s p dbconf
     runLoggingT (runPool dbconf (runMigration migrateAll) p)
                 (messageLoggerSource foundation logger)
     warp 3000 foundation
