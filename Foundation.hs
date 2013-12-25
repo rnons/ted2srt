@@ -261,7 +261,7 @@ tedTalkUrl talkslug = "http://www.ted.com/talks/" <> talkslug <> ".html"
 img113x85 :: Text -> Text
 img113x85 url = (T.reverse. T.drop 11 . T.reverse) url <> "113x85.jpg"
 
--- substitute ted.com to ted2srt.org  e.g.
--- http://www.ted.com/talks/marla_spivak_why_bees_are_disappearing.html
+-- Drop the talkUrl part.
+-- e.g. marla_spivak_why_bees_are_disappearing.html
 rewriteUrl ::Text -> Text
-rewriteUrl url = "http://ted2srt.org" <> T.drop 18 url
+rewriteUrl = T.drop $ T.length talkUrl

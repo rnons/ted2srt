@@ -2,9 +2,9 @@
   $forall t <- talks
     <div .talk>
       <div .img>
-        <a href="#{talkLink t}">
+        <a href="@{TalksR $ talkLink t}">
           <img src="#{img113x85 $ talkImage t}">
       <div .title>
-        <a href="#{talkLink t}">#{talkTitle t}
+        <a href="@{TalksR $ talkLink t}">#{talkTitle t}
       <div .intro>
         <span>#{preEscapedText $ talkDescription t}
