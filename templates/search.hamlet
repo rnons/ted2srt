@@ -1,10 +1,13 @@
 <div .talk-list>
-  $forall t <- talks
-    <div .talk>
-      <div .img>
-        <a href="@{TalksR $ talkLink t}">
-          <img src="#{img113x85 $ talkImage t}">
-      <div .title>
-        <a href="@{TalksR $ talkLink t}">#{talkTitle t}
-      <div .intro>
-        <span>#{preEscapedText $ talkDescription t}
+  $if null talks
+      Nothing found!
+  $else 
+    $forall t <- talks
+      <div .talk>
+        <div .img>
+          <a href="@{TalksR $ talkLink t}">
+            <img src="#{img113x85 $ talkImage t}">
+        <div .title>
+          <a href="@{TalksR $ talkLink t}">#{talkTitle t}
+        <div .intro>
+          <span>#{preEscapedText $ talkDescription t}

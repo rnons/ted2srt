@@ -49,14 +49,14 @@ mkYesod "Ted" [parseRoutes|
 |]
 
 instance Yesod Ted where
-    addStaticContent = 
+    addStaticContent =
         addStaticContentExternal minifym genFileName staticDir (StaticR . flip StaticRoute [])
       where
         genFileName = base64md5
 
     -- Override defaultLayout to apply default.cassius to all pages.
     defaultLayout widget = do
-        pc <- widgetToPageContent $ do 
+        pc <- widgetToPageContent $ do
             widget
             $(widgetFile "default")
         giveUrlRenderer
@@ -91,12 +91,12 @@ getHomeR = do
     q <- lookupGetParam "q"
     case q of
         Just kw
-            | talkUrl `T.isPrefixOf` kw -> 
+            | talkUrl `T.isPrefixOf` kw ->
                 redirect $ TalksR $ T.drop (T.length talkUrl) kw
             | otherwise -> redirect $ SearchR kw
         _ -> do
             talks' <- E.catch (runDB $ selectList [] [Desc TalkTid, LimitTo 5])
-                              (\e -> liftIO $ print (e :: E.SomeException) >> 
+                              (\e -> liftIO $ print (e :: E.SomeException) >>
                                return [])
             let talks = flip map talks' $ \(Entity _ t) ->
                         t { talkLink = rewriteUrl $ talkLink t }
@@ -123,11 +123,11 @@ getDownloadR = do
                   Just p -> do
                     -- filename "srt/foo.srt" == "foo.srt"
                     let fn = FS.filename $ FS.decodeString p
-                    addHeader "Content-Disposition" $ 
+                    addHeader "Content-Disposition" $
                         T.pack ("attachment; filename=" ++ FS.encodeString fn)
                     sendFile typePlain p
                   _      -> redirect HomeR
-         _                  -> redirect HomeR 
+         _                  -> redirect HomeR
 
 getPlayR :: Handler Value
 getPlayR = do
@@ -154,7 +154,7 @@ getWatchR :: Handler Html
 getWatchR = do
     slug <- lookupGetParam "slug"
     sub  <- lookupGetParam "subtitle"
-    case (slug, sub) of 
+    case (slug, sub) of
          (Just slug', Just sub') -> do
             let mu = mediaUrl slug'
                 v950k = mu "950k"
@@ -170,7 +170,7 @@ getSearchR q = do
     searchtalks <- liftIO $ searchTalk $ B8.pack $ T.unpack q
     dbtalks <- forM searchtalks $ \t -> do
         mtalk <- runDB $ selectFirst [TalkTid ==. s_id t] []
-        case mtalk of 
+        case mtalk of
             Just (Entity _ talk') -> return talk'
             _                    -> do
                 tedtalk <- liftIO $ queryTalk $ s_id t
@@ -185,10 +185,10 @@ getSearchR q = do
                                         }
                 runDB $ insertUnique dbtalk
                 return dbtalk
-                                        
+
     let talks = flip map dbtalks $ \t ->
                 t { talkLink = rewriteUrl $ talkLink t }
-            
+
     defaultLayout $ do
         $(widgetFile "topbar")
         $(widgetFile "search")
@@ -229,7 +229,7 @@ getTalksR url = do
                     redirect HomeR
   where
     layout talk = defaultLayout $ do
-        let prefix = downloadUrl <> subSlug talk 
+        let prefix = downloadUrl <> subSlug talk
             audio = prefix <> ".mp3"
             mu = mediaUrl $ subSlug talk
             v1500k = mu "1500k"

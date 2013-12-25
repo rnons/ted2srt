@@ -12,6 +12,7 @@ data QueryResponse = QueryResponse
     } deriving (Generic, Show)
 instance FromJSON QueryResponse
 
+-- Some talks (performance) has no language infomation e.g. 581.
 data Talk = Talk
     { _id           :: Int
     , _name         :: Text
@@ -22,7 +23,7 @@ data Talk = Talk
     , _updated_at   :: Text
     , _viewed_count :: Int
     , _images       :: [Image]
-    , _languages    :: Value
+    , _languages    :: Maybe Value
     , _tags         :: [Tag]
     , _themes       :: [Theme]
     , _speakers     :: [Speaker]

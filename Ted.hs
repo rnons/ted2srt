@@ -62,12 +62,14 @@ queryTalk tid = do
 
 -- "languages": { "en": { "name": "English", "native": true } }
 talkLanguages :: Talk -> [(Text, Text)]
-talkLanguages t = zip langCode langName
-  where
-    Object langs = _languages t
-    langCode = HM.keys langs
-    langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name")) 
-                   (HM.elems langs)
+talkLanguages t = 
+    case _languages t of
+        Just (Object langs) -> 
+            let langCode = HM.keys langs
+                langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name")) 
+                               (HM.elems langs)
+            in  zip langCode langName
+        _                   -> []
 
 -- "images": { ["image": { "size": , "url": }] }
 talkImg :: Talk -> Text
