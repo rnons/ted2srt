@@ -1,38 +1,37 @@
-<div #container>
-  <div #main>
-    <div .talk title="#{name talk}">
-      <div .img>
-        <a href="#{link talk}">
-          <img src="#{img113x85 $ image talk}">
-      <div .title>
-        <a href="#{link talk}">#{name talk}
-      <div .intro>
-        <span>#{preEscapedText $ description talk}
-    <fieldset #srt>
-      <legend>Available Subtitles
-      $if (length $ languages talk) > 1
-        $forall (code, lang) <- tail $ languages talk
-          <li data-lang=#{code}>#{lang}
-      $else 
-        <p>No subtitles available!
-    <center>
-      <div #watch .button>Watch
-  <div #sidepane>
-    <h4>Audio
-    <ul>
-      <li>
-        <a href="#{audio}">MP3
-    <h4>Video
-    <ul>
-      <li>
-        <a href="#{v1500k}">Highest Quality
-      <li>
-        <a href="#{v950k}">High Quality
-      <li>
-        <a href="#{v600k}">Middle Quality
-      <li>
-        <a href="#{v320k}">Low Quality
-    <h4>Subtitle
-    <ul>
-      <li #txt .download>Text
-      <li #srt .download>SRT
+<div #main>
+  <div .talk title="#{name talk}">
+    <div .title>
+      <a href="#{link talk}">#{name talk}
+    <div .img>
+      <a href="#{link talk}">
+        <img src="#{img113x85 $ image talk}">
+    <div .intro>
+      <span>#{preEscapedText $ description talk}
+  <fieldset #srt>
+    <legend>Available Subtitles
+    $if (length $ languages talk) > 1
+      $forall (code, lang) <- tail $ languages talk
+        <li data-lang=#{code}>#{lang}
+    $else 
+      <p>No subtitles available!
+  <center>
+    <div #watch .button>Watch
+<div #sidepane>
+  <h4>Audio
+  <ul>
+    <li>
+      <a href="#{audio}">MP3
+  <h4>Video
+  <ul>
+    <li>
+      <a href="#{v1500k}">Highest Quality
+    <li>
+      <a href="#{v950k}">High Quality
+    <li>
+      <a href="#{v600k}">Middle Quality
+    <li>
+      <a href="#{v320k}">Low Quality
+  <h4>Subtitle
+  <ul>
+    <li #txt .download>Text
+    <li #srt .download>SRT

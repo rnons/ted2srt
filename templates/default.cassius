@@ -1,23 +1,9 @@
-body 
-    font-size: 16px
-    margin: 0
-
-h3
-    color: #3f3f3f
-
 #logo_homepage
     font: bold 30px sans-serif
     color: rgba(255, 43, 6, 1.0)
     margin: auto
     position: relative
     text-align: center
-    top: 214px
-
-#topbar
-    height: 32px
-    border-bottom: 1.5px solid #727272
-    padding: 16px 35px
-    box-shadow: 0 0 2px #727272
 
 #logo
     font: bold 20px/32px sans-serif
@@ -28,12 +14,6 @@ h3
 #logo:hover
     color: rgba(255, 43, 6, 0.7)
 
-#search_form_homepage
-    margin: auto
-    position: relative
-    top: 249px
-    width: 470px
-
 #search_form
     margin: auto
     position: relative
@@ -41,7 +21,7 @@ h3
     float: left
 
 #search_input
-    width: 390px
+    width: 80%
     height: 26px
     border: 1.5px solid #727272
     float: right
@@ -68,63 +48,19 @@ h3
     background-color: rgba(255, 43, 6, 0.7)
     cursor: pointer
 
-.message
-    position: fixed
-    width: 100%
-    text-align: center
-    color: red
+.talk
+    min-height: 100px
+    margin: 10px 0
 
-.errors
-    color: #424242
-    font-size: 12px
-    font-style: italic
+.talk a
+    color: #ff2b06
 
-#feature
-    top: 342px
-    position: relative
-    width: 470px
-    margin: auto
-
-.tile
-    position: absolute
-
-.tile:nth-child(1)
-    left: 0px
-    top: 0px
-    height: 179px
-    width: 239px
-
-.tile:nth-child(2)
-    left: 240px
-    top: 0px
-    height: 89px
-    width: 119px
-
-.tile:nth-child(3)
-    left: 240px
-    top: 90px
-    height: 89px
-    width: 119px
-
-.tile:nth-child(4)
-    left: 360px
-    top: 0px
-    height: 89px
-    width: 119px
-
-.tile:nth-child(5)
-    left: 360px
-    top: 90px
-    height: 89px
-    width: 119px
-
-#feature img
-    width: 100%
-    height: 100%
+.talk img
+    float: left
+    padding-right: 5px
 
 fieldset
     border: 1.5px solid #727272
-    padding: 20px 40px
     margin-top: 20px
 
 legend
@@ -132,12 +68,11 @@ legend
     font-weight: bold
 
 #main
-    position: absolute;
-    left: 21px;
-    right: 250px;
+    left: 21px
+    right: 250px
     padding: 16px 16px
 
-li 
+li
     color: #424242
 
 li:hover
@@ -178,68 +113,189 @@ a:hover
     background-color: rgba(255, 43, 6, 0.8)
     cursor: pointer
 
-#container
-    width: 80%
-    margin: 0 auto
-    max-width: 800px
-
-#sidepane 
-    position: absolute
-    right: 0px
-    width: 200px
-    height: 100%
-    background: #eeeeee
-    padding: 12px 12px 0 32px
-
-#sidepane ul
-    padding-left: 20px
-
-#sidepane li
-    padding: 5px 0
-    list-style-type: none
-
 footer
     border-top: 1px solid #a2a2a2
     color: #727272
+    background-color: white
+    margin-top: 25px
+    text-align: center
+    padding: 5px
     position: fixed
-    padding: 5px 15px
     width: 100%
     bottom: 0px
 
-#footer_right
-    float: right
-    padding-right: 45px
+#sidepane
+    background: #eeeeee
 
-footer a
-    text-decoration: none
-    color: #727272
 
-footer a:hover
-    color: #424242
+@media screen and (max-width: 767px)
+    body
+        min-width: 320px
 
-.talk-list
-    width: 90%
-    min-width: 800px
-    margin-left: 35px
+    #logo_homepage
+        height: 32px
+        padding: 42px 0
 
-.talk
-    margin: 20px 0
-    height: 85px
+    #search_form_homepage
+        margin: auto
+        padding: 0
+        position: relative
+        width: 320px
+        height: 42px
 
-.talk a
-    color: #ff2b06
+    #search_button
+        width: 14%
 
-.title
-    padding: 0 20px
-    overflow: hidden
-    height: 21px
+    #search_form
+        width: 310px
 
-.img
-    position: relative
-    float: left
+    #feature
+        position: relative
+        width: 80%
+        min-width: 320px
+        margin: 5px auto
 
-.intro
-    padding: 0 20px
-    overflow: hidden
-    height: 64px
-    font-size: 14px
+    .tile
+        font-size: 14px
+        height: 89px
+        margin-top: 5px
+
+    .tile img
+        float: left
+        width: 119px
+
+    .tile div
+        overflow: hidden
+        padding-left: 10px
+
+    #topbar
+        position: relative
+        height: 64px
+
+    #logo
+        float: none
+
+    #main
+        position: relative
+        margin: auto
+        padding: 10px 0 0 0
+        left: 0
+        right: 0
+
+    .intro
+        font-size: 14px
+
+    fieldset:
+        padding: 0
+
+    #sidepane
+        position: relative
+
+
+@media screen and (min-width: 768px)
+    body
+        font-size: 16px
+        margin: 0
+
+    h3
+        color: #3f3f3f
+
+    #logo_homepage
+        top: 214px
+
+    #topbar
+        height: 32px
+        border-bottom: 1.5px solid #727272
+        padding: 16px 35px
+        box-shadow: 0 0 2px #727272
+
+    #search_form_homepage
+        margin: auto
+        position: relative
+        top: 249px
+        width: 470px
+
+    .message
+        position: fixed
+        width: 100%
+        text-align: center
+        color: red
+
+    .errors
+        color: #424242
+        font-size: 12px
+        font-style: italic
+
+    #feature
+        top: 342px
+        position: relative
+        width: 470px
+        margin: auto
+
+    #feature img
+        width: 100%
+        height: 100%
+
+    .tile
+        position: absolute
+
+    .tile div
+        display: none
+
+    .tile:nth-child(1)
+        left: 0px
+        top: 0px
+        height: 179px
+        width: 239px
+
+    .tile:nth-child(2)
+        left: 240px
+        top: 0px
+        height: 89px
+        width: 119px
+
+    .tile:nth-child(3)
+        left: 240px
+        top: 90px
+        height: 89px
+        width: 119px
+
+    .tile:nth-child(4)
+        left: 360px
+        top: 0px
+        height: 89px
+        width: 119px
+
+    .tile:nth-child(5)
+        left: 360px
+        top: 90px
+        height: 89px
+        width: 119px
+
+    #main
+        position: absolute
+
+    fieldset
+        padding: 20px 40px
+
+
+    #sidepane
+        position: absolute
+        right: 0px
+        width: 200px
+        padding: 12px 12px 0 32px
+
+    #sidepane ul
+        padding-left: 20px
+
+    #sidepane li
+        padding: 5px 0
+        list-style-type: none
+
+    .search
+        width: 90%
+        min-width: 800px
+        margin-left: 35px
+
+
+

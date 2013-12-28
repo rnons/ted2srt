@@ -101,9 +101,10 @@ getHomeR = do
             let talks = flip map talks' $ \(Entity _ t) ->
                         t { talkLink = rewriteUrl $ talkLink t }
             defaultLayout $ do
-                setTitle "Ted2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
+                setTitle "TED2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
                 toWidgetHead [hamlet| <meta name=description content="Find out all available subtitle languages, download as plain text or srt file. Watch TED talks with bilingual subtitle. TED演讲双语字幕下载。">|]
                 $(widgetFile "homepage")
+                $(widgetFile "footer")
 
 getDownloadR :: Handler RepPlain
 getDownloadR = do

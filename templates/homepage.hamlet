@@ -1,21 +1,11 @@
 <div #logo_homepage>
-    :: TED -> [SRT]
+  :: TED -> [SRT]
 <form #search_form_homepage method=GET action=@{HomeR}>
-    <input #search_button type=submit value=SRT>
-    <input #search_input name=q type=textfield required placeholder="Talk url or Keywords">
+  <input #search_button type=submit value=SRT>
+  <input #search_input name=q type=textfield required autofocus placeholder="Talk url or Keywords">
 <div #feature>
-    $forall talk <- talks
-        <div .tile title="#{talkTitle talk}">
-            <a href="@{TalksR $ talkLink talk}">
-                <img src="#{talkImage talk}">
-<footer>
-    <div #footer_right>
-        Ted2srt by #
-        <a href="https://gittip.com/rnons">
-            rnons
-        \ | #
-        <a href="https://github.com/rnons/ted2srt">
-            Source code
-        \ | #
-        <a href="mailto: remotenonsense@gmail.com">
-            Feedback
+  $forall talk <- talks
+    <div .tile title="#{talkTitle talk}">
+      <a href="@{TalksR $ talkLink talk}">
+        <img src="#{talkImage talk}">
+        <div>#{talkTitle talk}
