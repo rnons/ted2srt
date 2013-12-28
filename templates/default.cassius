@@ -80,12 +80,13 @@ legend
     right: 250px
     padding: 16px 16px
 
-li
-    color: #424242
+#sidepane
+    li
+        color: #424242
 
-li:hover
-    color: #ff2b06
-    cursor: pointer
+    li:hover
+        color: #ff2b06
+        cursor: pointer
 
 #main li
     width: 200px
@@ -134,6 +135,24 @@ footer
 
 #sidepane
     background: #eeeeee
+
+#about
+    margin: 10px auto
+    width: 90%
+
+#about a
+    color: #ff2b06
+
+#about a:hover
+    text-decoration: underline
+
+#about img
+    width: 100%
+    max-width: 640px
+    padding: 10px
+
+h2, h3
+    color: #3f3f3f
 
 
 @media screen and (max-width: 767px)
@@ -200,9 +219,6 @@ footer
     body
         font-size: 16px
         margin: 0
-
-    h3
-        color: #3f3f3f
 
     #topbar
         height: 32px

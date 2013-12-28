@@ -26,6 +26,7 @@ import           Yesod.Static
 
 import Model
 import Settings
+import Settings.StaticFiles
 import Ted
 import Ted.Types (Talk(..), SubTalk(..), SearchTalk(..))
 import Ted.Fallback (getTalk, getSlugAndPad)
@@ -41,6 +42,7 @@ mkYesod "Ted" [parseRoutes|
 /static StaticR Static getStatic
 /favicon.ico FaviconR GET
 / HomeR GET
+/about AboutR GET
 /download DownloadR GET
 /play PlayR GET
 /watch WatchR GET
@@ -241,6 +243,11 @@ getTalksR url = do
         addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
         $(widgetFile "topbar")
         $(widgetFile "talks")
+
+getAboutR :: Handler Html
+getAboutR = defaultLayout $ do
+    $(widgetFile "topbar")
+    $(widgetFile "about")
 
 talkUrl :: Text
 talkUrl = "http://www.ted.com/talks/"
