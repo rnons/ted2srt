@@ -4,6 +4,8 @@
     margin: auto
     position: relative
     text-align: center
+    height: 32px
+    padding: 42px 0
 
 #logo
     font: bold 20px/32px sans-serif
@@ -13,6 +15,12 @@
 
 #logo:hover
     color: rgba(255, 43, 6, 0.7)
+
+#search_form_homepage
+    margin: auto
+    padding: 0
+    position: relative
+    height: 42px
 
 #search_form
     margin: auto
@@ -137,11 +145,7 @@ footer
         padding: 42px 0
 
     #search_form_homepage
-        margin: auto
-        padding: 0
-        position: relative
         width: 320px
-        height: 42px
 
     #search_button
         width: 14%
@@ -200,9 +204,6 @@ footer
     h3
         color: #3f3f3f
 
-    #logo_homepage
-        top: 214px
-
     #topbar
         height: 32px
         border-bottom: 1.5px solid #727272
@@ -210,9 +211,6 @@ footer
         box-shadow: 0 0 2px #727272
 
     #search_form_homepage
-        margin: auto
-        position: relative
-        top: 249px
         width: 470px
 
     .message
@@ -227,10 +225,10 @@ footer
         font-style: italic
 
     #feature
-        top: 342px
         position: relative
         width: 470px
-        margin: auto
+        height: 180px
+        margin: 40px auto
 
     #feature img
         width: 100%
@@ -294,8 +292,11 @@ footer
 
     .search
         width: 90%
-        min-width: 800px
+        min-width: 720px
         margin-left: 35px
 
 
+@media screen and (min-width: 768px) and (min-height: 400px)
+    #homepage_wrapper
+        margin-top: 172px
 
