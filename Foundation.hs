@@ -27,9 +27,7 @@ import           Yesod.Static
 import Model
 import Settings
 import Settings.StaticFiles
-import Ted
-import Ted.Types (Talk(..), SubTalk(..), SearchTalk(..))
-import Ted.Fallback (getTalk, getSlugAndPad)
+import Web.TED
 
 
 data Ted = Ted
@@ -197,8 +195,8 @@ getSearchR q = do
         $(widgetFile "search")
 
 getTalksR :: Text -> Handler Html
-getTalksR url = do
-    mtalk <- runDB $ selectFirst [TalkLink ==. url] []
+getTalksR rurl = do
+    mtalk <- runDB $ selectFirst [TalkLink ==. rurl] []
     case mtalk of
         Just (Entity _ talk') -> do
             tedtalk <- liftIO $ queryTalk $ talkTid talk'
@@ -213,7 +211,7 @@ getTalksR url = do
                                 }
             layout stalk
         _          -> do
-            mtalk' <- liftIO $ getTalk $ tedTalkUrl url
+            mtalk' <- liftIO $ getTalk $ tedTalkUrl rurl
             case mtalk' of
                 Just talk -> do
                     let dbtalk = Model.Talk { talkTid = id talk
@@ -227,7 +225,7 @@ getTalksR url = do
                     runDB $ insertUnique dbtalk
                     layout talk
                 _         -> do
-                    let msg = "ERROR: " <> url <> " is not a TED talk page!"
+                    let msg = "ERROR: " <> rurl <> " is not a TED talk page!"
                     setMessage $ toHtml msg
                     redirect HomeR
   where
@@ -267,7 +265,7 @@ tedTalkUrl :: Text -> Text
 tedTalkUrl talkslug = "http://www.ted.com/talks/" <> talkslug <> ".html"
 
 img113x85 :: Text -> Text
-img113x85 url = (T.reverse. T.drop 11 . T.reverse) url <> "113x85.jpg"
+img113x85 rurl = (T.reverse. T.drop 11 . T.reverse) rurl <> "113x85.jpg"
 
 -- Drop the talkUrl part.
 -- e.g. marla_spivak_why_bees_are_disappearing.html

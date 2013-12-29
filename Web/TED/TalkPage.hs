@@ -1,5 +1,12 @@
+-- | TED talk page module
+-- Parse the TED talk page to retrieve information
+
 {-# LANGUAGE OverloadedStrings  #-}
-module Ted.Fallback where
+module Web.TED.TalkPage 
+  ( SubTalk (..)
+  , getTalk
+  , getSlugAndPad
+  ) where
 
 import           Control.Exception as E
 import           Control.Monad
@@ -13,8 +20,18 @@ import           Text.Regex.Posix ((=~))
 import           Text.XML.Cursor (Cursor, attribute, attributeIs, content,
                                   element, fromDocument, ($//), (&|), (&//))
 
-import Ted.Types (SubTalk(..))
 
+-- | Data used on @{TalksR}
+data SubTalk = SubTalk 
+    { id            :: Int
+    , name          :: Text
+    , image         :: Text
+    , description   :: Text
+    , link          :: Text
+    , languages     :: [(Text, Text)]
+    , subSlug       :: Text
+    , subLag        :: Double
+    } deriving Show
 
 -- Given talk url, get SubTalk.
 getTalk :: Text -> IO (Maybe SubTalk)

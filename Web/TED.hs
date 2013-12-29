@@ -1,6 +1,15 @@
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE OverloadedStrings  #-}
-module Ted where
+module Web.TED
+  ( Subtitle (..)
+  , FileType (..)
+  , Item (..)
+  , toSub
+  , responseSize
+  -- * Re-exports
+  , module Web.TED.API
+  , module Web.TED.TalkPage
+  ) where
 
 import           Control.Exception as E
 import           Control.Monad
@@ -14,7 +23,6 @@ import           qualified Data.Text as T
 import           qualified Data.Text.IO as T
 import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit hiding (path)
-import           Network.HTTP.Types (urlEncode)
 import           System.Directory
 import           System.IO
 import           Text.HTML.DOM (parseLBS)
@@ -22,7 +30,8 @@ import           Text.Printf
 import           Text.XML.Cursor (element, fromDocument, ($//), (&//))
 import qualified Text.XML.Cursor as XC
 
-import Ted.Types
+import Web.TED.API
+import Web.TED.TalkPage
 
 
 data Caption = Caption
@@ -49,45 +58,8 @@ data Subtitle = Subtitle
     , filetype          :: FileType
     } deriving Show
 
-queryTalk :: Int -> IO Talk
-queryTalk tid = do
-    res <- simpleHttp rurl
-    case eitherDecode res of
-        Right r -> return $ talk r
-        Left er -> error er
-
-  where
-    rurl = "https://api.ted.com/v1/talks/" ++ show tid ++
-           ".json?api-key=2a9uggd876y5qua7ydghfzrq"
-
--- "languages": { "en": { "name": "English", "native": true } }
-talkLanguages :: Talk -> [(Text, Text)]
-talkLanguages t = 
-    case _languages t of
-        Just (Object langs) -> 
-            let langCode = HM.keys langs
-                langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name")) 
-                               (HM.elems langs)
-            in  zip langCode langName
-        _                   -> []
-
--- "images": { ["image": { "size": , "url": }] }
-talkImg :: Talk -> Text
-talkImg t = url $ _image (_images t !! 1)
-
-searchTalk :: B8.ByteString -> IO [SearchTalk]
-searchTalk q = do
-    res <- simpleHttp rurl
-    case eitherDecode res of
-        Right r -> return $ map _talk (results r)
-        Left er -> error er
-  where
-    query = B8.unpack $ urlEncode True q
-    rurl = "https://api.ted.com/v1/search.json?q=" ++ query ++
-           "&categories=talks&api-key=2a9uggd876y5qua7ydghfzrq"
-
 toSub :: Subtitle -> IO (Maybe String)
-toSub sub 
+toSub sub
     | length lang == 1 = func sub
     | length lang == 2 = do
         pwd <- getCurrentDirectory
@@ -102,7 +74,7 @@ toSub sub
                                        , suffix
                                        ]
         cached <- doesFileExist path
-        if cached 
+        if cached
            then return $ Just path
            else do
                 p1 <- func sub { language = [s1] }
@@ -127,10 +99,10 @@ oneSub :: Subtitle -> IO (Maybe String)
 oneSub sub = do
     path <- subtitlePath sub
     cached <- doesFileExist path
-    if cached 
+    if cached
        then return $ Just path
        else do
-           let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
+           let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/"
                      <> talkId sub <> "/lang/" <> head (language sub)
            E.catch (do
                res <- simpleHttp rurl
@@ -142,7 +114,7 @@ oneSub sub = do
                         forM_ (zip (captions r) [1,2..]) (ppr h)
                         hClose h
                         return $ Just path
-                    Nothing -> 
+                    Nothing ->
                         return Nothing)
                (\e -> do print (e :: E.SomeException)
                          return Nothing)
@@ -169,10 +141,10 @@ oneTxt :: Subtitle -> IO (Maybe String)
 oneTxt sub = do
     path <- subtitlePath sub
     cached <- doesFileExist path
-    if cached 
+    if cached
        then return $ Just path
        else do
-           let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/" 
+           let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/"
                      <> talkId sub <> "/lang/" <> head (language sub)
                      <> "/format/html"
            res <- simpleHttp rurl
@@ -187,7 +159,7 @@ oneTxt sub = do
 -- | Merge srt files of two language line by line. However,
 -- one line in srt_1 may correspond to two lines in srt_2, or vice versa.
 merge :: [String] -> [String] -> [String]
-merge (a:as) (b:bs) 
+merge (a:as) (b:bs)
     | a == b    = a : merge as bs
     | a == ""   = b : merge (a:as) bs
     | b == ""   = a : merge as (b:bs)
@@ -196,7 +168,7 @@ merge _      _      = []
 
 -- Construct file path according to filetype.
 subtitlePath :: Subtitle -> IO String
-subtitlePath sub = 
+subtitlePath sub =
     case filetype sub of
         SRT -> path ("/static/srt/", ".srt")
         VTT -> path ("/static/vtt/", ".vtt")
