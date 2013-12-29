@@ -211,7 +211,7 @@ getTalksR rurl = do
                                 }
             layout stalk
         _          -> do
-            mtalk' <- liftIO $ getTalk $ tedTalkUrl rurl
+            mtalk' <- liftIO $ getTalk $ talkUrl <> rurl
             case mtalk' of
                 Just talk -> do
                     let dbtalk = Model.Talk { talkTid = id talk
@@ -257,9 +257,6 @@ downloadUrl = "http://download.ted.com/talks/"
 mediaUrl :: Text -> Text -> Text
 mediaUrl part quality =
   downloadUrl <> part <> "-" <> quality <> ".mp4"
-
-myTalkUrl :: Text -> Text
-myTalkUrl talkslug = "http://ted2srt.org/talks/" <> talkslug <> ".html"
 
 tedTalkUrl :: Text -> Text
 tedTalkUrl talkslug = "http://www.ted.com/talks/" <> talkslug <> ".html"

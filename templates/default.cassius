@@ -154,6 +154,12 @@ footer
 h2, h3
     color: #3f3f3f
 
+#jw-wrapper
+    width: 80%
+    margin: 0 auto
+    max-width: 800px
+    min-width: 320px
+
 
 @media screen and (max-width: 767px)
     body

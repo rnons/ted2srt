@@ -1,2 +1,2 @@
-<div #container>
+<div #jw-wrapper>
     <div #jwPlayer>Loading the player...
