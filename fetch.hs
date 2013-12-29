@@ -83,7 +83,7 @@ main = do
     -- 106 titles
     parseTitles cur = tail $ cur $// element "itunes:subtitle" &// content
     -- 106 summaries
-    parseDescription cur = tail $ cur $// element "itunes:summary" &// content
+    parseDescription cur = tail $ cur $// element "description" &// content
     -- 105 links
     parseLinks cur = cur $// element "feedburner:origLink" &// content
     -- 106 thumbnails
