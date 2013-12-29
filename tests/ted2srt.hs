@@ -1,14 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Yesod.Test
+import Database.Persist (loadConfig, applyEnv, createPoolConfig)
+import Database.Persist.Postgresql (PostgresConf)
 import Test.Hspec (hspec)
+import Yesod.Default.Config (withYamlEnvironment, DefaultEnv(..))
+import Yesod.Test
 import Foundation
 import Settings
 
 main :: IO ()
 main = do
     s <- staticSite
-    hspec $ yesodSpec (Ted s) homeSpecs
+    dbconf <- withYamlEnvironment "config/postgresql.yml" Production
+              loadConfig >>= applyEnv
+    p <- createPoolConfig (dbconf :: PostgresConf)
+    hspec $ yesodSpec (Ted s p dbconf) homeSpecs
 
 type Specs = YesodSpec Ted
 
@@ -25,10 +31,10 @@ homeSpecs =
             get (HomeR, [ ("_hasdata", "")
                         , ("q", "http://www.ted.com/talks/ken_robinson_says_schools_kill_creativity.html")
                         ])
-            statusIs 303
+            statusIs 302
 
         yit "get talks" $ do
             get $ TalksR "ken_robinson_says_schools_kill_creativity.html"
             statusIs 200
-            htmlCount "li" 58 
-            htmlAllContain "#download" "Download"
+            htmlCount "#main li" 58 
+            htmlCount "#sidepane li" 7 

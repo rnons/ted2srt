@@ -1,10 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
-import Control.Monad.IO.Class
+import Prelude hiding (id)
 import Test.HUnit
 import Test.Hspec
-import Text.XML.Cursor
 
-import Ted
+import Web.TED
 
 main :: IO ()
 main = do
@@ -12,20 +11,20 @@ main = do
     talk <- getTalk uri
     hspec $ spec talk
 
-spec :: Maybe Talk -> Spec
+spec :: Maybe SubTalk -> Spec
 spec talk =
     describe "Ted.hs tests" $ do
         it "talk id" $
-            fmap tid talk  @?= Just "1696"
+            fmap id talk  @?= Just 1696
         it "talk title" $
-            fmap title talk @?= Just "Francis Collins: We need better drugs -- now"
-            
+            fmap name talk @?= Just "Francis Collins: We need better drugs -- now"
+
         it "available subtitles" $ do
-            let srtlist = fmap subLang talk
-            fmap length srtlist @?= Just 25
+            let srtlist = fmap languages talk
+            fmap length srtlist @?= Just 27
 
         it "mediaSlug" $
-            fmap subName talk @?= Just "FrancisCollins_2012P"
+            fmap subSlug talk @?= Just "FrancisCollins_2012P"
 
         it "mediaPad" $
             fmap subLag talk @?= Just 15330.0
