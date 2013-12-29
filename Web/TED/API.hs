@@ -2,7 +2,8 @@
 -- Documented at <http://developer.ted.com/io-docs>
 
 {-# LANGUAGE DeriveGeneric      #-}
-module Web.TED.API 
+{-# LANGUAGE OverloadedStrings  #-}
+module Web.TED.API
   ( Talk (..)
   , SearchTalk (..)
   , Theme (..)
@@ -61,7 +62,7 @@ data Img = Img
     , url           :: Text
     } deriving (Generic, Show)
 instance FromJSON Img
-    
+
 data Tag = Tag
     { tag           :: Text
     } deriving (Generic, Show)
@@ -126,11 +127,11 @@ queryTalk tid = do
 
 -- | "languages": { "en": { "name": "English", "native": true } }
 talkLanguages :: Talk -> [(Text, Text)]
-talkLanguages t = 
+talkLanguages t =
     case _languages t of
-        Just (Object langs) -> 
+        Just (Object langs) ->
             let langCode = HM.keys langs
-                langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name")) 
+                langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name"))
                                (HM.elems langs)
             in  zip langCode langName
         _                   -> []
