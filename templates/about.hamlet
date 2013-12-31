@@ -7,11 +7,17 @@
     \You can also download subtitles in the format of <b>SRT</b> and <b>TXT</b>.
 
   <p>
-    TED2srt is built on #
-    \<a href="http://opensource.org/osd">open source</a> technology and it's itself a #
+    TED2srt is built upon #
+    \<a href="http://opensource.org/osd">open source</a> technology and itself is a #
     \<a href="http://www.gnu.org/philosophy/free-sw.html">free software</a>. #
     The source code of TED2srt is availabe on #
     \<a href="https://github.com/rnons/ted2srt">GitHub</a>.
+
+  <p>
+    \All the contents (videos/subtitles) you find on this site are attributed to #
+    \<a href="http://www.ted.com/">TED</a> and licensed under #
+    \<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/">Creative Commons license "Attribution - NonCommercial - NonDerivative"</a>. #
+    \Please follow the <a href="http://www.ted.com/pages/talk_usage_policy">TED Talks usage policy</a>.
 
   <h2>Troubleshooting
 
