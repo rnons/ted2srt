@@ -109,13 +109,13 @@ oneSub sub = do
                let decoded = decode res :: Maybe Caption
                case decoded of
                     Just r -> do
-                        h <- if filetype sub == VTT 
+                        h <- if filetype sub == VTT
                                  then do
                                      h <- openFile path WriteMode
                                      hPutStrLn h "WEBVTT\n"
                                      return h
                                  else do
-                                     -- Prepend the UTF-8 byte order mark 
+                                     -- Prepend the UTF-8 byte order mark
                                      -- to do Windows user a favor.
                                      withBinaryFile path WriteMode $ \h ->
                                          hPutStr h "\xef\xbb\xbf"
@@ -159,13 +159,14 @@ oneTxt sub = do
            res <- simpleHttp rurl
            let cursor = fromDocument $ parseLBS res
                con = cursor $// element "p" &// XC.content
-               txt = filter (`notElem` ["\n", "\n\t\t\t\t\t"]) con
+               txt = filter (`notElem` ["\n", "\t\t", "\n\t\t\t\t\t"]) con
                txt' = map (\t -> if t == "\n\t\t\t" then "\n\n" else t)
                           txt
            -- Prepend the UTF-8 byte order mark to do Windows user a favor.
            withBinaryFile path WriteMode $ \h ->
                hPutStr h "\xef\xbb\xbf"
-           T.appendFile path $ T.concat txt'
+           T.appendFile path $ T.intercalate " " txt'
+           --T.appendFile path $ T.intercalate " " $ tail txt'
            return $ Just path
 
 -- | Merge srt files of two language line by line. However,
