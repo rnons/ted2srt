@@ -6,7 +6,7 @@
     <input #search_input name=q type=textfield required autofocus placeholder="Talk url or Keywords">
   <div #feature>
     $forall talk <- talks
-      <div .tile title="#{talkTitle talk}">
+      <div .tile>
         <a href="@{TalksR $ talkLink talk}">
           <img src="#{talkImage talk}">
-          <div>#{talkTitle talk}
+          <div #title>#{talkTitle talk}

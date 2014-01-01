@@ -261,9 +261,6 @@ h2, h3
     .tile
         position: absolute
 
-    .tile div
-        display: none
-
     .tile:nth-child(1)
         left: 0px
         top: 0px
@@ -293,6 +290,23 @@ h2, h3
         top: 90px
         height: 89px
         width: 119px
+
+    #title
+      position: absolute
+      left: 0
+      top: 0
+      width: 220px
+      height: 80px
+      background-color: rgba(255, 43, 6, 0.9)
+      color: #ffffff
+      font: bold 16px/20px sans-serif
+      padding: 5px 10px
+      z-index: 42
+      opacity: 0
+
+    .tile:hover > a #title
+      opacity: 1
+      transition-duration: 0.4s
 
     #main
         position: absolute
