@@ -8,5 +8,6 @@ main
 *.vtt
 *.txt
 .hsenv
+dist/
 static/tmp/
 config/postgresql.yml
