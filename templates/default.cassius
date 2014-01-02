@@ -130,7 +130,7 @@ footer
     background-color: white
     margin-top: 25px
     text-align: center
-    padding: 5px
+    padding: 5px 0
     position: fixed
     width: 100%
     bottom: 0px
@@ -165,7 +165,7 @@ h2, h3
 
 @media screen and (max-width: 767px)
     body
-        min-width: 320px
+        min-width: 300px
 
     #logo_homepage
         height: 32px
@@ -183,7 +183,7 @@ h2, h3
     #feature
         position: relative
         width: 80%
-        min-width: 320px
+        min-width: 300px
         margin: 30px auto 40px
 
     .tile
@@ -295,7 +295,7 @@ h2, h3
       position: absolute
       left: 0
       top: 0
-      width: 220px
+      width: 219px
       height: 80px
       background-color: rgba(255, 43, 6, 0.9)
       color: #ffffff
