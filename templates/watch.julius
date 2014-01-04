@@ -1,3 +1,5 @@
+jwplayer.key="pEdpebFhzopIeu+fhGRFb3MLCfZf+0ORRz1lHA==";
+
 var slug = $("#jw-wrapper").data("mediaslug");
 var path = "/static/vtt/" + slug + "." + $("#jw-wrapper").data("lang") + ".vtt";
 

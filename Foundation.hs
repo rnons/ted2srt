@@ -144,7 +144,8 @@ getWatchR = do
                 Just path -> do
                     let dataLang = T.intercalate "." lang
                     defaultLayout $ do
-                        addScriptRemote "http://jwpsrv.com/library/_trNSDy3EeO49hIxOQfUww.js"
+                        addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
+                        addScript $ StaticR jwplayer_jwplayer_js
                         $(widgetFile "watch")
                 _ -> redirect HomeR
         _             -> redirect HomeR
