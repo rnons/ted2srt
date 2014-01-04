@@ -28,6 +28,7 @@ import Model
 import Settings
 import Settings.StaticFiles
 import Web.TED
+import Handler.Util
 
 
 data Ted = Ted
@@ -154,9 +155,9 @@ getPlayR = do
 -- https://github.com/videojs/video.js/
 getWatchR :: Handler Html
 getWatchR = do
-    slug <- lookupGetParam "slug"
+    mslug <- lookupGetParam "slug"
     sub  <- lookupGetParam "subtitle"
-    case (slug, sub) of
+    case (mslug, sub) of
          (Just slug', Just sub') -> do
             let mu = mediaUrl slug'
                 v950k = mu "950k"
@@ -175,16 +176,8 @@ getSearchR q = do
         case mtalk of
             Just (Entity _ talk') -> return talk'
             _                    -> do
-                tedtalk <- liftIO $ queryTalk $ s_id t
-                (slug, pad) <- liftIO $ getSlugAndPad $ tedTalkUrl $ s_slug t
-                let dbtalk = Model.Talk { talkTid = _id tedtalk
-                                        , talkTitle = _name tedtalk
-                                        , talkDescription = s_description t
-                                        , talkLink = tedTalkUrl $ s_slug t
-                                        , talkImage = talkImg tedtalk
-                                        , talkMediaSlug = slug
-                                        , talkMediaPad = pad
-                                        }
+                talk <- liftIO $ queryTalk $ s_id t
+                dbtalk <- liftIO $ marshal talk
                 runDB $ insertUnique dbtalk
                 return dbtalk
 
@@ -199,41 +192,26 @@ getTalksR :: Text -> Handler Html
 getTalksR rurl = do
     mtalk <- runDB $ selectFirst [TalkLink ==. rurl] []
     case mtalk of
-        Just (Entity _ talk') -> do
-            tedtalk <- liftIO $ queryTalk $ talkTid talk'
-            let stalk = SubTalk { id = _id tedtalk
-                                , name = _name tedtalk
-                                , image = talkImg tedtalk
-                                , description = _description tedtalk
-                                , link = talkUrl <> _slug tedtalk <> ".html"
-                                , languages = talkLanguages tedtalk
-                                , subSlug = talkMediaSlug talk'
-                                , subLag = talkMediaPad talk'
-                                }
-            layout stalk
+        Just (Entity _ dbtalk) -> do
+            talk <- liftIO $ queryTalk $ talkTid dbtalk
+            layout dbtalk talk
         _          -> do
-            mtalk' <- liftIO $ getTalk $ talkUrl <> rurl
-            case mtalk' of
-                Just talk -> do
-                    let dbtalk = Model.Talk { talkTid = id talk
-                                            , talkTitle = name talk
-                                            , talkDescription = description talk
-                                            , talkLink = link talk
-                                            , talkImage = image talk
-                                            , talkMediaSlug = subSlug talk
-                                            , talkMediaPad = subLag talk
-                                            }
+            mtid <- liftIO $ getTalkId $ talkUrl <> rurl
+            case mtid of
+                Just tid -> do
+                    talk <- liftIO $ queryTalk tid
+                    dbtalk <- liftIO $ marshal talk
                     runDB $ insertUnique dbtalk
-                    layout talk
+                    layout dbtalk talk
                 _         -> do
                     let msg = "ERROR: " <> rurl <> " is not a TED talk page!"
                     setMessage $ toHtml msg
                     redirect HomeR
   where
-    layout talk = defaultLayout $ do
-        let prefix = downloadUrl <> subSlug talk
+    layout dbtalk talk = defaultLayout $ do
+        let prefix = downloadUrl <> slug talk
             audio = prefix <> ".mp3"
-            mu = mediaUrl $ subSlug talk
+            mu = mediaUrl $ slug talk
             v1500k = mu "1500k"
             v950k = mu "950k"
             v600k = mu "600k"
@@ -248,24 +226,3 @@ getAboutR = defaultLayout $ do
     $(widgetFile "topbar")
     $(widgetFile "about")
 
-talkUrl :: Text
-talkUrl = "http://www.ted.com/talks/"
-
-downloadUrl :: Text
-downloadUrl = "http://download.ted.com/talks/"
-
--- Available quality: 1500k, 950k, 600k, 450k, 320k, 180k, 64k
-mediaUrl :: Text -> Text -> Text
-mediaUrl part quality =
-  downloadUrl <> part <> "-" <> quality <> ".mp4"
-
-tedTalkUrl :: Text -> Text
-tedTalkUrl talkslug = "http://www.ted.com/talks/" <> talkslug <> ".html"
-
-img113x85 :: Text -> Text
-img113x85 rurl = (T.reverse. T.drop 11 . T.reverse) rurl <> "113x85.jpg"
-
--- Drop the talkUrl part.
--- e.g. marla_spivak_why_bees_are_disappearing.html
-rewriteUrl ::Text -> Text
-rewriteUrl = T.drop $ T.length talkUrl

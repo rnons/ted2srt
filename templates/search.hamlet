@@ -5,7 +5,7 @@
     $forall t <- talks
       <div .talk>
         <div .title>
-          <a href="@{TalksR $ talkLink t}">#{talkTitle t}
+          <a href="@{TalksR $ talkLink t}">#{talkName t}
         <div .img>
           <a href="@{TalksR $ talkLink t}">
             <img src="#{img113x85 $ talkImage t}">

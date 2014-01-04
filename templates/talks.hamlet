@@ -1,16 +1,16 @@
 <div #main>
   <div .talk title="#{name talk}">
     <div .title>
-      <a href="#{link talk}">#{name talk}
+      <a href="#{tedTalkUrl $ slug talk}">#{name talk}
     <div .img>
-      <a href="#{link talk}">
-        <img src="#{img113x85 $ image talk}">
+      <a href="#{tedTalkUrl $ slug talk}">
+        <img src="#{img113x85 $ talkImg talk}">
     <div .intro>
       <span>#{preEscapedText $ description talk}
   <fieldset #srt>
     <legend>Available Subtitles
-    $if (length $ languages talk) > 1
-      $forall (code, lang) <- tail $ languages talk
+    $if (length $ talkLanguages talk) > 1
+      $forall (code, lang) <- talkLanguages talk
         <li data-lang=#{code}>#{lang}
     $else 
       <p>No subtitles available!

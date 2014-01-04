@@ -40,19 +40,19 @@ instance FromJSON QueryResponse
 
 -- | Some talks (performance) has no language infomation e.g. 581.
 data Talk = Talk
-    { _id           :: Int
-    , _name         :: Text
-    , _description  :: Text
-    , _slug         :: Text
-    , _recorded_at  :: Text
-    , _published_at :: Maybe UTCTime
-    , _updated_at   :: Text
-    , _viewed_count :: Int
-    , _images       :: [Image]
-    , _languages    :: Maybe Value
-    , _tags         :: [Tag]
-    , _themes       :: [Theme]
-    , _speakers     :: [Speaker]
+    { id           :: Int
+    , name         :: Text
+    , description  :: Text
+    , slug         :: Text
+    , recorded_at  :: Text
+    , published_at :: Maybe UTCTime
+    , updated_at   :: Text
+    , viewed_count :: Int
+    , images       :: [Image]
+    , languages    :: Maybe Value
+    , tags         :: [Tag]
+    , themes       :: [Theme]
+    , speakers     :: [Speaker]
     } deriving (Generic, Show)
 instance FromJSON Talk where
     parseJSON (Object v) = Talk <$>
@@ -75,10 +75,10 @@ instance FromJSON Talk where
     parseJSON _          = mzero
 
 data Image = Image
-    { _image        :: Img
+    { image        :: Img
     } deriving (Generic, Show)
-instance FromJSON Image where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+instance FromJSON Image
+
 data Img = Img
     { size          :: Text
     , url           :: Text
@@ -94,6 +94,7 @@ data Theme = Theme
     { theme         :: TM
     } deriving (Generic, Show)
 instance FromJSON Theme
+
 data TM = TM
     { tm_id         :: Int
     , tm_name       :: Text
@@ -105,6 +106,7 @@ data Speaker = Speaker
     { speaker       :: Sp
     } deriving (Generic, Show)
 instance FromJSON Speaker
+
 data Sp = Sp
     { sp_id         :: Int
     , sp_name       :: Text
@@ -150,7 +152,7 @@ queryTalk tid = do
 -- | "languages": { "en": { "name": "English", "native": true } }
 talkLanguages :: Talk -> [(Text, Text)]
 talkLanguages t =
-    case _languages t of
+    case languages t of
         Just (Object langs) ->
             let langCode = HM.keys langs
                 langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name"))
@@ -160,7 +162,7 @@ talkLanguages t =
 
 -- | "images": { ["image": { "size": , "url": }] }
 talkImg :: Talk -> Text
-talkImg t = url $ _image (_images t !! 1)
+talkImg t = url $ image (images t !! 1)
 
 searchTalk :: B8.ByteString -> IO [SearchTalk]
 searchTalk q = do

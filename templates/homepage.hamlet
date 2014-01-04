@@ -9,4 +9,4 @@
       <div .tile>
         <a href="@{TalksR $ talkLink talk}">
           <img src="#{talkImage talk}">
-          <div #title>#{talkTitle talk}
+          <div #title>#{talkName talk}

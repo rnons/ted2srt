@@ -12,9 +12,9 @@ $(".download").bind("click", function() {
     if (len === 0) {
         alert("No language selected");
     } else {
-        var tid = "#{rawJS $ show $ id talk}";
-        var fname = "#{rawJS $ subSlug talk}";
-        var lag = "#{rawJS $ show $ subLag talk}";
+        var tid = "#{rawJS $ show $ talkTid dbtalk}";
+        var fname = "#{rawJS $ talkMediaSlug dbtalk}";
+        var lag = "#{rawJS $ show $ talkMediaPad dbtalk}";
         var url = "/download?tid=" + tid + "&type=" + this.id +
                   "&fname=" + fname + "&lag=" + lag;
         $("#main li.selected").each(function(i){
@@ -27,9 +27,9 @@ $(".download").bind("click", function() {
 
 $("#watch").bind("click", function() {
     var len = $("#main li.selected").length;
-    var tid = "#{rawJS $ show $ id talk}";
-    var fname = "#{rawJS $ subSlug talk}";
-    var lag = "#{rawJS $ show $ subLag talk}";
+    var tid = "#{rawJS $ show $ talkTid dbtalk}";
+    var fname = "#{rawJS $ talkMediaSlug dbtalk}";
+    var lag = "#{rawJS $ show $ talkMediaPad dbtalk}";
     var lang = [];
     $("#main li.selected").each(function(i){
         lang.push($(this).data("lang"));
