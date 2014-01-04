@@ -18,7 +18,7 @@ import qualified Filesystem.Path.CurrentOS as FS
 import           Prelude hiding (id)
 import           Text.Blaze.Internal (preEscapedText)
 import           Text.Jasmine (minifym)
-import           Yesod hiding (languages)
+import           Yesod
 import           Yesod.Default.Util (addStaticContentExternal)
 import           Yesod.Static
 
@@ -94,7 +94,7 @@ getHomeR = do
                 redirect $ TalksR $ T.drop (T.length talkUrl) kw
             | otherwise -> redirect $ SearchR kw
         _ -> do
-            talks' <- E.catch (runDB $ selectList [] [Desc TalkTid, LimitTo 5])
+            talks' <- E.catch (runDB $ selectList [] [Desc TalkPublishedAt, LimitTo 5])
                               (\e -> liftIO $ print (e :: E.SomeException) >>
                                return [])
             let talks = flip map talks' $ \(Entity _ t) ->
@@ -191,9 +191,9 @@ getTalksR rurl = do
                     redirect HomeR
   where
     layout dbtalk talk = defaultLayout $ do
-        let prefix = downloadUrl <> slug talk
+        let prefix = downloadUrl <> talkMediaSlug dbtalk
             audio = prefix <> ".mp3"
-            mu = mediaUrl $ slug talk
+            mu = mediaUrl $ talkMediaSlug dbtalk
             v1500k = mu "1500k"
             v950k = mu "950k"
             v600k = mu "600k"

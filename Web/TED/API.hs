@@ -24,6 +24,7 @@ import           Data.Aeson
 import qualified Data.ByteString.Char8 as B8
 import           Data.Aeson.Types (defaultOptions, Options(..))
 import qualified Data.HashMap.Strict as HM
+import           Data.List (sort)
 import           Data.Text (Text)
 import           Data.Time (UTCTime)
 import           Data.Time.Format (parseTime)
@@ -157,7 +158,7 @@ talkLanguages t =
             let langCode = HM.keys langs
                 langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name"))
                                (HM.elems langs)
-            in  zip langCode langName
+            in  sort $ zip langName langCode
         _                   -> []
 
 -- | "images": { ["image": { "size": , "url": }] }
