@@ -12,11 +12,7 @@ $(".download").bind("click", function() {
     if (len === 0) {
         alert("No language selected");
     } else {
-        var tid = "#{rawJS $ show $ talkTid dbtalk}";
-        var fname = "#{rawJS $ talkMediaSlug dbtalk}";
-        var lag = "#{rawJS $ show $ talkMediaPad dbtalk}";
-        var url = "/download?tid=" + tid + "&type=" + this.id +
-                  "&fname=" + fname + "&lag=" + lag;
+        var url = "/download?tid=" + $("#main").data("tid") + "&type=" + this.id;
         $("#main li.selected").each(function(i){
             url += "&lang=" + $(this).data("lang");
         });
@@ -26,28 +22,18 @@ $(".download").bind("click", function() {
 });
 
 $("#watch").bind("click", function() {
-    var len = $("#main li.selected").length;
-    var tid = "#{rawJS $ show $ talkTid dbtalk}";
-    var fname = "#{rawJS $ talkMediaSlug dbtalk}";
-    var lag = "#{rawJS $ show $ talkMediaPad dbtalk}";
     var lang = [];
+    var url = "/watch?tid=" + $("#main").data("tid");
     $("#main li.selected").each(function(i){
         lang.push($(this).data("lang"));
+        url += "&lang=" + $(this).data("lang");
     });
 
     // When no languaged is selected, default to english
-    if (lang.length === 0)
+    if (lang.length === 0) {
         lang = ["en"];
-    $.get("@{PlayR}", 
-          { 
-            tid: tid,
-            fname: fname,
-            lag : lag,
-            lang: lang }, 
-          function(data) {
-            var url = "/watch?slug=" + fname + 
-                      "&subtitle=" + data.subtitle;
-            console.log(url);
-            location.href= url;
-          });
+        url += "&lang=en";
+    }
+    console.log(url);
+    location.href= url;
 });

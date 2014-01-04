@@ -1,2 +1,2 @@
-<div #jw-wrapper>
+<div #jw-wrapper data-mediaslug=#{talkMediaSlug talk} data-lang=#{dataLang}>
     <div #jwPlayer>Loading the player...

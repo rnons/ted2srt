@@ -1,12 +1,20 @@
+var slug = $("#jw-wrapper").data("mediaslug");
+var path = "/static/vtt/" + slug + "." + $("#jw-wrapper").data("lang") + ".vtt";
+
+function mkUrl(quality) {
+  var prefix = "http://download.ted.com/talks/" + slug;
+  return prefix + "-" + quality + ".mp4";
+}
+
 jwplayer("jwPlayer").setup({
     playlist: [{
         sources: [
-            { file: "#{rawJS v450k}", label: "Normal", type: "mp4" },
-            { file: "#{rawJS v600k}", label: "Middle" },
-            { file: "#{rawJS v950k}", label: "High" }
+            { file: mkUrl("450k"), label: "Normal", type: "mp4" },
+            { file: mkUrl("600k"), label: "Middle" },
+            { file: mkUrl("950k"), label: "High" }
         ],
         tracks: [{ 
-            file: "#{rawJS sub'}", 
+            file: path, 
             label: "English",
             kind: "captions",
             "default": true 

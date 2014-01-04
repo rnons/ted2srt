@@ -16,10 +16,8 @@ import           Database.Persist.Postgresql (PostgresConf)
 import           Database.Persist.Sql (SqlPersistT)
 import qualified Filesystem.Path.CurrentOS as FS
 import           Prelude hiding (id)
-import           System.Directory
 import           Text.Blaze.Internal (preEscapedText)
 import           Text.Jasmine (minifym)
-import           Text.Julius (rawJS)
 import           Yesod hiding (languages)
 import           Yesod.Default.Util (addStaticContentExternal)
 import           Yesod.Static
@@ -43,7 +41,6 @@ mkYesod "Ted" [parseRoutes|
 / HomeR GET
 /about AboutR GET
 /download DownloadR GET
-/play PlayR GET
 /watch WatchR GET
 /talks/#Text TalksR GET
 /search/#Text SearchR GET
@@ -110,17 +107,17 @@ getHomeR = do
 
 getDownloadR :: Handler RepPlain
 getDownloadR = do
-    tid   <- lookupGetParam "tid"
+    tid'  <- lookupGetParam "tid"
     lang  <- lookupGetParams "lang"
-    fname <- lookupGetParam "fname"
-    lag <- lookupGetParam "lag"
-    type_   <- lookupGetParam "type"
-    case (tid, fname, lag, type_) of
-         (Just tid', Just fname', Just lag', Just type') -> do
-             let lagtime = read $ T.unpack lag'
-             path <- case type' of
-                "srt" -> liftIO $ toSub $ Subtitle tid' lang fname' lagtime SRT
-                "txt" -> liftIO $ toSub $ Subtitle tid' lang fname' lagtime TXT
+    type' <- lookupGetParam "type"
+    case (tid', type') of
+         (Just tid, Just type_) -> do
+             (Entity _ talk) <- runDB $ getBy404 (UniqueTalk $ read $ T.unpack tid)
+             path <- case type_ of
+                "srt" -> liftIO $ toSub $
+                    Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) SRT
+                "txt" -> liftIO $ toSub $
+                    Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) TXT
                 _     -> return Nothing
              case path of
                   Just p -> do
@@ -132,41 +129,25 @@ getDownloadR = do
                   _      -> redirect HomeR
          _                  -> redirect HomeR
 
-getPlayR :: Handler Value
-getPlayR = do
-    tid   <- lookupGetParam "tid"
-    lang  <- lookupGetParams "lang[]"
-    fname <- lookupGetParam "fname"
-    lag <- lookupGetParam "lag"
-    -- req <- getRequest
-    pwd <- liftIO getCurrentDirectory
-    case (tid, fname, lag) of
-         (Just tid', Just fname', Just lag') -> do
-             let lagtime = read $ T.unpack lag'
-             path <- liftIO $ toSub $ Subtitle tid' lang fname' lagtime VTT
-             case path of
-                  Just p -> do
-                    let vtt = drop (length pwd) p
-                    returnJson $ object ["subtitle" .= vtt]
-                  _      -> returnJson $ object ["subtitle" .= ("" :: Text)]
-         _  -> returnJson $ object ["subtitle" .= ("" :: Text)]
-
 -- Using video.js to play video/mp4 with captions.
 -- https://github.com/videojs/video.js/
 getWatchR :: Handler Html
 getWatchR = do
-    mslug <- lookupGetParam "slug"
-    sub  <- lookupGetParam "subtitle"
-    case (mslug, sub) of
-         (Just slug', Just sub') -> do
-            let mu = mediaUrl slug'
-                v950k = mu "950k"
-                v600k = mu "600k"
-                v450k = mu "450k"
-            defaultLayout $ do
-                addScriptRemote "http://jwpsrv.com/library/_trNSDy3EeO49hIxOQfUww.js"
-                $(widgetFile "watch")
-         _             -> redirect HomeR
+    tid' <- lookupGetParam "tid"
+    lang <- lookupGetParams "lang"
+    case tid' of
+        Just tid -> do
+            (Entity _ talk) <- runDB $ getBy404 (UniqueTalk $ read $ T.unpack tid)
+            path' <- liftIO $ toSub $
+                Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) VTT
+            case path' of
+                Just path -> do
+                    let dataLang = T.intercalate "." lang
+                    defaultLayout $ do
+                        addScriptRemote "http://jwpsrv.com/library/_trNSDy3EeO49hIxOQfUww.js"
+                        $(widgetFile "watch")
+                _ -> redirect HomeR
+        _             -> redirect HomeR
 
 getSearchR :: Text -> Handler Html
 getSearchR q = do

@@ -1,4 +1,4 @@
-<div #main>
+<div #main data-tid=#{id talk}>
   <div .talk title="#{name talk}">
     <div .title>
       <a href="#{tedTalkUrl $ slug talk}">#{name talk}
