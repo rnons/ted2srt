@@ -18,14 +18,19 @@ module Web.TED.API
   , talkLanguages
   ) where
 
+import           Control.Applicative ((<$>), (<*>))
+import           Control.Monad (liftM, mzero)
 import           Data.Aeson
 import qualified Data.ByteString.Char8 as B8
 import           Data.Aeson.Types (defaultOptions, Options(..))
 import qualified Data.HashMap.Strict as HM
 import           Data.Text (Text)
+import           Data.Time (UTCTime)
+import           Data.Time.Format (parseTime)
 import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit (simpleHttp)
 import           Network.HTTP.Types (urlEncode)
+import           System.Locale (defaultTimeLocale)
 
 -- | Response of https://api.ted.com/v1/talks/:id.json
 data QueryResponse = QueryResponse
@@ -40,7 +45,7 @@ data Talk = Talk
     , _description  :: Text
     , _slug         :: Text
     , _recorded_at  :: Text
-    , _published_at :: Text
+    , _published_at :: Maybe UTCTime
     , _updated_at   :: Text
     , _viewed_count :: Int
     , _images       :: [Image]
@@ -50,7 +55,24 @@ data Talk = Talk
     , _speakers     :: [Speaker]
     } deriving (Generic, Show)
 instance FromJSON Talk where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 1 }
+    parseJSON (Object v) = Talk <$>
+                           v .: "id" <*>
+                           v .: "name" <*>
+                           v .: "description" <*>
+                           v .: "slug" <*>
+                           v .: "recorded_at" <*>
+                           liftM parseUTime (v .: "published_at") <*>
+                           v .: "updated_at" <*>
+                           v .: "viewed_count" <*>
+                           v .: "images" <*>
+                           v .: "languages" <*>
+                           v .: "tags" <*>
+                           v .: "themes" <*>
+                           v .: "speakers"
+      where
+        parseUTime :: String -> Maybe UTCTime
+        parseUTime = parseTime defaultTimeLocale "%Y-%m-%d %H:%M:%S"
+    parseJSON _          = mzero
 
 data Image = Image
     { _image        :: Img

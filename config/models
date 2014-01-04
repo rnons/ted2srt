@@ -1,8 +1,10 @@
 Talk
     tid Int
-    title Text
+    name Text
     description Text
+    slug Text
     link Text
+    publishedAt UTCTime Maybe
     image Text
     mediaSlug Text
     mediaPad Double

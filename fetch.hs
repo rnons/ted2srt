@@ -1,10 +1,11 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-import           Control.Monad (forM, forM_)
+import           Control.Monad (forM_, void)
+import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson (Result(..), fromJSON)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.HashMap.Strict as M
-import           Data.List (zipWith7)
+import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Yaml
@@ -15,7 +16,7 @@ import           Text.HTML.DOM (parseLBS)
 import           Text.XML.Cursor
 
 import Model
-import Web.TED (getSlugAndPad)
+import Web.TED (Talk(..), queryTalk, talkImg, getSlugAndPad)
 
 
 data Database = Database
@@ -59,37 +60,31 @@ main = do
     connStr <- mkConnStr db
     res <- simpleHttp rurl
     let cursor = fromDocument $ parseLBS res
-        talks = take 10 $ zipWith7 Talk  (parseTids cursor)
-                                         (parseTitles cursor)
-                                         (parseDescription cursor)
-                                         (parseLinks cursor)
-                                         (parsePics cursor)
-                                         (repeat "")
-                                         (repeat 0)
-    talks' <- forM talks $ \t -> do
-        (slug, pad) <- getSlugAndPad $ talkLink t
-        return t { talkMediaSlug = slug, talkMediaPad = pad }
-
+        tids = take 5 (parseTids cursor)
     withPostgresqlPool connStr (poolsize db) $ \pool ->
         flip runSqlPersistMPool pool $ do
             runMigration migrateAll
-            forM_ (reverse talks') $ \t -> insertUnique t
 
+            forM_ tids $ \tid -> do
+                mtalk <- selectFirst [TalkTid ==. tid] []
+                case mtalk of
+                    Just _ -> return ()
+                    _      -> do
+                        tedtalk <- liftIO $ queryTalk tid
+                        (slug, pad) <- liftIO $ getSlugAndPad $ tedTalkUrl $ _slug tedtalk
+                        let dbtalk = Model.Talk { talkTid = _id tedtalk
+                                                , talkName = _name tedtalk
+                                                , talkDescription = _description tedtalk
+                                                , talkSlug = _slug tedtalk
+                                                , talkLink = tedTalkUrl $ _slug tedtalk
+                                                , talkPublishedAt = _published_at tedtalk
+                                                , talkImage = talkImg tedtalk
+                                                , talkMediaSlug = slug
+                                                , talkMediaPad = pad
+                                                }
+                        void $ insertUnique dbtalk
   where
     rurl = "http://feeds.feedburner.com/tedtalks_video"
-
     -- 105 tids
     parseTids cur = map (read . T.unpack) $ cur $// element "jwplayer:talkId" &// content
-    -- 106 titles
-    parseTitles cur = tail $ cur $// element "itunes:subtitle" &// content
-    -- 106 summaries
-    parseDescription cur = tail $ cur $// element "description" &// content
-    -- 105 links
-    parseLinks cur = cur $// element "feedburner:origLink" &// content
-    -- 106 thumbnails
-    parsePics cur = map smallPic $ tail $ concat $
-                    cur $// element "media:thumbnail" &| attribute "url"
-
-    -- use 240x180.jpg instead of 480x360.jpg  e.g.
-    -- http://images.ted.com/images/ted/c58cf2dbb9f8843b91eb2228caf27974b5f428de_480x360.jpg
-    smallPic url = (T.reverse. T.drop 11 . T.reverse) url `T.append` "240x180.jpg"
+    tedTalkUrl talkslug = "http://www.ted.com/talks/" <> talkslug <> ".html"
