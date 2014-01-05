@@ -8,7 +8,6 @@ module Foundation where
 
 import qualified Control.Exception.Lifted as E
 import           Control.Monad (forM)
-import qualified Data.ByteString.Char8 as B8
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
@@ -57,6 +56,7 @@ instance Yesod Ted where
         pc <- widgetToPageContent $ do
             widget
             $(widgetFile "default")
+        mmsg <- getMessage
         giveUrlRenderer
             [hamlet|
                 $doctype 5
@@ -67,8 +67,9 @@ instance Yesod Ted where
                         <meta name=viewport content="width=device-width, initial-scale=1">
                         ^{pageHead pc}
                     <body>
-                        <article>
-                            ^{pageBody pc}
+                        $maybe msg <- mmsg
+                            <div .message>#{msg}
+                        ^{pageBody pc}
             |]
 
 instance YesodPersist Ted where
@@ -104,6 +105,61 @@ getHomeR = do
                 toWidgetHead [hamlet| <meta name=description content="Find out all available subtitle languages, download as plain text or srt file. Watch TED talks with bilingual subtitle. TED演讲双语字幕下载。">|]
                 $(widgetFile "homepage")
                 $(widgetFile "footer")
+
+getTalksR :: Text -> Handler Html
+getTalksR rurl = do
+    mtalk <- runDB $ selectFirst [TalkLink ==. rurl] []
+    case mtalk of
+        Just (Entity _ dbtalk) -> do
+            talk <- liftIO $ queryTalk $ talkTid dbtalk
+            layout dbtalk talk
+        _          -> do
+            mtid <- liftIO $ getTalkId $ talkUrl <> rurl
+            case mtid of
+                Just tid -> do
+                    talk <- liftIO $ queryTalk tid
+                    dbtalk <- liftIO $ marshal talk
+                    runDB $ insertUnique dbtalk
+                    layout dbtalk talk
+                _         -> do
+                    let msg = "ERROR: " <> talkUrl <> rurl
+                                        <> " is not a TED talk page!"
+                    setMessage $ toHtml msg
+                    redirect HomeR
+  where
+    layout dbtalk talk = defaultLayout $ do
+        let prefix = downloadUrl <> talkMediaSlug dbtalk
+            audio = prefix <> ".mp3"
+            mu = mediaUrl $ talkMediaSlug dbtalk
+            v1500k = mu "1500k"
+            v950k = mu "950k"
+            v600k = mu "600k"
+            v320k = mu "320k"
+        setTitle $ toHtml $ name talk <> " | Subtitle on ted2srt.org"
+        addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
+        $(widgetFile "topbar")
+        $(widgetFile "talks")
+
+-- | Use API function (searchTalk) first.
+-- Then query DB, if not in DB, queryTalk and insert.
+getSearchR :: Text -> Handler Html
+getSearchR q = do
+    searchtalks <- liftIO $ searchTalk q
+    dbtalks <- forM searchtalks $ \t -> do
+        mtalk <- runDB $ getBy (UniqueTalk $ s_id t)
+        case mtalk of
+            Just (Entity _ talk') -> return talk'
+            _                    -> do
+                dbtalk <- liftIO $ marshal =<< queryTalk (s_id t)
+                runDB $ insertUnique dbtalk
+                return dbtalk
+
+    let talks = flip map dbtalks $ \t ->
+                t { talkLink = rewriteUrl $ talkLink t }
+
+    defaultLayout $ do
+        $(widgetFile "topbar")
+        $(widgetFile "search")
 
 getDownloadR :: Handler RepPlain
 getDownloadR = do
@@ -149,59 +205,6 @@ getWatchR = do
                         $(widgetFile "watch")
                 _ -> redirect HomeR
         _             -> redirect HomeR
-
-getSearchR :: Text -> Handler Html
-getSearchR q = do
-    searchtalks <- liftIO $ searchTalk $ B8.pack $ T.unpack q
-    dbtalks <- forM searchtalks $ \t -> do
-        mtalk <- runDB $ selectFirst [TalkTid ==. s_id t] []
-        case mtalk of
-            Just (Entity _ talk') -> return talk'
-            _                    -> do
-                talk <- liftIO $ queryTalk $ s_id t
-                dbtalk <- liftIO $ marshal talk
-                runDB $ insertUnique dbtalk
-                return dbtalk
-
-    let talks = flip map dbtalks $ \t ->
-                t { talkLink = rewriteUrl $ talkLink t }
-
-    defaultLayout $ do
-        $(widgetFile "topbar")
-        $(widgetFile "search")
-
-getTalksR :: Text -> Handler Html
-getTalksR rurl = do
-    mtalk <- runDB $ selectFirst [TalkLink ==. rurl] []
-    case mtalk of
-        Just (Entity _ dbtalk) -> do
-            talk <- liftIO $ queryTalk $ talkTid dbtalk
-            layout dbtalk talk
-        _          -> do
-            mtid <- liftIO $ getTalkId $ talkUrl <> rurl
-            case mtid of
-                Just tid -> do
-                    talk <- liftIO $ queryTalk tid
-                    dbtalk <- liftIO $ marshal talk
-                    runDB $ insertUnique dbtalk
-                    layout dbtalk talk
-                _         -> do
-                    let msg = "ERROR: " <> rurl <> " is not a TED talk page!"
-                    setMessage $ toHtml msg
-                    redirect HomeR
-  where
-    layout dbtalk talk = defaultLayout $ do
-        let prefix = downloadUrl <> talkMediaSlug dbtalk
-            audio = prefix <> ".mp3"
-            mu = mediaUrl $ talkMediaSlug dbtalk
-            v1500k = mu "1500k"
-            v950k = mu "950k"
-            v600k = mu "600k"
-            v320k = mu "320k"
-        setTitle $ toHtml $ name talk <> " | Subtitle on ted2srt.org"
-        addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
-        $(widgetFile "topbar")
-        $(widgetFile "talks")
 
 getAboutR :: Handler Html
 getAboutR = defaultLayout $ do

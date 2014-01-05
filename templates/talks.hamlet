@@ -9,11 +9,11 @@
       <span>#{preEscapedText $ description talk}
   <fieldset #srt>
     <legend>Available Subtitles
-    $if (length $ talkLanguages talk) > 0
+    $if null $ talkLanguages talk
+      <p>No subtitles available!
+    $else 
       $forall (lang, code) <- talkLanguages talk
         <li data-lang=#{code}>#{lang}
-    $else 
-      <p>No subtitles available!
   <center>
     <div #watch .button>Watch
 <div #sidepane>

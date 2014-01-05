@@ -25,7 +25,9 @@ import qualified Data.ByteString.Char8 as B8
 import           Data.Aeson.Types (defaultOptions, Options(..))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (sort)
+import           Data.Monoid ((<>))
 import           Data.Text (Text)
+import qualified Data.Text as T
 import           Data.Time (UTCTime)
 import           Data.Time.Format (parseTime)
 import           GHC.Generics (Generic)
@@ -165,14 +167,14 @@ talkLanguages t =
 talkImg :: Talk -> Text
 talkImg t = url $ image (images t !! 1)
 
-searchTalk :: B8.ByteString -> IO [SearchTalk]
+searchTalk :: Text -> IO [SearchTalk]
 searchTalk q = do
     res <- simpleHttp rurl
     case eitherDecode res of
         Right r -> return $ map _talk (results r)
         Left er -> error er
   where
-    query = B8.unpack $ urlEncode True q
-    rurl = "https://api.ted.com/v1/search.json?q=" ++ query ++
+    query = B8.unpack $ urlEncode True $ B8.pack $ T.unpack q
+    rurl = "https://api.ted.com/v1/search.json?q=" <> query <>
            "&categories=talks&api-key=2a9uggd876y5qua7ydghfzrq"
 
