@@ -5,7 +5,6 @@ import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson (Result(..), fromJSON)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.HashMap.Strict as M
-import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Yaml
@@ -16,7 +15,8 @@ import           Text.HTML.DOM (parseLBS)
 import           Text.XML.Cursor
 
 import Model
-import Web.TED (Talk(..), queryTalk, talkImg, getSlugAndPad)
+import Handler.Util (marshal)
+import Web.TED (queryTalk)
 
 
 data Database = Database
@@ -66,25 +66,14 @@ main = do
             runMigration migrateAll
 
             forM_ tids $ \tid -> do
-                mtalk <- selectFirst [TalkTid ==. tid] []
+                mtalk <- getBy (UniqueTalk tid)
                 case mtalk of
                     Just _ -> return ()
                     _      -> do
-                        tedtalk <- liftIO $ queryTalk tid
-                        (slug, pad) <- liftIO $ getSlugAndPad $ tedTalkUrl $ _slug tedtalk
-                        let dbtalk = Model.Talk { talkTid = _id tedtalk
-                                                , talkName = _name tedtalk
-                                                , talkDescription = _description tedtalk
-                                                , talkSlug = _slug tedtalk
-                                                , talkLink = tedTalkUrl $ _slug tedtalk
-                                                , talkPublishedAt = _published_at tedtalk
-                                                , talkImage = talkImg tedtalk
-                                                , talkMediaSlug = slug
-                                                , talkMediaPad = pad
-                                                }
+                        dbtalk <- liftIO $ marshal =<< queryTalk tid
                         void $ insertUnique dbtalk
   where
     rurl = "http://feeds.feedburner.com/tedtalks_video"
     -- 105 tids
-    parseTids cur = map (read . T.unpack) $ cur $// element "jwplayer:talkId" &// content
-    tedTalkUrl talkslug = "http://www.ted.com/talks/" <> talkslug <> ".html"
+    parseTids cur = map (read . T.unpack) $ cur $// element "jwplayer:talkId"
+                                                &// content
