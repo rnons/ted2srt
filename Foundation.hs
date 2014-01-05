@@ -72,6 +72,13 @@ instance Yesod Ted where
                         ^{pageBody pc}
             |]
 
+    errorHandler NotFound = fmap toTypedContent $ defaultLayout $ do
+        setTitle "TED2srt | Page Not Found."
+        $(widgetFile "topbar")
+        $(widgetFile "404")
+        $(widgetFile "footer")
+    errorHandler other = defaultErrorHandler other
+
 instance YesodPersist Ted where
     type YesodPersistBackend Ted = SqlPersistT
     runDB = defaultRunDB persistConfig connPool

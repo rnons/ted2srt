@@ -1,3 +1,6 @@
+body 
+    font: normal 16px/20px sans-serif
+
 #logo_homepage
     font: bold 30px sans-serif
     color: rgba(255, 43, 6, 1.0)
@@ -138,17 +141,17 @@ footer
 #sidepane
     background: #eeeeee
 
-#about
+#container
     margin: 10px auto
     width: 90%
 
-#about a
+#container a
     color: #ff2b06
 
-#about a:hover
+#container a:hover
     text-decoration: underline
 
-#about img
+#container img
     width: 100%
     max-width: 640px
     padding: 10px
