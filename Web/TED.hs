@@ -41,7 +41,7 @@ instance FromJSON Caption
 
 data Item = Item
     { duration          :: Int
-    , content           :: String
+    , content           :: Text
     , startOfParagraph  :: Bool
     , startTime         :: Int
     } deriving (Generic, Show)
@@ -58,7 +58,7 @@ data Subtitle = Subtitle
     , filetype          :: FileType
     } deriving Show
 
-toSub :: Subtitle -> IO (Maybe String)
+toSub :: Subtitle -> IO (Maybe FilePath)
 toSub sub
     | length lang == 1 = func sub
     | length lang == 2 = do
@@ -81,10 +81,7 @@ toSub sub
                 p2 <- func sub { language = [s2] }
                 case (p1, p2) of
                      (Just p1', Just p2') -> do
-                         c1 <- readFile p1'
-                         c2 <- readFile p2'
-                         let merged = unlines $ merge (lines c1) (lines c2)
-                         writeFile path merged
+                         mergeFile p1' p2' path
                          return $ Just path
                      _                    -> return Nothing
     | otherwise = return Nothing
@@ -95,7 +92,7 @@ toSub sub
         VTT -> ("/static/vtt/", ".vtt", oneSub)
         TXT -> ("/static/txt/", ".txt", oneTxt)
 
-oneSub :: Subtitle -> IO (Maybe String)
+oneSub :: Subtitle -> IO (Maybe FilePath)
 oneSub sub = do
     path <- subtitlePath sub
     cached <- doesFileExist path
@@ -144,9 +141,9 @@ oneSub sub = do
             em = et `div` 1000 `mod` 3600 `div` 60
             es = et `div` 1000 `mod` 60
             ems = et `mod` 1000
-        hPrintf h fmt (i::Int) sh sm ss sms eh em es ems (content c)
+        hPrintf h fmt (i::Int) sh sm ss sms eh em es ems (T.unpack $ content c)
 
-oneTxt :: Subtitle -> IO (Maybe String)
+oneTxt :: Subtitle -> IO (Maybe FilePath)
 oneTxt sub = do
     path <- subtitlePath sub
     cached <- doesFileExist path
@@ -169,9 +166,16 @@ oneTxt sub = do
            --T.appendFile path $ T.intercalate " " $ tail txt'
            return $ Just path
 
+mergeFile :: FilePath -> FilePath -> FilePath -> IO ()
+mergeFile p1 p2 path = do
+    c1 <- T.readFile p1
+    c2 <- T.readFile p2
+    let merged = T.unlines $ merge (T.lines c1) (T.lines c2)
+    T.writeFile path merged
+
 -- | Merge srt files of two language line by line. However,
 -- one line in srt_1 may correspond to two lines in srt_2, or vice versa.
-merge :: [String] -> [String] -> [String]
+merge :: [Text] -> [Text] -> [Text]
 merge (a:as) (b:bs)
     | a == b    = a : merge as bs
     | a == ""   = b : merge (a:as) bs
@@ -180,7 +184,7 @@ merge (a:as) (b:bs)
 merge _      _      = []
 
 -- Construct file path according to filetype.
-subtitlePath :: Subtitle -> IO String
+subtitlePath :: Subtitle -> IO FilePath
 subtitlePath sub =
     case filetype sub of
         SRT -> path ("/static/srt/", ".srt")
