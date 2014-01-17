@@ -68,7 +68,7 @@ instance FromJSON Talk where
                            v .: "updated_at" <*>
                            v .: "viewed_count" <*>
                            v .: "images" <*>
-                           v .: "languages" <*>
+                           v .:? "languages" <*>
                            v .: "tags" <*>
                            v .: "themes" <*>
                            v .: "speakers"
