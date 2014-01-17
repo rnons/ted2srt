@@ -8,6 +8,7 @@ module Foundation where
 
 import qualified Control.Exception.Lifted as E
 import           Control.Monad (forM)
+import           Data.Maybe (catMaybes)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
@@ -118,16 +119,21 @@ getTalksR rurl = do
     mtalk <- runDB $ selectFirst [TalkLink ==. rurl] []
     case mtalk of
         Just (Entity _ dbtalk) -> do
-            talk <- liftIO $ queryTalk $ talkTid dbtalk
-            layout dbtalk talk
+            talk' <- liftIO $ queryTalk $ talkTid dbtalk
+            case talk' of
+                Just talk -> layout dbtalk talk
+                Nothing   -> notFound
         _          -> do
             mtid <- liftIO $ getTalkId $ talkUrl <> rurl
             case mtid of
                 Just tid -> do
-                    talk <- liftIO $ queryTalk tid
-                    dbtalk <- liftIO $ marshal talk
-                    runDB $ insertUnique dbtalk
-                    layout dbtalk talk
+                    talk' <- liftIO $ queryTalk tid
+                    case talk' of
+                        Nothing   -> notFound
+                        Just talk -> do
+                            dbtalk <- liftIO $ marshal talk
+                            runDB $ insertUnique dbtalk
+                            layout dbtalk talk
                 _         -> do
                     let msg = "ERROR: " <> talkUrl <> rurl
                                         <> " is not a TED talk page!"
@@ -155,13 +161,17 @@ getSearchR q = do
     dbtalks <- forM searchtalks $ \t -> do
         mtalk <- runDB $ getBy (UniqueTalk $ s_id t)
         case mtalk of
-            Just (Entity _ talk') -> return talk'
+            Just (Entity _ talk') -> return $ Just talk'
             _                    -> do
-                dbtalk <- liftIO $ marshal =<< queryTalk (s_id t)
-                runDB $ insertUnique dbtalk
-                return dbtalk
+                talk' <- liftIO $ queryTalk (s_id t)
+                case talk' of
+                    Nothing -> return Nothing
+                    Just talk -> do
+                        dbtalk <- liftIO $ marshal talk
+                        runDB $ insertUnique dbtalk
+                        return $ Just dbtalk
 
-    let talks = flip map dbtalks $ \t ->
+    let talks = flip map (catMaybes dbtalks) $ \t ->
                 t { talkLink = rewriteUrl $ talkLink t }
 
     defaultLayout $ do
