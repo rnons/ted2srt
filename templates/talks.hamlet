@@ -11,7 +11,7 @@
     <legend>Available Subtitles
     $if null $ talkLanguages talk
       <p>No subtitles available!
-    $else 
+    $else
       $forall (lang, code) <- talkLanguages talk
         <li data-lang=#{code}>#{lang}
   <center>
@@ -24,13 +24,13 @@
   <h4>Video
   <ul>
     <li>
-      <a href="#{v1500k}">Highest Quality
+      <a href="#{v1500k}" title=1280x720>720p
     <li>
-      <a href="#{v950k}">High Quality
+      <a href="#{v950k}" title=854x480>480p
     <li>
-      <a href="#{v600k}">Middle Quality
+      <a href="#{v600k}" title=640x360>360p
     <li>
-      <a href="#{v320k}">Low Quality
+      <a href="#{v320k}" title=512x288>288p
   <h4>Subtitle
   <ul>
     <li #txt .download>Text
