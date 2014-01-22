@@ -20,18 +20,18 @@
   <h4>Audio
   <ul>
     <li>
-      <a href="#{audio}">MP3
+      <a href="#{audio}" title="#{helpMsg}">MP3
       <li #lrc .download>LRC
   <h4>Video
   <ul>
     <li>
-      <a href="#{v1500k}" title=1280x720>720p
+      <a href="#{v1500k}" title="#{helpMsg} (1280x720)">720p
     <li>
-      <a href="#{v950k}" title=854x480>480p
+      <a href="#{v950k}" title="#{helpMsg} (854x480)">480p
     <li>
-      <a href="#{v600k}" title=640x360>360p
+      <a href="#{v600k}" title="#{helpMsg} (640x360)">360p
     <li>
-      <a href="#{v320k}" title=512x288>288p
+      <a href="#{v320k}" title="#{helpMsg} (512x288)">288p
   <h4>Subtitle
   <ul>
     <li #txt .download>Text

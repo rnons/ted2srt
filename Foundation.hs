@@ -147,7 +147,8 @@ getTalksR rurl = do
             v1500k = mu "1500k"
             v950k = mu "950k"
             v600k = mu "600k"
-            v320k = mu "320k"
+            v320k = prefix <> ".mp4" -- equivalent to "320k"
+            helpMsg = "Right click to download" :: Text
         setTitle $ toHtml $ name talk <> " | Subtitle on ted2srt.org"
         addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
         $(widgetFile "topbar")
