@@ -47,7 +47,7 @@ data Item = Item
     } deriving (Generic, Show)
 instance FromJSON Item
 
-data FileType = SRT | VTT | TXT
+data FileType = SRT | VTT | TXT | LRC
     deriving (Show, Eq)
 
 data Subtitle = Subtitle
@@ -60,6 +60,7 @@ data Subtitle = Subtitle
 
 toSub :: Subtitle -> IO (Maybe FilePath)
 toSub sub
+    | filetype sub == LRC = oneLrc sub
     | length lang == 1 = func sub
     | length lang == 2 = do
         pwd <- getCurrentDirectory
@@ -91,6 +92,7 @@ toSub sub
         SRT -> ("/static/srt/", ".srt", oneSub)
         VTT -> ("/static/vtt/", ".vtt", oneSub)
         TXT -> ("/static/txt/", ".txt", oneTxt)
+        LRC -> ("/static/lrc/", ".lrc", oneLrc)
 
 oneSub :: Subtitle -> IO (Maybe FilePath)
 oneSub sub = do
@@ -166,6 +168,37 @@ oneTxt sub = do
            --T.appendFile path $ T.intercalate " " $ tail txt'
            return $ Just path
 
+oneLrc :: Subtitle -> IO (Maybe FilePath)
+oneLrc sub = do
+    path <- subtitlePath sub
+    cached <- doesFileExist path
+    if cached
+       then return $ Just path
+       else do
+           let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/"
+                     <> talkId sub <> "/lang/en"
+           E.catch (do
+               res <- simpleHttp rurl
+               let decoded = decode res :: Maybe Caption
+               case decoded of
+                    Just r -> do
+                        h <- openFile path WriteMode
+                        forM_ (captions r) (ppr h)
+                        hClose h
+                        return $ Just path
+                    Nothing ->
+                        return Nothing)
+               (\e -> do print (e :: E.SomeException)
+                         return Nothing)
+  where
+    fmt = "[%02d:%02d.%02d]%s\n"
+    ppr h c = do
+        let st = startTime c + floor (timeLag sub) + 3000
+            sm = st `div` 1000 `mod` 3600 `div` 60
+            ss = st `div` 1000 `mod` 60
+            sms = st `mod` 100
+        hPrintf h fmt sm ss sms (T.unpack $ content c)
+
 mergeFile :: FilePath -> FilePath -> FilePath -> IO ()
 mergeFile p1 p2 path = do
     c1 <- T.readFile p1
@@ -190,6 +223,7 @@ subtitlePath sub =
         SRT -> path ("/static/srt/", ".srt")
         VTT -> path ("/static/vtt/", ".vtt")
         TXT -> path ("/static/txt/", ".txt")
+        LRC -> lrcPath ("/static/lrc/", ".lrc")
   where
     path (dir, suffix) = do
         pwd <- getCurrentDirectory
@@ -198,6 +232,13 @@ subtitlePath sub =
                                      , filename sub
                                      , "."
                                      , head $ language sub
+                                     , suffix
+                                     ]
+    lrcPath (dir, suffix) = do
+        pwd <- getCurrentDirectory
+        return $ T.unpack $ T.concat [ T.pack pwd
+                                     , dir
+                                     , filename sub
                                      , suffix
                                      ]
 

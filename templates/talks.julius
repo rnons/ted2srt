@@ -9,7 +9,7 @@ $("#main li").bind("click", function() {
 
 $(".download").bind("click", function() {
     var len = $("#main li.selected").length;
-    if (len === 0) {
+    if (len === 0 && this.id !== "lrc") {
         alert("No language selected");
     } else {
         var url = "/download?tid=" + $("#main").data("tid") + "&type=" + this.id;

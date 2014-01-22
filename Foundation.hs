@@ -191,6 +191,8 @@ getDownloadR = do
                     Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) SRT
                 "txt" -> liftIO $ toSub $
                     Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) TXT
+                "lrc" -> liftIO $ toSub $
+                    Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) LRC
                 _     -> return Nothing
              case path of
                   Just p -> do

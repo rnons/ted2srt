@@ -21,6 +21,7 @@
   <ul>
     <li>
       <a href="#{audio}">MP3
+      <li #lrc .download>LRC
   <h4>Video
   <ul>
     <li>
