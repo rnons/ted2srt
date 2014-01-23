@@ -138,9 +138,6 @@ footer
     width: 100%
     bottom: 0px
 
-#sidepane
-    background: #eeeeee
-
 #container
     margin: 10px auto
     width: 90%
@@ -320,9 +317,11 @@ h2, h3
 
     #sidepane
         position: absolute
-        right: 0px
-        width: 200px
+        border: 1px solid #727272
+        right: 12px
+        width: 180px
         padding: 12px 12px 0 32px
+        margin-top: 46px
 
     #sidepane ul
         padding-left: 20px
