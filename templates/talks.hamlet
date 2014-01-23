@@ -17,11 +17,12 @@
   <center>
     <div #watch .button>Watch
 <div #sidepane>
-  <h4>Audio
-  <ul>
-    <li>
-      <a href="#{audio}" title="#{helpMsg}">MP3
-      <li #lrc .download>LRC
+  $if talkHasAudio talk
+    <h4>Audio
+    <ul>
+      <li>
+        <a href="#{audio}" title="#{helpMsg}">MP3
+        <li #lrc .download>LRC
   <h4>Video
   <ul>
     <li>

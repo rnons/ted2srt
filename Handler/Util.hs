@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings  #-}
 module Handler.Util where
 
 import           Data.Monoid ((<>))

@@ -16,6 +16,7 @@ module Web.TED.API
   , searchTalk
   , talkImg
   , talkLanguages
+  , talkHasAudio
   ) where
 
 import           Control.Applicative ((<$>), (<*>))
@@ -26,6 +27,7 @@ import qualified Data.ByteString.Char8 as B8
 import           Data.Aeson.Types (defaultOptions, Options(..))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (sort)
+import           Data.Maybe (isJust)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
@@ -53,6 +55,7 @@ data Talk = Talk
     , updated_at   :: Text
     , viewed_count :: Int
     , images       :: [Image]
+    , media        :: Value
     , languages    :: Maybe Value
     , tags         :: [Tag]
     , themes       :: [Theme]
@@ -69,6 +72,7 @@ instance FromJSON Talk where
                            v .: "updated_at" <*>
                            v .: "viewed_count" <*>
                            v .: "images" <*>
+                           v .: "media" <*>
                            v .:? "languages" <*>
                            v .: "tags" <*>
                            v .: "themes" <*>
@@ -166,6 +170,14 @@ talkLanguages t =
                                (HM.elems langs)
             in  sort $ zip langName langCode
         _                   -> []
+
+-- | Whether "audio-podcast" field is present
+talkHasAudio :: Talk -> Bool
+talkHasAudio t = 
+    case media t of
+        Object ms -> isJust $ HM.lookup "internal" ms >>=
+                            \(Object im) -> HM.lookup "audio-podcast" im 
+        _         -> False
 
 -- | "images": { ["image": { "size": , "url": }] }
 talkImg :: Talk -> Text
