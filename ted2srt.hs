@@ -1,3 +1,5 @@
+module Main where
+
 import           Control.Monad.Logger (runLoggingT)
 import           Database.Persist (loadConfig, applyEnv, createPoolConfig, runPool)
 import           Database.Persist.Postgresql (PostgresConf)

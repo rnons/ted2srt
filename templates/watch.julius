@@ -13,7 +13,7 @@ jwplayer("jwPlayer").setup({
         sources: [
             { file: mkUrl("320k"), label: "288p", type: "mp4" },
             { file: mkUrl("600k"), label: "360p" },
-            { file: mkUrl("950k"), label: "480p" }
+            { file: mkUrl("950k"), label: "480p" },
             { file: mkUrl("1500k"), label: "720p" }
         ],
         tracks: [{ 

@@ -221,11 +221,12 @@ subtitlePath :: Subtitle -> IO FilePath
 subtitlePath sub =
     case filetype sub of
         SRT -> path ("/static/srt/", ".srt")
-        VTT -> path ("/static/vtt/", ".vtt")
+        VTT -> pathTr ("/static/vtt/", ".vtt")
         TXT -> path ("/static/txt/", ".txt")
-        LRC -> lrcPath ("/static/lrc/", ".lrc")
+        LRC -> pathEn ("/static/lrc/", ".lrc")
   where
-    path (dir, suffix) = do
+    path = if head (language sub) == "en" then pathEn else pathTr
+    pathTr (dir, suffix) = do
         pwd <- getCurrentDirectory
         return $ T.unpack $ T.concat [ T.pack pwd
                                      , dir
@@ -234,7 +235,7 @@ subtitlePath sub =
                                      , head $ language sub
                                      , suffix
                                      ]
-    lrcPath (dir, suffix) = do
+    pathEn (dir, suffix) = do
         pwd <- getCurrentDirectory
         return $ T.unpack $ T.concat [ T.pack pwd
                                      , dir
