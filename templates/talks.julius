@@ -1,3 +1,6 @@
+// English subtitle is selected by default.
+$('[data-lang="en"]').addClass("selected");
+
 $("#main li").bind("click", function() {
     var len = $("#main li.selected").length;
     if ( len < 2 ) {
