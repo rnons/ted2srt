@@ -7,7 +7,7 @@
 module Foundation where
 
 import qualified Control.Exception.Lifted as E
-import           Control.Monad (forM)
+import           Control.Monad (forM, when)
 import           Data.Maybe (catMaybes)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
@@ -99,7 +99,7 @@ getHomeR = do
     q <- lookupGetParam "q"
     case q of
         Just kw
-            | talkUrl `T.isPrefixOf` kw ->
+            | talkUrl `T.isPrefixOf` kw || newTalkUrl `T.isPrefixOf` kw ->
                 redirect $ TalksR $ T.drop (T.length talkUrl) kw
             | otherwise -> redirect $ SearchR kw
         _ -> do
@@ -160,6 +160,7 @@ getTalksR rurl = do
 getSearchR :: Text -> Handler Html
 getSearchR q = do
     searchtalks <- liftIO $ searchTalk q
+    when (null searchtalks) notFound
     dbtalks <- forM searchtalks $ \t -> do
         mtalk <- runDB $ getBy (UniqueTalk $ s_id t)
         case mtalk of

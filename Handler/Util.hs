@@ -26,8 +26,9 @@ marshal talk = do
                       , talkMediaPad = mediaPad
                       }
 
-talkUrl :: Text
+talkUrl, newTalkUrl :: Text
 talkUrl = "http://www.ted.com/talks/"
+newTalkUrl = "http://new.ted.com/talks/"
 
 downloadUrl :: Text
 downloadUrl = "http://download.ted.com/talks/"
