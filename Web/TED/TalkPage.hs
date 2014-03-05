@@ -14,24 +14,22 @@ import           Data.Text (Text)
 import           qualified Data.Text as T
 import           Network.HTTP.Conduit
 import           Prelude hiding (id)
-import           Text.HTML.DOM (parseLBS)
 import           Text.Regex.Posix ((=~))
-import           Text.XML.Cursor (Cursor, attribute, attributeIs,
-                                  element, fromDocument, ($//), (&|))
 
 
 -- | Given talk url, return talk id.
 getTalkId :: Text -> IO (Maybe Int)
 getTalkId uri = E.catch
     (do body <- simpleHttp $ T.unpack uri
-        let cursor = fromDocument $ parseLBS body
-        return $ Just $ parseId cursor)
+        return $ Just $ parseId body)
     (\e -> do print (e :: E.SomeException)
               return Nothing)
 
-parseId :: Cursor -> Int
-parseId cursor = read $ T.unpack $ head $ head $ cursor $// element "div" >=> 
-                 attributeIs "id" "share_and_save" &| attribute "data-id"
+parseId :: L8.ByteString -> Int
+parseId body = read $ last $ last r
+  where
+    pat = "id\":([^,]+),\"duration" :: String
+    r = L8.unpack body =~ pat :: [[String]]
 
 -- | Given talk url, return mediaSlug and mediaPad of talk.
 getSlugAndPad :: Text -> IO (Text, Double)
@@ -45,7 +43,7 @@ getSlugAndPad rurl = E.catch
 mediaSlug :: L8.ByteString -> Text
 mediaSlug body = T.pack $ last $ last r
   where
-    pat = "mediaSlug\":\"([^\"]+)\"" :: String
+    pat = "\"low\":\"http://download.ted.com/talks/(.+)-light.mp4" :: String
     r = L8.unpack body =~ pat :: [[String]]
 
 -- TED talk videos begin with different versions of TED promos. 
@@ -53,6 +51,6 @@ mediaSlug body = T.pack $ last $ last r
 mediaPad :: L8.ByteString -> Double
 mediaPad body = read t * 1000.0
   where
-    pat = "mediaPad\":(.+)}" :: String
+    pat = "introDuration\":([^,]+)" :: String
     r = L8.unpack body =~ pat :: [[String]]
     t = last $ last r
