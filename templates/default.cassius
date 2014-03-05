@@ -222,6 +222,9 @@ h2, h3
     #sidepane
         position: relative
 
+    #jw-wrapper
+        width: 95%
+
 
 @media screen and (min-width: 768px)
     body
@@ -296,7 +299,7 @@ h2, h3
       left: 0
       top: 0
       width: 219px
-      height: 80px
+      height: 79px
       background-color: rgba(255, 43, 6, 0.9)
       color: #ffffff
       font: bold 16px/20px sans-serif
