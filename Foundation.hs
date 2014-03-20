@@ -7,7 +7,7 @@
 module Foundation where
 
 import qualified Control.Exception.Lifted as E
-import           Control.Monad (forM, when)
+import           Control.Monad (forM, when, void)
 import           Data.Maybe (catMaybes)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
@@ -216,16 +216,13 @@ getWatchR = do
     case tid' of
         Just tid -> do
             (Entity _ talk) <- runDB $ getBy404 (UniqueTalk $ read $ T.unpack tid)
-            path' <- liftIO $ toSub $
+            void $ liftIO $ toSub $
                 Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) VTT
-            case path' of
-                Just path -> do
-                    let dataLang = T.intercalate "." lang
-                    defaultLayout $ do
-                        addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
-                        addScript $ StaticR jwplayer_jwplayer_js
-                        $(widgetFile "watch")
-                _ -> redirect HomeR
+            let dataLang = T.intercalate "." lang
+            defaultLayout $ do
+                addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
+                addScript $ StaticR jwplayer_jwplayer_js
+                $(widgetFile "watch")
         _             -> redirect HomeR
 
 getAboutR :: Handler Html

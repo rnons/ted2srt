@@ -33,7 +33,8 @@
       <li>360p
     <a href="#{v320k}" title="#{rClickMsg} (512x288)">
       <li>288p
-  <h4>Subtitle
-  <ul>
-    <li #txt .download title="#{clickMsg}">Text
-    <li #srt .download title="#{clickMsg}">SRT
+  $if not $ null $ talkLanguages talk
+    <h4>Subtitle
+    <ul>
+      <li #txt .download title="#{clickMsg}">Text
+      <li #srt .download title="#{clickMsg}">SRT
