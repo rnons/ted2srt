@@ -1,42 +1,49 @@
-// English subtitle is selected by default.
-$('[data-lang="en"]').addClass("selected");
+window.onload = function() {
+  'use strict';
 
-$("#main li").bind("click", function() {
-    var len = $("#main li.selected").length;
+  var $ = function(s) {
+    var els = document.querySelectorAll(s);
+    return els.length === 1 ? els[0] : els;
+  };
+
+  $('[data-lang="en"]').classList.add('selected');
+
+  $('#main').addEventListener('click', function(e) {
+    var len = document.querySelectorAll('#main li.selected').length;
     if ( len < 2 ) {
-        $(this).toggleClass("selected");
+        e.target.classList.toggle('selected');
     } else if ( len === 2) {
-        $(this).removeClass("selected");
+        e.target.classList.remove('selected');
     }
-});
+  });
 
-$(".download").bind("click", function() {
-    var len = $("#main li.selected").length;
-    if (len === 0 && this.id !== "lrc") {
-        alert("No language selected");
-    } else {
-        var url = "/download?tid=" + $("#main").data("tid") + "&type=" + this.id;
-        $("#main li.selected").each(function(i){
-            url += "&lang=" + $(this).data("lang");
-        });
-        console.log(url);
-        location.href = url;
+  $('.download').addEventListener('click', function(e) {
+    var selected = document.querySelectorAll('#main li.selected');
+    var len = selected.length;
+    var url = '/download?tid=' + $('#main').dataset.tid + '&type=' + e.target.id;
+    if (len === 0 && e.target.id !== 'lrc') {
+      alert('No language selected');
+    } else if (len === 1) {
+      url += '&lang=' + selected[0].dataset.lang;
+    } else if (len === 2) {
+      url += '&lang=' + selected[0].dataset.lang;
+      url += '&lang=' + selected[1].dataset.lang;
     }
-});
+    location.href = url;
+  });
 
-$("#watch").bind("click", function() {
-    var lang = [];
-    var url = "/watch?tid=" + $("#main").data("tid");
-    $("#main li.selected").each(function(i){
-        lang.push($(this).data("lang"));
-        url += "&lang=" + $(this).data("lang");
-    });
-
-    // When no languaged is selected, default to english
-    if (lang.length === 0) {
-        lang = ["en"];
-        url += "&lang=en";
+  $('#watch').addEventListener('click', function(e) {
+    var selected = document.querySelectorAll('#main li.selected');
+    var len = selected.length;
+    var url = '/watch?tid=' + $('#main').dataset.tid;
+    if (len === 0 && e.target.id !== 'lrc') {
+      url += '&lang=en';
+    } else if (len === 1) {
+      url += '&lang=' + selected[0].dataset.lang;
+    } else if (len === 2) {
+      url += '&lang=' + selected[0].dataset.lang;
+      url += '&lang=' + selected[1].dataset.lang;
     }
-    console.log(url);
     location.href= url;
-});
+  });
+};

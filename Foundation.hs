@@ -163,7 +163,6 @@ getTalksR rurl = do
             clickMsg = "Click to download" :: Text
             rClickMsg = "Right click to download" :: Text
         setTitle $ toHtml $ caName talk <> " | Subtitle on ted2srt.org"
-        addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
         $(widgetFile "topbar")
         $(widgetFile "talks")
 
@@ -232,7 +231,6 @@ getWatchR = do
                 Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) VTT
             let dataLang = T.intercalate "." lang
             defaultLayout $ do
-                addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
                 addScript $ StaticR jwplayer_jwplayer_js
                 $(widgetFile "watch")
         _             -> redirect HomeR

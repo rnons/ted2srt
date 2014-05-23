@@ -1,29 +1,34 @@
-jwplayer.key="pEdpebFhzopIeu+fhGRFb3MLCfZf+0ORRz1lHA==";
+window.onload = function() {
+  'use strict';
 
-var slug = $("#jw-wrapper").data("mediaslug");
-var path = "/static/vtt/" + slug + "." + $("#jw-wrapper").data("lang") + ".vtt";
+  jwplayer.key='pEdpebFhzopIeu+fhGRFb3MLCfZf+0ORRz1lHA==';
 
-function mkUrl(quality) {
-  var prefix = "http://download.ted.com/talks/" + slug;
-  return prefix + "-" + quality + ".mp4";
-}
+  var wrapper = document.querySelector('#jw-wrapper');
+  var slug = wrapper.dataset.mediaslug;
+  var path = '/static/vtt/' + slug + '.' + wrapper.dataset.lang + '.vtt';
 
-jwplayer("jwPlayer").setup({
+  function mkUrl(quality) {
+    var prefix = 'http://download.ted.com/talks/' + slug;
+    return prefix + '-' + quality + '.mp4';
+  }
+
+  jwplayer('jwPlayer').setup({
     playlist: [{
-        sources: [
-            { file: mkUrl("320k"), label: "288p", type: "mp4" },
-            { file: mkUrl("600k"), label: "360p" },
-            { file: mkUrl("950k"), label: "480p" },
-            { file: mkUrl("1500k"), label: "720p" }
-        ],
-        tracks: [{ 
-            file: path, 
-            label: "English",
-            kind: "captions",
-            "default": true 
-        }],
+      sources: [
+        { file: mkUrl('320k'), label: '288p', type: 'mp4' },
+        { file: mkUrl('600k'), label: '360p' },
+        { file: mkUrl('950k'), label: '480p' },
+        { file: mkUrl('1500k'), label: '720p' }
+      ],
+      tracks: [{
+        file: path,
+        label: 'English',
+        kind: 'captions',
+        default: true
+      }],
     }],
     autostart: true,
-    width: "100%",
-    aspectratio: "16:9"
-});
+    width: '100%',
+    aspectratio: '16:9'
+  });
+};

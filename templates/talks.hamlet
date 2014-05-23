@@ -35,6 +35,6 @@
       <li>288p
   $if not $ null $ caLanguages talk
     <h4>Subtitle
-    <ul>
-      <li #txt .download title="#{clickMsg}">Text
-      <li #srt .download title="#{clickMsg}">SRT
+    <ul .download>
+      <li #txt title="#{clickMsg}">Text
+      <li #srt title="#{clickMsg}">SRT
