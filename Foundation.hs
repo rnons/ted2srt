@@ -8,7 +8,9 @@ module Foundation where
 
 import qualified Control.Exception.Lifted as E
 import           Control.Monad (forM, when, void)
-import           Data.Maybe (catMaybes)
+import           Data.Aeson (encode, decode)
+import qualified Data.ByteString.Lazy as L
+import           Data.Maybe (catMaybes, fromJust)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
@@ -116,13 +118,20 @@ getHomeR = do
 
 getTalksR :: Text -> Handler Html
 getTalksR rurl = do
-    mtalk <- runDB $ selectFirst [TalkLink ==. rurl] []
+    mtalk <- runDB $ selectFirst [TalkSlug ==. rurl] []
     case mtalk of
         Just (Entity _ dbtalk) -> do
-            talk' <- liftIO $ queryTalk $ talkTid dbtalk
-            case talk' of
-                Just talk -> layout dbtalk talk
-                Nothing   -> notFound
+            (path, isCached) <- liftIO $ jsonPath $ talkTid dbtalk
+            if isCached
+                then lift (L.readFile path) >>= layout dbtalk . fromJust . decode
+                else do
+                    talk' <- liftIO $ queryTalk $ talkTid dbtalk
+                    case talk' of
+                        Just talk -> do
+                            let value = apiTalkToValue talk
+                            liftIO $ L.writeFile path $ encode value
+                            layout dbtalk value
+                        Nothing   -> notFound
         _          -> do
             mtid <- liftIO $ getTalkId $ talkUrl <> rurl
             case mtid of
@@ -133,7 +142,10 @@ getTalksR rurl = do
                         Just talk -> do
                             dbtalk <- liftIO $ marshal talk
                             runDB $ insertUnique dbtalk
-                            layout dbtalk talk
+                            (path, _) <- liftIO $ jsonPath $ talkTid dbtalk
+                            let value = apiTalkToValue talk
+                            liftIO $ L.writeFile path $ encode value
+                            layout dbtalk value
                 _         -> do
                     let msg = "ERROR: " <> talkUrl <> rurl
                                         <> " is not a TED talk page!"
@@ -150,7 +162,7 @@ getTalksR rurl = do
             v320k = prefix <> ".mp4" -- equivalent to "320k"
             clickMsg = "Click to download" :: Text
             rClickMsg = "Right click to download" :: Text
-        setTitle $ toHtml $ name talk <> " | Subtitle on ted2srt.org"
+        setTitle $ toHtml $ caName talk <> " | Subtitle on ted2srt.org"
         addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
         $(widgetFile "topbar")
         $(widgetFile "talks")

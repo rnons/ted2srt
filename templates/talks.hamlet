@@ -1,23 +1,23 @@
-<div #main data-tid=#{id talk}>
-  <div .talk title="#{name talk}">
+<div #main data-tid=#{caId talk}>
+  <div .talk title="#{caName talk}">
     <div .title>
-      <a href="#{tedTalkUrl $ slug talk}">#{name talk}
+      <a href="#{tedTalkUrl $ caSlug talk}">#{caName talk}
     <div .img>
-      <a href="#{tedTalkUrl $ slug talk}">
-        <img src="#{img113x85 $ talkImg talk}">
+      <a href="#{tedTalkUrl $ caSlug talk}">
+        <img src="#{img113x85 $ caImage talk}">
     <div .intro>
-      <span>#{preEscapedText $ description talk}
+      <span>#{preEscapedText $ caDescription talk}
   <fieldset #srt>
     <legend>Available Subtitles
-    $if null $ talkLanguages talk
+    $if null $ caLanguages talk
       <p>No subtitles available!
     $else
-      $forall (lang, code) <- talkLanguages talk
+      $forall (lang, code) <- caLanguages talk
         <li data-lang=#{code}>#{lang}
   <center>
     <div #watch .button>Watch
 <div #sidepane>
-  $if talkHasAudio talk
+  $if caAudio talk
     <h4>Audio
     <ul>
       <a href="#{audio}" title="#{rClickMsg}">
@@ -33,7 +33,7 @@
       <li>360p
     <a href="#{v320k}" title="#{rClickMsg} (512x288)">
       <li>288p
-  $if not $ null $ talkLanguages talk
+  $if not $ null $ caLanguages talk
     <h4>Subtitle
     <ul>
       <li #txt .download title="#{clickMsg}">Text

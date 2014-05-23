@@ -1,16 +1,20 @@
+{-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE OverloadedStrings  #-}
 module Handler.Util where
 
+import           Data.Aeson (FromJSON, ToJSON)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
+import           GHC.Generics (Generic)
 import           Prelude hiding (id)
+import           System.Directory
 
 import Model
 import Web.TED
 
 tedTalkUrl :: Text -> Text
-tedTalkUrl s = "http://www.ted.com/talks/" <> s <> ".html"
+tedTalkUrl s = "http://www.ted.com/talks/" <> s
 
 marshal :: Web.TED.Talk -> IO Model.Talk
 marshal talk = do
@@ -45,3 +49,33 @@ img113x85 rurl = (T.reverse. T.drop 11 . T.reverse) rurl <> "113x85.jpg"
 -- e.g. marla_spivak_why_bees_are_disappearing.html
 rewriteUrl ::Text -> Text
 rewriteUrl = T.drop $ T.length talkUrl
+
+jsonPath :: Int -> IO (FilePath, Bool)
+jsonPath tid = do
+    pwd <- getCurrentDirectory
+    let path = pwd ++ "/static/json/" ++ show tid ++ ".json"
+    cached <- doesFileExist path
+    return (path, cached)
+
+data CacheTalk = CacheTalk
+    { caId          :: Int
+    , caName        :: Text
+    , caDescription :: Text
+    , caSlug        :: Text
+    , caImage       :: Text
+    , caLanguages   :: [(Text, Text)]
+    , caAudio       :: Bool
+    } deriving (Generic, Show)
+instance FromJSON CacheTalk
+instance ToJSON CacheTalk
+
+apiTalkToValue :: Web.TED.Talk -> CacheTalk
+apiTalkToValue talk =
+    CacheTalk { caId = id talk
+              , caName = name talk
+              , caDescription = description talk
+              , caSlug = slug talk
+              , caImage = talkImg talk
+              , caLanguages = talkLanguages talk
+              , caAudio = talkHasAudio talk
+              }
