@@ -22,7 +22,6 @@
     <ul>
       <a href="#{audio}" title="#{rClickMsg}">
         <li>MP3
-      <li #lrc .download title="#{clickMsg}">LRC
   <h4>Video
   <ul>
     <a href="#{v1500k}" title="#{rClickMsg} (1280x720)">
@@ -38,3 +37,4 @@
     <ul .download>
       <li #txt title="#{clickMsg}">Text
       <li #srt title="#{clickMsg}">SRT
+      <li #lrc title="#{clickMsg}">LRC

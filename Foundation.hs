@@ -202,11 +202,11 @@ getDownloadR = do
              (Entity _ talk) <- runDB $ getBy404 (UniqueTalk $ read $ T.unpack tid)
              path <- case type_ of
                 "srt" -> liftIO $ toSub $
-                    Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) SRT
+                    Subtitle tid (talkSlug talk) lang (talkMediaSlug talk) (talkMediaPad talk) SRT
                 "txt" -> liftIO $ toSub $
-                    Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) TXT
+                    Subtitle tid (talkSlug talk) lang (talkMediaSlug talk) (talkMediaPad talk) TXT
                 "lrc" -> liftIO $ toSub $
-                    Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) LRC
+                    Subtitle tid (talkSlug talk) lang (talkMediaSlug talk) (talkMediaPad talk) LRC
                 _     -> return Nothing
              case path of
                   Just p -> do
@@ -228,7 +228,7 @@ getWatchR = do
         Just tid -> do
             (Entity _ talk) <- runDB $ getBy404 (UniqueTalk $ read $ T.unpack tid)
             void $ liftIO $ toSub $
-                Subtitle tid lang (talkMediaSlug talk) (talkMediaPad talk) VTT
+                Subtitle tid (talkSlug talk) lang (talkMediaSlug talk) (talkMediaPad talk) VTT
             let dataLang = T.intercalate "." lang
             defaultLayout $ do
                 addScript $ StaticR jwplayer_jwplayer_js

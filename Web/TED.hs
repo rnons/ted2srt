@@ -27,7 +27,7 @@ import           System.Directory
 import           System.IO
 import           Text.HTML.DOM (parseLBS)
 import           Text.Printf
-import           Text.XML.Cursor (element, fromDocument, ($//), (&//))
+import           Text.XML.Cursor (attributeIs, element, fromDocument, ($//), (&//))
 import qualified Text.XML.Cursor as XC
 
 import Web.TED.API
@@ -52,6 +52,7 @@ data FileType = SRT | VTT | TXT | LRC
 
 data Subtitle = Subtitle
     { talkId            :: Text
+    , talkslug          :: Text
     , language          :: [Text]
     , filename           :: Text
     , timeLag           :: Double
@@ -152,20 +153,19 @@ oneTxt sub = do
     if cached
        then return $ Just path
        else do
-           let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/"
-                     <> talkId sub <> "/lang/" <> head (language sub)
-                     <> "/format/html"
+           let rurl = T.unpack $ "http://www.ted.com/talks/" <> talkslug sub
+                               <> "/transcript?lang=" <> head (language sub)
            res <- simpleHttp rurl
            let cursor = fromDocument $ parseLBS res
-               con = cursor $// element "p" &// XC.content
-               txt = filter (`notElem` ["\n", "\t\t", "\n\t\t\t\t\t"]) con
-               txt' = map (\t -> if t == "\n\t\t\t" then "\n\n" else t)
-                          txt
+               con = cursor $// element "span"
+                            >=> attributeIs "class" "talk-transcript__para__text"
+                            &// XC.content
+               txt = scanl1 (\x1 x2 -> if x2 == "\n" then if x1 == " "
+                                             then "\n\n" else " " else x2) con
            -- Prepend the UTF-8 byte order mark to do Windows user a favor.
            withBinaryFile path WriteMode $ \h ->
                hPutStr h "\xef\xbb\xbf"
-           T.appendFile path $ T.intercalate " " txt'
-           --T.appendFile path $ T.intercalate " " $ tail txt'
+           T.appendFile path $ T.concat txt
            return $ Just path
 
 oneLrc :: Subtitle -> IO (Maybe FilePath)
