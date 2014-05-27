@@ -10,25 +10,21 @@ import           GHC.Generics (Generic)
 import           Prelude hiding (id)
 import           System.Directory
 
-import Model
-import Web.TED
+import qualified Web.TED as API
 
 tedTalkUrl :: Text -> Text
 tedTalkUrl s = "http://www.ted.com/talks/" <> s
 
-marshal :: Web.TED.Talk -> IO Model.Talk
+marshal :: API.Talk -> IO Talk
 marshal talk = do
-    (mediaSlug, mediaPad) <- getSlugAndPad $ tedTalkUrl $ slug talk
-    return Model.Talk { talkTid = id talk
-                      , talkName = name talk
-                      , talkDescription = description talk
-                      , talkSlug = slug talk
-                      , talkLink = tedTalkUrl $ slug talk
-                      , talkPublishedAt = published_at talk
-                      , talkImage = talkImg talk
-                      , talkMediaSlug = mediaSlug
-                      , talkMediaPad = mediaPad
-                      }
+    (mediaSlug, mediaPad) <- API.getSlugAndPad $ tedTalkUrl $ API.slug talk
+    return Talk { name = API.name talk
+                , description = API.description talk
+                , slug = API.slug talk
+                , image = API.talkImg talk
+                , mSlug = mediaSlug
+                , mPad = mediaPad
+                }
 
 talkUrl, newTalkUrl :: Text
 talkUrl = "http://www.ted.com/talks/"
@@ -57,25 +53,26 @@ jsonPath tid = do
     cached <- doesFileExist path
     return (path, cached)
 
-data CacheTalk = CacheTalk
-    { caId          :: Int
-    , caName        :: Text
-    , caDescription :: Text
-    , caSlug        :: Text
-    , caImage       :: Text
-    , caLanguages   :: [(Text, Text)]
+data Talk = Talk
+    { name          :: Text
+    , description   :: Text
+    , slug          :: Text
+    , image         :: Text
+    , mSlug         :: Text
+    , mPad          :: Double
+    } deriving (Generic, Show)
+instance FromJSON Talk
+instance ToJSON Talk
+
+data TalkCache = TalkCache
+    { caLanguages   :: [(Text, Text)]
     , caAudio       :: Bool
     } deriving (Generic, Show)
-instance FromJSON CacheTalk
-instance ToJSON CacheTalk
+instance FromJSON TalkCache
+instance ToJSON TalkCache
 
-apiTalkToValue :: Web.TED.Talk -> CacheTalk
+apiTalkToValue :: API.Talk -> TalkCache
 apiTalkToValue talk =
-    CacheTalk { caId = id talk
-              , caName = name talk
-              , caDescription = description talk
-              , caSlug = slug talk
-              , caImage = talkImg talk
-              , caLanguages = talkLanguages talk
-              , caAudio = talkHasAudio talk
+    TalkCache { caLanguages = API.talkLanguages talk
+              , caAudio = API.talkHasAudio talk
               }

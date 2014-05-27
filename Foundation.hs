@@ -6,35 +6,34 @@
 
 module Foundation where
 
-import qualified Control.Exception.Lifted as E
-import           Control.Monad (forM, when, void)
-import           Data.Aeson (encode, decode)
+import           Control.Monad (forM, when)
+import           Data.Aeson (encode, decodeStrict)
+import qualified Data.ByteString.Char8 as C8
 import qualified Data.ByteString.Lazy as L
 import           Data.Maybe (catMaybes, fromJust)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           Database.Persist.Postgresql (PostgresConf)
-import           Database.Persist.Sql (SqlPersistT)
 import qualified Filesystem.Path.CurrentOS as FS
 import           Prelude hiding (id)
 import           Text.Blaze.Internal (preEscapedText)
 import           Text.Jasmine (minifym)
-import           Yesod
+import           Yesod hiding (get)
 import           Yesod.Default.Util (addStaticContentExternal)
 import           Yesod.Static
 
-import Model
 import Settings
 import Settings.StaticFiles
-import Web.TED
+import Web.TED (getTalkId, queryTalk, searchTalk, SearchTalk(..), toSub, Subtitle(..), FileType(..))
 import Handler.Util
+
+import Database.Redis hiding (decode)
+import Data.Either.Utils (fromRight)
 
 
 data Ted = Ted
     { getStatic :: Static
-    , connPool :: PersistConfigPool PostgresConf
-    , persistConfig :: PostgresConf
+    , conn      :: Connection
     }
 
 mkYesod "Ted" [parseRoutes|
@@ -82,10 +81,6 @@ instance Yesod Ted where
         $(widgetFile "footer")
     errorHandler other = defaultErrorHandler other
 
-instance YesodPersist Ted where
-    type YesodPersistBackend Ted = SqlPersistT
-    runDB = defaultRunDB persistConfig connPool
-
 instance RenderMessage Ted FormMessage where
     renderMessage _ _ = defaultFormMessage
 
@@ -105,11 +100,12 @@ getHomeR = do
                 redirect $ TalksR $ T.drop (T.length talkUrl) kw
             | otherwise -> redirect $ SearchR kw
         _ -> do
-            talks' <- E.catch (runDB $ selectList [] [Desc TalkPublishedAt, LimitTo 5])
-                              (\e -> liftIO $ print (e :: E.SomeException) >>
-                               return [])
-            let talks = flip map talks' $ \(Entity _ t) ->
-                        t { talkLink = rewriteUrl $ talkLink t }
+            site <- getYesod
+            latest <- lift $ runRedis (conn site) $ lrange "latest" 0 4
+            talksJson <- lift $ runRedis (conn site) $
+                mapM get (fromRight latest)
+            let talks = flip map talksJson $ \tj ->
+                        fromJust $ decodeStrict $ fromJust $ fromRight tj
             defaultLayout $ do
                 setTitle "TED2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
                 toWidgetHead [hamlet| <meta name=description content="Find out all available subtitle languages, download as plain text or srt file. Watch TED talks with bilingual subtitle. TED演讲双语字幕下载。">|]
@@ -118,19 +114,27 @@ getHomeR = do
 
 getTalksR :: Text -> Handler Html
 getTalksR rurl = do
-    mtalk <- runDB $ selectFirst [TalkSlug ==. rurl] []
-    case mtalk of
-        Just (Entity _ dbtalk) -> do
-            (path, isCached) <- liftIO $ jsonPath $ talkTid dbtalk
-            if isCached
-                then lift (L.readFile path) >>= layout dbtalk . fromJust . decode
-                else do
-                    talk' <- liftIO $ queryTalk $ talkTid dbtalk
+    site <- getYesod
+    emtid <- lift $ runRedis (conn site) $ get $ C8.pack $ T.unpack rurl
+
+    case emtid of
+        Right (Just tid) -> do
+            mtalk <- lift $ runRedis (conn site) $ get tid
+            mcache <- lift $ runRedis (conn site) $ get ("cache:" <> tid)
+            case (mtalk, mcache) of
+                (Right (Just talk), Right (Just cache)) ->
+                    layout tid (fromJust $ decodeStrict talk)
+                               (fromJust $ decodeStrict cache)
+                _ -> do
+                    talk' <- liftIO $ queryTalk $ read $ C8.unpack tid
                     case talk' of
                         Just talk -> do
                             let value = apiTalkToValue talk
-                            liftIO $ L.writeFile path $ encode value
-                            layout dbtalk value
+                            lift $ runRedis (conn site) $
+                                setex ("cache:" <> tid) (3600*24)
+                                      (L.toStrict $ encode value)
+                            -- layout dbtalk value
+                            getTalksR rurl
                         Nothing   -> notFound
         _          -> do
             mtid <- liftIO $ getTalkId $ talkUrl <> rurl
@@ -141,28 +145,33 @@ getTalksR rurl = do
                         Nothing   -> notFound
                         Just talk -> do
                             dbtalk <- liftIO $ marshal talk
-                            runDB $ insertUnique dbtalk
-                            (path, _) <- liftIO $ jsonPath $ talkTid dbtalk
-                            let value = apiTalkToValue talk
-                            liftIO $ L.writeFile path $ encode value
-                            layout dbtalk value
+                            lift $ runRedis (conn site) $ do
+                                set (C8.pack $ T.unpack rurl) (C8.pack $ show tid)
+                                set (C8.pack $ show tid)
+                                    (L.toStrict $ encode dbtalk)
+                            getTalksR rurl
+                            -- (path, _) <- liftIO $ jsonPath $ talkTid dbtalk
+                            -- let value = apiTalkToValue talk
+                            -- liftIO $ L.writeFile path $ encode value
+                            -- layout dbtalk value
                 _         -> do
                     let msg = "ERROR: " <> talkUrl <> rurl
                                         <> " is not a TED talk page!"
                     setMessage $ toHtml msg
                     redirect HomeR
   where
-    layout dbtalk talk = defaultLayout $ do
-        let prefix = downloadUrl <> talkMediaSlug dbtalk
+    layout tid' dbtalk talk = defaultLayout $ do
+        let prefix = downloadUrl <> mSlug dbtalk
             audio = prefix <> ".mp3"
-            mu = mediaUrl $ talkMediaSlug dbtalk
+            mu = mediaUrl $ mSlug dbtalk
             v1500k = mu "1500k"
             v950k = mu "950k"
             v600k = mu "600k"
             v320k = prefix <> ".mp4" -- equivalent to "320k"
             clickMsg = "Click to download" :: Text
             rClickMsg = "Right click to download" :: Text
-        setTitle $ toHtml $ caName talk <> " | Subtitle on ted2srt.org"
+            tid = C8.unpack tid'
+        setTitle $ toHtml $ name dbtalk <> " | Subtitle on ted2srt.org"
         $(widgetFile "topbar")
         $(widgetFile "talks")
 
@@ -173,20 +182,24 @@ getSearchR q = do
     searchtalks <- liftIO $ searchTalk q
     when (null searchtalks) notFound
     dbtalks <- forM searchtalks $ \t -> do
-        mtalk <- runDB $ getBy (UniqueTalk $ s_id t)
+        site <- getYesod
+        mtalk <- lift $ runRedis (conn site) $ get (C8.pack $ show $ s_id t)
         case mtalk of
-            Just (Entity _ talk') -> return $ Just talk'
+            Right (Just talk') -> return $ decodeStrict talk'
             _                    -> do
-                talk' <- liftIO $ queryTalk (s_id t)
+                talk' <- liftIO $ queryTalk $ s_id t
                 case talk' of
                     Nothing -> return Nothing
                     Just talk -> do
                         dbtalk <- liftIO $ marshal talk
-                        runDB $ insertUnique dbtalk
+                        lift $ runRedis (conn site) $
+                            set (C8.pack $ show $ s_id t)
+                                (L.toStrict $ encode dbtalk)
                         return $ Just dbtalk
 
-    let talks = flip map (catMaybes dbtalks) $ \t ->
-                t { talkLink = rewriteUrl $ talkLink t }
+    let talks = catMaybes dbtalks
+    -- let talks = flip map (catMaybes dbtalks) $ \t ->
+    --             t { talkLink = rewriteUrl $ talkLink t }
 
     defaultLayout $ do
         $(widgetFile "topbar")
@@ -199,14 +212,17 @@ getDownloadR = do
     type' <- lookupGetParam "type"
     case (tid', type') of
          (Just tid, Just type_) -> do
-             (Entity _ talk) <- runDB $ getBy404 (UniqueTalk $ read $ T.unpack tid)
+             site <- getYesod
+             (Right (Just talk')) <- lift $ runRedis (conn site) $
+                get (C8.pack $ T.unpack tid)
+             let talk = fromJust $ decodeStrict talk'
              path <- case type_ of
                 "srt" -> liftIO $ toSub $
-                    Subtitle tid (talkSlug talk) lang (talkMediaSlug talk) (talkMediaPad talk) SRT
+                    Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) SRT
                 "txt" -> liftIO $ toSub $
-                    Subtitle tid (talkSlug talk) lang (talkMediaSlug talk) (talkMediaPad talk) TXT
+                    Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) TXT
                 "lrc" -> liftIO $ toSub $
-                    Subtitle tid (talkSlug talk) lang (talkMediaSlug talk) (talkMediaPad talk) LRC
+                    Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) LRC
                 _     -> return Nothing
              case path of
                   Just p -> do
@@ -226,9 +242,12 @@ getWatchR = do
     lang <- lookupGetParams "lang"
     case tid' of
         Just tid -> do
-            (Entity _ talk) <- runDB $ getBy404 (UniqueTalk $ read $ T.unpack tid)
-            void $ liftIO $ toSub $
-                Subtitle tid (talkSlug talk) lang (talkMediaSlug talk) (talkMediaPad talk) VTT
+            site <- getYesod
+            (Right (Just talk')) <- lift $ runRedis (conn site) $
+               get (C8.pack $ T.unpack tid)
+            let talk = fromJust $ decodeStrict talk'
+            lift $ toSub $
+                Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) VTT
             let dataLang = T.intercalate "." lang
             defaultLayout $ do
                 addScript $ StaticR jwplayer_jwplayer_js

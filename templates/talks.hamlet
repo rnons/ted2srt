@@ -1,12 +1,12 @@
-<div #main data-tid=#{caId talk}>
-  <div .talk title="#{caName talk}">
+<div #main data-tid=#{tid}>
+  <div .talk title="#{name dbtalk}">
     <div .title>
-      <a href="#{tedTalkUrl $ caSlug talk}">#{caName talk}
+      <a href="#{tedTalkUrl $ slug dbtalk}">#{name dbtalk}
     <div .img>
-      <a href="#{tedTalkUrl $ caSlug talk}">
-        <img src="#{img113x85 $ caImage talk}">
+      <a href="#{tedTalkUrl $ slug dbtalk}">
+        <img src="#{img113x85 $ image dbtalk}">
     <div .intro>
-      <span>#{preEscapedText $ caDescription talk}
+      <span>#{preEscapedText $ description dbtalk}
   <fieldset #srt>
     <legend>Available Subtitles
     $if null $ caLanguages talk

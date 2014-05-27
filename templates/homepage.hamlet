@@ -7,6 +7,6 @@
   <div #feature>
     $forall talk <- talks
       <div .tile>
-        <a href="@{TalksR $ talkLink talk}">
-          <img src="#{talkImage talk}">
-          <div #title>#{talkName talk}
+        <a href="@{TalksR $ slug talk}">
+          <img src="#{image talk}">
+          <div #title>#{name talk}

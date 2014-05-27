@@ -1,13 +1,13 @@
 <div .search>
   $if null talks
       Nothing found!
-  $else 
+  $else
     $forall t <- talks
       <div .talk>
         <div .title>
-          <a href="@{TalksR $ talkLink t}">#{talkName t}
+          <a href="@{TalksR $ slug t}">#{name t}
         <div .img>
-          <a href="@{TalksR $ talkLink t}">
-            <img src="#{img113x85 $ talkImage t}">
+          <a href="@{TalksR $ slug t}">
+            <img src="#{img113x85 $ image t}">
         <div .intro>
-          <span>#{preEscapedText $ talkDescription t}
+          <span>#{preEscapedText $ description t}
