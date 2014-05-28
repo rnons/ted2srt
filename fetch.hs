@@ -21,24 +21,25 @@ main = do
     let cursor = fromDocument $ parseLBS res
         tids = take limit (parseTids cursor)
 
-    runRedis conn $ do
-        del [key]
-        rpush key tids
+    runRedis conn $ del [key] >> rpush key (map (C.pack . show) tids)
     forM_ tids $ \tid -> do
-        mtalk <- runRedis conn $ get tid
+        mtalk <- runRedis conn $ get (C.pack $ show tid)
         case mtalk of
             Right (Just _) -> return ()
-            _                 -> do
-                talk' <- liftIO $ queryTalk $ read $ C.unpack tid
+            Right Nothing  -> do
+                talk' <- liftIO $ queryTalk tid
                 case talk' of
                     Nothing -> return ()
                     Just talk -> do
                         dbtalk <- liftIO $ marshal talk
-                        void $ runRedis conn $ set tid (L.toStrict $ encode dbtalk)
+                        void $ runRedis conn $ set (C.pack $ show tid) 
+                                                   (L.toStrict $ encode dbtalk)
+            Left err        -> error $ show err
   where
     key = "latest"
     limit = 5
     rurl = "http://feeds.feedburner.com/tedtalks_video"
     -- 105 tids
-    parseTids cur = map (C.pack . T.unpack) $ cur $// element "jwplayer:talkId"
-                                                  &// content
+    parseTids :: Cursor -> [Int]
+    parseTids cur = map (read . T.unpack) $ cur $// element "jwplayer:talkId"
+                                                &// content
