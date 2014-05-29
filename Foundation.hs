@@ -10,10 +10,11 @@ import           Control.Monad (forM, when)
 import           Data.Aeson (encode, decodeStrict)
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.ByteString.Lazy as L
-import           Data.Maybe (catMaybes, fromJust)
+import           Data.Maybe (catMaybes, mapMaybe, fromJust)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
+import           Database.Redis hiding (decode)
 import qualified Filesystem.Path.CurrentOS as FS
 import           Prelude hiding (id)
 import           Text.Blaze.Internal (preEscapedText)
@@ -26,9 +27,6 @@ import Settings
 import Settings.StaticFiles
 import Web.TED (getTalkId, queryTalk, searchTalk, SearchTalk(..), toSub, Subtitle(..), FileType(..))
 import Handler.Util
-
-import Database.Redis hiding (decode)
-import Data.Either.Utils (fromRight)
 
 
 data Ted = Ted
@@ -101,11 +99,15 @@ getHomeR = do
             | otherwise -> redirect $ SearchR kw
         _ -> do
             site <- getYesod
-            latest <- lift $ runRedis (conn site) $ lrange "latest" 0 4
-            talksJson <- lift $ runRedis (conn site) $
-                mapM get (fromRight latest)
-            let talks = flip map talksJson $ \tj ->
-                        fromJust $ decodeStrict $ fromJust $ fromRight tj
+            emtalks <- lift $ runRedis (conn site) $ do
+                elatest <- lrange "latest" 0 4
+                case elatest of
+                    Right latest -> mget latest
+                    Left  reply   -> return $ Left reply
+            let talks = case emtalks of
+                    Right mtalks -> 
+                        mapMaybe decodeStrict $ catMaybes mtalks
+                    Left  _       -> []
             defaultLayout $ do
                 setTitle "TED2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
                 toWidgetHead [hamlet| <meta name=description content="Find out all available subtitle languages, download as plain text or srt file. Watch TED talks with bilingual subtitle. TED演讲双语字幕下载。">|]
@@ -126,7 +128,7 @@ getTalksR rurl = do
                     layout tid (fromJust $ decodeStrict talk)
                                (fromJust $ decodeStrict cache)
                 _ -> do
-                    talk' <- liftIO $ queryTalk $ read $ C8.unpack tid
+                    talk' <- lift $ queryTalk $ read $ C8.unpack tid
                     case talk' of
                         Just talk -> do
                             let value = apiTalkToValue talk
@@ -137,22 +139,22 @@ getTalksR rurl = do
                             getTalksR rurl
                         Nothing   -> notFound
         _          -> do
-            mtid <- liftIO $ getTalkId $ talkUrl <> rurl
+            mtid <- lift $ getTalkId $ talkUrl <> rurl
             case mtid of
                 Just tid -> do
-                    talk' <- liftIO $ queryTalk tid
+                    talk' <- lift $ queryTalk tid
                     case talk' of
                         Nothing   -> notFound
                         Just talk -> do
-                            dbtalk <- liftIO $ marshal talk
+                            dbtalk <- lift $ marshal talk
                             lift $ runRedis (conn site) $ do
                                 set (C8.pack $ T.unpack rurl) (C8.pack $ show tid)
                                 set (C8.pack $ show tid)
                                     (L.toStrict $ encode dbtalk)
                             getTalksR rurl
-                            -- (path, _) <- liftIO $ jsonPath $ talkTid dbtalk
+                            -- (path, _) <- lift $ jsonPath $ talkTid dbtalk
                             -- let value = apiTalkToValue talk
-                            -- liftIO $ L.writeFile path $ encode value
+                            -- lift $ L.writeFile path $ encode value
                             -- layout dbtalk value
                 _         -> do
                     let msg = "ERROR: " <> talkUrl <> rurl
@@ -179,7 +181,7 @@ getTalksR rurl = do
 -- Then query DB, if not in DB, queryTalk and insert.
 getSearchR :: Text -> Handler Html
 getSearchR q = do
-    searchtalks <- liftIO $ searchTalk q
+    searchtalks <- lift $ searchTalk q
     when (null searchtalks) notFound
     dbtalks <- forM searchtalks $ \t -> do
         site <- getYesod
@@ -187,11 +189,11 @@ getSearchR q = do
         case mtalk of
             Right (Just talk') -> return $ decodeStrict talk'
             _                    -> do
-                talk' <- liftIO $ queryTalk $ s_id t
+                talk' <- lift $ queryTalk $ s_id t
                 case talk' of
                     Nothing -> return Nothing
                     Just talk -> do
-                        dbtalk <- liftIO $ marshal talk
+                        dbtalk <- lift $ marshal talk
                         lift $ runRedis (conn site) $
                             set (C8.pack $ show $ s_id t)
                                 (L.toStrict $ encode dbtalk)
@@ -217,11 +219,11 @@ getDownloadR = do
                 get (C8.pack $ T.unpack tid)
              let talk = fromJust $ decodeStrict talk'
              path <- case type_ of
-                "srt" -> liftIO $ toSub $
+                "srt" -> lift $ toSub $
                     Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) SRT
-                "txt" -> liftIO $ toSub $
+                "txt" -> lift $ toSub $
                     Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) TXT
-                "lrc" -> liftIO $ toSub $
+                "lrc" -> lift $ toSub $
                     Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) LRC
                 _     -> return Nothing
              case path of
