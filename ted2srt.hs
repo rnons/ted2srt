@@ -9,6 +9,6 @@ import Settings (staticSite)
 main :: IO ()
 main = do
     s <- staticSite
-    conn <- connect defaultConnectInfo
-    let foundation = Ted s conn
+    c <- connect defaultConnectInfo
+    let foundation = Ted s c
     warp 3000 foundation

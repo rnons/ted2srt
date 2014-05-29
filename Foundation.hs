@@ -31,7 +31,7 @@ import Handler.Util
 
 data Ted = Ted
     { getStatic :: Static
-    , conn      :: Connection
+    , connPool  :: Connection
     }
 
 mkYesod "Ted" [parseRoutes|
@@ -98,8 +98,8 @@ getHomeR = do
                 redirect $ TalksR $ T.drop (T.length talkUrl) kw
             | otherwise -> redirect $ SearchR kw
         _ -> do
-            site <- getYesod
-            emtalks <- lift $ runRedis (conn site) $ do
+            conn <- fmap connPool getYesod
+            emtalks <- lift $ runRedis conn $ do
                 elatest <- lrange "latest" 0 4
                 case elatest of
                     Right latest -> mget latest
@@ -116,13 +116,13 @@ getHomeR = do
 
 getTalksR :: Text -> Handler Html
 getTalksR rurl = do
-    site <- getYesod
-    emtid <- lift $ runRedis (conn site) $ get $ C8.pack $ T.unpack rurl
+    conn <- fmap connPool getYesod
+    emtid <- lift $ runRedis conn $ get $ C8.pack $ T.unpack rurl
 
     case emtid of
         Right (Just tid) -> do
-            mtalk <- lift $ runRedis (conn site) $ get tid
-            mcache <- lift $ runRedis (conn site) $ get ("cache:" <> tid)
+            mtalk <- lift $ runRedis conn $ get tid
+            mcache <- lift $ runRedis conn $ get ("cache:" <> tid)
             case (mtalk, mcache) of
                 (Right (Just talk), Right (Just cache)) ->
                     layout tid (fromJust $ decodeStrict talk)
@@ -132,7 +132,7 @@ getTalksR rurl = do
                     case talk' of
                         Just talk -> do
                             let value = apiTalkToValue talk
-                            lift $ runRedis (conn site) $
+                            lift $ runRedis conn $
                                 setex ("cache:" <> tid) (3600*24)
                                       (L.toStrict $ encode value)
                             -- layout dbtalk value
@@ -147,7 +147,7 @@ getTalksR rurl = do
                         Nothing   -> notFound
                         Just talk -> do
                             dbtalk <- lift $ marshal talk
-                            lift $ runRedis (conn site) $ do
+                            lift $ runRedis conn $ do
                                 set (C8.pack $ T.unpack rurl) (C8.pack $ show tid)
                                 set (C8.pack $ show tid)
                                     (L.toStrict $ encode dbtalk)
@@ -184,8 +184,8 @@ getSearchR q = do
     searchtalks <- lift $ searchTalk q
     when (null searchtalks) notFound
     dbtalks <- forM searchtalks $ \t -> do
-        site <- getYesod
-        mtalk <- lift $ runRedis (conn site) $ get (C8.pack $ show $ s_id t)
+        conn <- fmap connPool getYesod
+        mtalk <- lift $ runRedis conn $ get (C8.pack $ show $ s_id t)
         case mtalk of
             Right (Just talk') -> return $ decodeStrict talk'
             _                    -> do
@@ -194,7 +194,7 @@ getSearchR q = do
                     Nothing -> return Nothing
                     Just talk -> do
                         dbtalk <- lift $ marshal talk
-                        lift $ runRedis (conn site) $
+                        lift $ runRedis conn $
                             set (C8.pack $ show $ s_id t)
                                 (L.toStrict $ encode dbtalk)
                         return $ Just dbtalk
@@ -214,8 +214,8 @@ getDownloadR = do
     type' <- lookupGetParam "type"
     case (tid', type') of
          (Just tid, Just type_) -> do
-             site <- getYesod
-             (Right (Just talk')) <- lift $ runRedis (conn site) $
+             conn <- fmap connPool getYesod
+             (Right (Just talk')) <- lift $ runRedis conn $
                 get (C8.pack $ T.unpack tid)
              let talk = fromJust $ decodeStrict talk'
              path <- case type_ of
@@ -236,16 +236,16 @@ getDownloadR = do
                   _      -> redirect HomeR
          _                  -> redirect HomeR
 
--- Using video.js to play video/mp4 with captions.
--- https://github.com/videojs/video.js/
+-- Using jwplayer to play video/mp4 with captions.
+-- http://www.jwplayer.com
 getWatchR :: Handler Html
 getWatchR = do
     tid' <- lookupGetParam "tid"
     lang <- lookupGetParams "lang"
     case tid' of
         Just tid -> do
-            site <- getYesod
-            (Right (Just talk')) <- lift $ runRedis (conn site) $
+            conn <- fmap connPool getYesod
+            (Right (Just talk')) <- lift $ runRedis conn $
                get (C8.pack $ T.unpack tid)
             let talk = fromJust $ decodeStrict talk'
             lift $ toSub $
