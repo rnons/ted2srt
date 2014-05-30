@@ -1,4 +1,4 @@
-body 
+body
     font: normal 16px/20px sans-serif
 
 #logo_homepage
@@ -216,7 +216,7 @@ h2, h3
     .intro
         font-size: 14px
 
-    fieldset:
+    fieldset
         padding: 0
 
     #sidepane

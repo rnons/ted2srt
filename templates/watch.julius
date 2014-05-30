@@ -1,4 +1,4 @@
-window.onload = function() {
+(function() {
   'use strict';
 
   jwplayer.key='pEdpebFhzopIeu+fhGRFb3MLCfZf+0ORRz1lHA==';
@@ -31,4 +31,4 @@ window.onload = function() {
     width: '100%',
     aspectratio: '16:9'
   });
-};
+})();
