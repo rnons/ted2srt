@@ -6,6 +6,7 @@
 
 module Foundation where
 
+import           Control.Applicative((<$>), (<*>))
 import           Control.Monad (forM, when)
 import           Data.Aeson (encode, decodeStrict)
 import qualified Data.ByteString.Char8 as C8
@@ -117,12 +118,16 @@ getTalksR rurl = do
 
     case emtid of
         Right (Just tid) -> do
-            mtalk <- lift $ runRedis conn $ get tid
-            mcache <- lift $ runRedis conn $ get ("cache:" <> tid)
-            case (mtalk, mcache) of
-                (Right (Just talk), Right (Just cache)) ->
-                    layout tid (fromJust $ decodeStrict talk)
-                               (fromJust $ decodeStrict cache)
+            result <- lift $ runRedis conn $ multiExec $ do
+                t <- get tid
+                c <- get ("cache:" <> tid)
+                return $ (,) <$> t <*> c
+            case result of
+                TxSuccess (Just talk, Just cache) ->
+                    layout (read $ C8.unpack tid) 
+                           (fromJust $ decodeStrict talk)
+                           (fromJust $ decodeStrict cache)
+                TxError err -> setAndRedirect err
                 _ -> do
                     talk' <- lift $ queryTalk $ read $ C8.unpack tid
                     case talk' of
@@ -131,7 +136,6 @@ getTalksR rurl = do
                             lift $ runRedis conn $
                                 setex ("cache:" <> tid) (3600*24)
                                       (L.toStrict $ encode value)
-                            -- layout dbtalk value
                             getTalksR rurl
                         Nothing   -> notFound
         Right Nothing    -> do
@@ -143,26 +147,28 @@ getTalksR rurl = do
                         Nothing   -> notFound
                         Just talk -> do
                             dbtalk <- lift $ marshal talk
+                            let value = apiTalkToValue talk
                             lift $ runRedis conn $ multiExec $ do
                                 set (C8.pack $ T.unpack rurl) (C8.pack $ show tid)
                                 set (C8.pack $ show tid)
                                     (L.toStrict $ encode dbtalk)
-                            getTalksR rurl
-                            -- (path, _) <- lift $ jsonPath $ talkTid dbtalk
-                            -- let value = apiTalkToValue talk
-                            -- lift $ L.writeFile path $ encode value
-                            -- layout dbtalk value
+                                setex ("cache:" <> C8.pack (show tid))
+                                      (3600*24)
+                                      (L.toStrict $ encode value)
+                            layout tid dbtalk value
                 _         -> do
                     let msg = "ERROR: " <> talkUrl <> rurl
                                         <> " is not a TED talk page!"
                     setMessage $ toHtml msg
                     redirect HomeR
-        Left reply       -> do
-            let msg = "ERROR: " <> show reply
-            setMessage $ toHtml msg
-            redirect HomeR
+        Left reply       -> setAndRedirect reply
   where
-    layout tid' dbtalk talk = defaultLayout $ do
+    setAndRedirect err = do
+        let msg = "ERROR: " <> show err
+        setMessage $ toHtml msg
+        redirect HomeR
+    layout :: Int -> Talk -> TalkCache -> Handler Html
+    layout tid dbtalk talk = defaultLayout $ do
         let prefix = downloadUrl <> mSlug dbtalk
             audio = prefix <> ".mp3"
             mu = mediaUrl $ mSlug dbtalk
@@ -172,7 +178,6 @@ getTalksR rurl = do
             v320k = prefix <> ".mp4" -- equivalent to "320k"
             clickMsg = "Click to download" :: Text
             rClickMsg = "Right click to download" :: Text
-            tid = C8.unpack tid'
         setTitle $ toHtml $ name dbtalk <> " | Subtitle on ted2srt.org"
         $(widgetFile "topbar")
         $(widgetFile "talks")
