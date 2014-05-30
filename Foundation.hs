@@ -10,6 +10,7 @@ import           Control.Monad (forM, when)
 import           Data.Aeson (encode, decodeStrict)
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Foldable as F
 import           Data.Maybe (catMaybes, mapMaybe, fromJust)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
@@ -101,13 +102,8 @@ getHomeR = do
             conn <- fmap connPool getYesod
             emtalks <- lift $ runRedis conn $ do
                 elatest <- lrange "latest" 0 4
-                case elatest of
-                    Right latest -> mget latest
-                    Left  reply   -> return $ Left reply
-            let talks = case emtalks of
-                    Right mtalks -> 
-                        mapMaybe decodeStrict $ catMaybes mtalks
-                    Left  _       -> []
+                mget $ F.concat elatest
+            let talks = mapMaybe decodeStrict $ catMaybes $ F.concat emtalks
             defaultLayout $ do
                 setTitle "TED2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
                 toWidgetHead [hamlet| <meta name=description content="Find out all available subtitle languages, download as plain text or srt file. Watch TED talks with bilingual subtitle. TED演讲双语字幕下载。">|]
@@ -138,7 +134,7 @@ getTalksR rurl = do
                             -- layout dbtalk value
                             getTalksR rurl
                         Nothing   -> notFound
-        _          -> do
+        Right Nothing    -> do
             mtid <- lift $ getTalkId $ talkUrl <> rurl
             case mtid of
                 Just tid -> do
@@ -147,7 +143,7 @@ getTalksR rurl = do
                         Nothing   -> notFound
                         Just talk -> do
                             dbtalk <- lift $ marshal talk
-                            lift $ runRedis conn $ do
+                            lift $ runRedis conn $ multiExec $ do
                                 set (C8.pack $ T.unpack rurl) (C8.pack $ show tid)
                                 set (C8.pack $ show tid)
                                     (L.toStrict $ encode dbtalk)
@@ -161,6 +157,10 @@ getTalksR rurl = do
                                         <> " is not a TED talk page!"
                     setMessage $ toHtml msg
                     redirect HomeR
+        Left reply       -> do
+            let msg = "ERROR: " <> show reply
+            setMessage $ toHtml msg
+            redirect HomeR
   where
     layout tid' dbtalk talk = defaultLayout $ do
         let prefix = downloadUrl <> mSlug dbtalk
