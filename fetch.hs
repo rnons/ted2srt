@@ -21,7 +21,8 @@ main = do
     let cursor = fromDocument $ parseLBS res
         tids = take limit (parseTids cursor)
 
-    runRedis conn $ del [key] >> rpush key (map (C.pack . show) tids)
+    runRedis conn $ multiExec $ do
+        del [key] >> rpush key (map (C.pack . show) tids)
     forM_ tids $ \tid -> do
         mtalk <- runRedis conn $ get (C.pack $ show tid)
         case mtalk of
@@ -32,7 +33,7 @@ main = do
                     Nothing -> return ()
                     Just talk -> do
                         dbtalk <- liftIO $ marshal talk
-                        void $ runRedis conn $ set (C.pack $ show tid) 
+                        void $ runRedis conn $ set (C.pack $ show tid)
                                                    (L.toStrict $ encode dbtalk)
             Left err        -> error $ show err
   where
