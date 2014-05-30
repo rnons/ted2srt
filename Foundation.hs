@@ -218,28 +218,27 @@ getDownloadR = do
     lang  <- lookupGetParams "lang"
     type' <- lookupGetParam "type"
     case (tid', type') of
-         (Just tid, Just type_) -> do
-             conn <- fmap connPool getYesod
-             (Right (Just talk')) <- lift $ runRedis conn $
-                get (C8.pack $ T.unpack tid)
-             let talk = fromJust $ decodeStrict talk'
-             path <- case type_ of
-                "srt" -> lift $ toSub $
-                    Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) SRT
-                "txt" -> lift $ toSub $
-                    Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) TXT
-                "lrc" -> lift $ toSub $
-                    Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) LRC
-                _     -> return Nothing
-             case path of
-                  Just p -> do
-                    -- filename "srt/foo.srt" == "foo.srt"
-                    let fn = FS.filename $ FS.decodeString p
-                    addHeader "Content-Disposition" $
-                        T.pack ("attachment; filename=" ++ FS.encodeString fn)
-                    sendFile typePlain p
-                  _      -> redirect HomeR
-         _                  -> redirect HomeR
+        (Just tid, Just type_) -> do
+            conn <- fmap connPool getYesod
+            path <- lift $ do
+                talk <- getTalk conn (read $ T.unpack tid)
+                case type_ of
+                    "srt" -> toSub $
+                        Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) SRT
+                    "txt" -> toSub $
+                        Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) TXT
+                    "lrc" -> toSub $
+                        Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) LRC
+                    _     -> return Nothing
+            case path of
+                 Just p -> do
+                   -- filename "srt/foo.srt" == "foo.srt"
+                   let fn = FS.filename $ FS.decodeString p
+                   addHeader "Content-Disposition" $
+                       T.pack ("attachment; filename=" ++ FS.encodeString fn)
+                   sendFile typePlain p
+                 _      -> redirect HomeR
+        _                  -> redirect HomeR
 
 -- Using jwplayer to play video/mp4 with captions.
 -- http://www.jwplayer.com
@@ -250,10 +249,8 @@ getWatchR = do
     case tid' of
         Just tid -> do
             conn <- fmap connPool getYesod
-            (Right (Just talk')) <- lift $ runRedis conn $
-               get (C8.pack $ T.unpack tid)
-            let talk = fromJust $ decodeStrict talk'
-            lift $ toSub $
+            talk <- lift $ getTalk conn (read $ T.unpack tid)
+            lift $ toSub $ 
                 Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) VTT
             let dataLang = T.intercalate "." lang
             defaultLayout $ do
@@ -266,3 +263,8 @@ getAboutR = defaultLayout $ do
     $(widgetFile "topbar")
     $(widgetFile "about")
 
+getTalk :: Connection -> Int -> IO Talk
+getTalk conn tid = do
+    (Right (Just talk')) <- runRedis conn $
+       get (C8.pack $ show tid)
+    return $ fromJust $ decodeStrict talk'
