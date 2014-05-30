@@ -28,6 +28,7 @@ import           Yesod.Static
 import Settings
 import Settings.StaticFiles
 import Web.TED (getTalkId, queryTalk, searchTalk, SearchTalk(..), toSub, Subtitle(..), FileType(..))
+import qualified Web.TED as API
 import Handler.Util
 
 
@@ -124,7 +125,7 @@ getTalksR rurl = do
                 return $ (,) <$> t <*> c
             case result of
                 TxSuccess (Just talk, Just cache) ->
-                    layout (read $ C8.unpack tid) 
+                    layout (read $ C8.unpack tid)
                            (fromJust $ decodeStrict talk)
                            (fromJust $ decodeStrict cache)
                 TxError err -> setAndRedirect err
@@ -149,7 +150,8 @@ getTalksR rurl = do
                             dbtalk <- lift $ marshal talk
                             let value = apiTalkToValue talk
                             lift $ runRedis conn $ multiExec $ do
-                                set (C8.pack $ T.unpack rurl) (C8.pack $ show tid)
+                                set (C8.pack $ T.unpack $ API.slug talk)
+                                    (C8.pack $ show tid)
                                 set (C8.pack $ show tid)
                                     (L.toStrict $ encode dbtalk)
                                 setex ("cache:" <> C8.pack (show tid))
@@ -250,7 +252,7 @@ getWatchR = do
         Just tid -> do
             conn <- fmap connPool getYesod
             talk <- lift $ getTalk conn (read $ T.unpack tid)
-            lift $ toSub $ 
+            lift $ toSub $
                 Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) VTT
             let dataLang = T.intercalate "." lang
             defaultLayout $ do
