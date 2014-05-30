@@ -6,7 +6,9 @@
     return els.length === 1 ? els[0] : els;
   };
 
-  $('[data-lang="en"]').classList.add('selected');
+
+  var en = $('[data-lang="en"]');
+  if (en.length) en.classList.add('selected');
 
   $('#main').addEventListener('click', function(e) {
     var len = document.querySelectorAll('#main li.selected').length;
@@ -17,20 +19,23 @@
     }
   });
 
-  $('.download').addEventListener('click', function(e) {
-    var selected = document.querySelectorAll('#main li.selected');
-    var len = selected.length;
-    var url = '/download?tid=' + $('#main').dataset.tid + '&type=' + e.target.id;
-    if (len === 0 && e.target.id !== 'lrc') {
-      alert('No language selected');
-    } else if (len === 1) {
-      url += '&lang=' + selected[0].dataset.lang;
-    } else if (len === 2) {
-      url += '&lang=' + selected[0].dataset.lang;
-      url += '&lang=' + selected[1].dataset.lang;
-    }
-    location.href = url;
-  });
+  var download = $('.download');
+  if (download.length) {
+    download.addEventListener('click', function(e) {
+      var selected = document.querySelectorAll('#main li.selected');
+      var len = selected.length;
+      var url = '/download?tid=' + $('#main').dataset.tid + '&type=' + e.target.id;
+      if (len === 0 && e.target.id !== 'lrc') {
+        alert('No language selected');
+      } else if (len === 1) {
+        url += '&lang=' + selected[0].dataset.lang;
+      } else if (len === 2) {
+        url += '&lang=' + selected[0].dataset.lang;
+        url += '&lang=' + selected[1].dataset.lang;
+      }
+      location.href = url;
+    });
+  }
 
   $('#watch').addEventListener('click', function(e) {
     var selected = document.querySelectorAll('#main li.selected');
