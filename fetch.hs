@@ -11,7 +11,7 @@ import           Text.HTML.DOM (parseLBS)
 import           Text.XML.Cursor
 
 import Handler.Util (marshal)
-import Web.TED (queryTalk)
+import Web.TED (queryTalk, slug)
 
 
 main :: IO ()
@@ -33,8 +33,11 @@ main = do
                     Nothing -> return ()
                     Just talk -> do
                         dbtalk <- liftIO $ marshal talk
-                        void $ runRedis conn $ set (C.pack $ show tid)
-                                                   (L.toStrict $ encode dbtalk)
+                        void $ runRedis conn $ multiExec $ do
+                            set (C.pack $ T.unpack $ slug talk)
+                                (C.pack $ show tid)
+                            set (C.pack $ show tid)
+                                (L.toStrict $ encode dbtalk)
             Left err        -> error $ show err
   where
     key = "latest"
