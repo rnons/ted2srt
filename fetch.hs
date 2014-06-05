@@ -21,7 +21,7 @@ main = do
     let cursor = fromDocument $ parseLBS res
         tids = take limit (parseTids cursor)
 
-    runRedis conn $ multiExec $ do
+    runRedis conn $ multiExec $
         del [key] >> rpush key (map (C.pack . show) tids)
     forM_ tids $ \tid -> do
         mtalk <- runRedis conn $ get (C.pack $ show tid)

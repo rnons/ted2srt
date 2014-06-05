@@ -11,14 +11,12 @@ import           Control.Monad (forM, when)
 import           Data.Aeson (encode, decodeStrict)
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.ByteString.Lazy as L
-import qualified Data.Foldable as F
 import           Data.Maybe (catMaybes, mapMaybe, fromJust)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Database.Redis hiding (decode)
 import qualified Filesystem.Path.CurrentOS as FS
-import           Prelude hiding (id)
 import           Text.Blaze.Internal (preEscapedText)
 import           Text.Jasmine (minifym)
 import           Yesod hiding (get)
@@ -104,8 +102,9 @@ getHomeR = do
             conn <- fmap connPool getYesod
             emtalks <- lift $ runRedis conn $ do
                 elatest <- lrange "latest" 0 4
-                mget $ F.concat elatest
-            let talks = mapMaybe decodeStrict $ catMaybes $ F.concat emtalks
+                mget $ either (const []) id elatest
+            let talks = mapMaybe decodeStrict $ catMaybes $ 
+                            either (const [Nothing]) id emtalks
             defaultLayout $ do
                 setTitle "TED2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
                 toWidgetHead [hamlet| <meta name=description content="Find out all available subtitle languages, download as plain text or srt file. Watch TED talks with bilingual subtitle. TED演讲双语字幕下载。">|]

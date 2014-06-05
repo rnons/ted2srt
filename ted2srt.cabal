@@ -62,7 +62,7 @@ executable ted2srt
     -- other-modules:
     default-extensions: OverloadedStrings
     other-extensions:   DeriveGeneric, DeriveDataTypeable, GADTs, FlexibleContexts, TemplateHaskell, TypeFamilies, CPP, MultiParamTypeClasses, QuasiQuotes
-    build-depends:    base >= 4.7
+    build-depends:    base == 4.*
                     , aeson >= 0.7
                     , bytestring >= 0.10
                     , conduit >= 1.1
