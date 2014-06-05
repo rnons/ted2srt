@@ -80,6 +80,8 @@ instance Yesod Ted where
         $(widgetFile "footer")
     errorHandler other = defaultErrorHandler other
 
+    makeSessionBackend _ = return Nothing
+
 instance RenderMessage Ted FormMessage where
     renderMessage _ _ = defaultFormMessage
 
@@ -127,7 +129,7 @@ getTalksR rurl = do
                     layout (read $ C8.unpack tid)
                            (fromJust $ decodeStrict talk)
                            (fromJust $ decodeStrict cache)
-                TxError err -> setAndRedirect err
+                TxError _ -> redirect HomeR
                 _ -> do
                     talk' <- lift $ queryTalk $ read $ C8.unpack tid
                     case talk' of
@@ -157,17 +159,9 @@ getTalksR rurl = do
                                       (3600*24)
                                       (L.toStrict $ encode value)
                             layout tid dbtalk value
-                _         -> do
-                    let msg = "ERROR: " <> talkUrl <> rurl
-                                        <> " is not a TED talk page!"
-                    setMessage $ toHtml msg
-                    redirect HomeR
-        Left reply       -> setAndRedirect reply
+                _         -> redirect HomeR
+        Left _ -> redirect HomeR
   where
-    setAndRedirect err = do
-        let msg = "ERROR: " <> show err
-        setMessage $ toHtml msg
-        redirect HomeR
     layout :: Int -> Talk -> TalkCache -> Handler Html
     layout tid dbtalk talk = defaultLayout $ do
         let prefix = downloadUrl <> mSlug dbtalk
