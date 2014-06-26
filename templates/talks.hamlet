@@ -35,6 +35,6 @@
   $if not $ null $ caLanguages talk
     <h4>Subtitle
     <ul .download>
+      <li #lrc title="#{clickMsg}">LRC
       <li #txt title="#{clickMsg}">Text
       <li #srt title="#{clickMsg}">SRT
-      <li #lrc title="#{clickMsg}">LRC

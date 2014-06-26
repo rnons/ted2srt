@@ -1,7 +1,6 @@
-<footer>
-  <div>
-    TED2srt by #
-    <a href="https://gittip.com/rnons">
-      rnons
-    \ | #
-    <a href="@{AboutR}">about
+<footer .center>
+  TED2srt by #
+  <a href="https://gittip.com/rnons">
+    rnons
+  \ | #
+  <a href="@{AboutR}">about

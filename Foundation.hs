@@ -173,7 +173,7 @@ getTalksR rurl = do
             v320k = prefix <> ".mp4" -- equivalent to "320k"
             clickMsg = "Click to download" :: Text
             rClickMsg = "Right click to download" :: Text
-        setTitle $ toHtml $ name dbtalk <> " | Subtitle on ted2srt.org"
+        setTitle $ toHtml $ name dbtalk <> " | TED2srt"
         $(widgetFile "topbar")
         $(widgetFile "talks")
 
@@ -204,6 +204,7 @@ getSearchR q = do
     --             t { talkLink = rewriteUrl $ talkLink t }
 
     defaultLayout $ do
+        setTitle "Search results | TED2srt"
         $(widgetFile "topbar")
         $(widgetFile "search")
 
@@ -249,12 +250,14 @@ getWatchR = do
                 Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) VTT
             let dataLang = T.intercalate "." lang
             defaultLayout $ do
+                setTitle $ toHtml $ name talk <> " | TED2srt"
                 addScript $ StaticR jwplayer_jwplayer_js
                 $(widgetFile "watch")
         _             -> redirect HomeR
 
 getAboutR :: Handler Html
 getAboutR = defaultLayout $ do
+    setTitle "About | TED2srt"
     $(widgetFile "topbar")
     $(widgetFile "about")
 
