@@ -1,54 +1,41 @@
 (function() {
   'use strict';
 
-  var $ = function(s) {
-    var els = document.querySelectorAll(s);
-    return els.length === 1 ? els[0] : els;
-  };
+  var selected = [],
+      main = document.querySelector('#main'),
+      watch = document.querySelector('#watch'),
+      download = document.querySelector('.download'),
+      en = document.querySelector('[data-lang="en"]');
 
+  if (en) {
+    en.classList.add('selected');
+    selected.push('en');
+  }
 
-  var en = document.querySelector('[data-lang="en"]');
-  if (en) en.classList.add('selected');
-
-  $('#main').addEventListener('click', function(e) {
-    var len = document.querySelectorAll('#main li.selected').length;
-    if ( len < 2 ) {
+  main.addEventListener('click', function(e) {
+    var lang = e.target.dataset.lang,
+        len = selected.length,
+        index = selected.indexOf(lang);
+    if (len < 2) {
         e.target.classList.toggle('selected');
-    } else if ( len === 2) {
+        index === -1 ? selected.push(lang) : selected.splice(index, 1);
+    } else if (len === 2) {
         e.target.classList.remove('selected');
+        if (index !== -1) selected.splice(index, 1);
     }
   });
 
-  var download = document.querySelector('.download');
   if (download) {
     download.addEventListener('click', function(e) {
-      var selected = document.querySelectorAll('#main li.selected');
-      var len = selected.length;
-      var url = '/download?tid=' + $('#main').dataset.tid + '&type=' + e.target.id;
-      if (len === 0) {
-        url += '&lang=en';
-      } else if (len === 1) {
-        url += '&lang=' + selected[0].dataset.lang;
-      } else if (len === 2) {
-        url += '&lang=' + selected[0].dataset.lang;
-        url += '&lang=' + selected[1].dataset.lang;
-      }
+      var url = '/download?tid=' + main.dataset.tid + '&type=' + e.target.id;
+      url += '&lang=' + selected.join('&lang=');
       location.href = url;
     });
   }
 
-  $('#watch').addEventListener('click', function() {
-    var selected = document.querySelectorAll('#main li.selected');
-    var len = selected.length;
-    var url = '/watch?tid=' + $('#main').dataset.tid;
-    if (len === 0) {
-      url += '&lang=en';
-    } else if (len === 1) {
-      url += '&lang=' + selected[0].dataset.lang;
-    } else if (len === 2) {
-      url += '&lang=' + selected[0].dataset.lang;
-      url += '&lang=' + selected[1].dataset.lang;
-    }
+  watch.addEventListener('click', function() {
+    var url = '/watch?tid=' + main.dataset.tid;
+    url += '&lang=' + selected.join('&lang=');
     location.href= url;
   });
 })();
