@@ -59,8 +59,22 @@ data Subtitle = Subtitle
     , filetype          :: FileType
     } deriving Show
 
+availableLanguages :: [Text]
+availableLanguages =
+    [ "af", "sq", "arq", "am", "ar", "hy", "as", "ast", "az", "eu", "be", "bn"
+    , "bi", "bs", "bg", "my", "ca", "ceb", "zh-cn", "zh-tw", "zh", "ht", "hr"
+    , "cs", "da", "nl", "en", "eo", "et", "fil", "fi", "fr", "fr-ca", "gl"
+    , "ka", "de", "el", "gu", "ha", "he", "hi", "hu", "hup", "is", "id", "inh"
+    , "ga", "it", "ja", "kn", "kk", "km", "tlh", "ko", "ku", "ky", "lo", "ltg"
+    , "la", "lv", "lt", "lb", "rup", "mk", "mg", "ms", "ml", "mt", "mr", "mn"
+    , "srp", "ne", "nb", "nn", "oc", "fa", "pl", "pt", "pt-br", "ro", "ru"
+    , "sr", "sh", "szl", "si", "sk", "sl", "so", "es", "sw", "sv", "tl", "tg"
+    , "ta", "tt", "te", "th", "bo", "tr", "uk", "ur", "ug", "uz", "vi"
+    ]
+
 toSub :: Subtitle -> IO (Maybe FilePath)
 toSub sub
+    | any (`notElem` availableLanguages) lang = return Nothing
     | filetype sub == LRC = oneLrc sub
     | length lang == 1 = func sub
     | length lang == 2 = do
