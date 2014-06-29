@@ -7,6 +7,11 @@
       download = document.querySelector('.download'),
       en = document.querySelector('[data-lang="en"]');
 
+  var mkUrl = function(arr) {
+    if (arr.length === 0) return '&lang=en';
+    else return arr.map(function(i){return '&lang=' + i}).join('');
+  };
+
   if (en) {
     en.classList.add('selected');
     selected.push('en');
@@ -28,14 +33,14 @@
   if (download) {
     download.addEventListener('click', function(e) {
       var url = '/download?tid=' + main.dataset.tid + '&type=' + e.target.id;
-      url += '&lang=' + selected.join('&lang=');
+      url += mkUrl(selected);
       location.href = url;
     });
   }
 
   watch.addEventListener('click', function() {
     var url = '/watch?tid=' + main.dataset.tid;
-    url += '&lang=' + selected.join('&lang=');
+    url += mkUrl(selected);
     location.href= url;
   });
 })();
