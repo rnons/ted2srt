@@ -304,7 +304,7 @@ h2, h3
       height: 79px
       background-color: rgba(255, 43, 6, 0.9)
       color: #ffffff
-      font: bold 16px/20px sans-serif
+      font: 16px/20px sans-serif
       padding: 5px 10px
       z-index: 42
       opacity: 0

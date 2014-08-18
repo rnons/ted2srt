@@ -168,7 +168,7 @@ oneTxt sub = do
        then return $ Just path
        else do
            let rurl = T.unpack $ "http://www.ted.com/talks/" <> talkslug sub
-                               <> "/transcript?lang=" <> head (language sub)
+                               <> "/transcript?language=" <> head (language sub)
            res <- simpleHttp rurl
            let cursor = fromDocument $ parseLBS res
                con = cursor $// element "span"
