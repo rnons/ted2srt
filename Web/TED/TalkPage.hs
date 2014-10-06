@@ -2,7 +2,7 @@
 -- Parse the TED talk page to retrieve information
 
 {-# LANGUAGE OverloadedStrings  #-}
-module Web.TED.TalkPage 
+module Web.TED.TalkPage
   ( getTalkId
   , getSlugAndPad
   ) where
@@ -43,10 +43,10 @@ getSlugAndPad rurl = E.catch
 mediaSlug :: L8.ByteString -> Text
 mediaSlug body = T.pack $ last $ last r
   where
-    pat = "\"low\":\"http://download.ted.com/talks/(.+)-light.mp4" :: String
+    pat = "\"file\":\"http://download.ted.com/talks/(.+)-320k.mp4\\?apikey" :: String
     r = L8.unpack body =~ pat :: [[String]]
 
--- TED talk videos begin with different versions of TED promos. 
+-- TED talk videos begin with different versions of TED promos.
 -- To keep sync, add time delay (in milliseconds) to subtitles.
 mediaPad :: L8.ByteString -> Double
 mediaPad body = read t * 1000.0
