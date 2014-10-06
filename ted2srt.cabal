@@ -52,7 +52,7 @@ executable fetch
                     , transformers
                     , unordered-containers >= 0.2
                     , xml-conduit >= 1.2
-                    , yesod >= 1.2
+                    , yesod >= 1.4
                     , ted2srt
     ghc-options:         -Wall -fno-warn-unused-do-bind -O2
     default-language:    Haskell2010
@@ -74,8 +74,8 @@ executable ted2srt
                     , hjsmin >= 0.1
                     , html-conduit >= 1.1
                     , http-conduit >= 2.1
-                    , http-types >=0.8
-                    , lifted-base >=0.2
+                    , http-types >= 0.8
+                    , lifted-base >= 0.2
                     , old-locale
                     , regex-posix >= 0.95
                     , shakespeare >= 2.0
@@ -85,9 +85,9 @@ executable ted2srt
                     , time
                     , unordered-containers >= 0.2
                     , xml-conduit >= 1.2
-                    , yesod >= 1.2
-                    , yesod-core >= 1.2
-                    , yesod-static >=1.2
+                    , yesod >= 1.4
+                    , yesod-core >= 1.4
+                    , yesod-static >= 1.4
                     , ted2srt
   -- hs-source-dirs:
     cpp-options:         -DPRODUCTION

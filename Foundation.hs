@@ -3,6 +3,7 @@
 {-# LANGUAGE QuasiQuotes            #-}
 {-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE ViewPatterns           #-}
 
 module Foundation where
 
@@ -58,7 +59,7 @@ instance Yesod Ted where
             widget
             $(widgetFile "default")
         mmsg <- getMessage
-        giveUrlRenderer
+        withUrlRenderer
             [hamlet|
                 $doctype 5
                 <html>
@@ -105,7 +106,7 @@ getHomeR = do
             emtalks <- lift $ runRedis conn $ do
                 elatest <- lrange "latest" 0 4
                 mget $ either (const []) id elatest
-            let talks = mapMaybe decodeStrict $ catMaybes $ 
+            let talks = mapMaybe decodeStrict $ catMaybes $
                             either (const [Nothing]) id emtalks
             defaultLayout $ do
                 setTitle "TED2srt: Download bilingual subtitles of TED talks | Subtitles worth spreading"
