@@ -71,11 +71,12 @@ talkToFeedEntry RedisTalk {..} = do
     case path of
         Just path' -> do
           transcript <- T.readFile path'
-          return $ Just FeedEntry { feedEntryTitle = name
-                    , feedEntryLink  = tedTalkUrl slug
-                    , feedEntryUpdated = fromJust publishedAt
-                    , feedEntryContent = ppr transcript
-                    }
+          return $ Just FeedEntry
+              { feedEntryTitle = name
+              , feedEntryLink  = "http://ted2srt.org/talks/" <> slug
+              , feedEntryUpdated = fromJust publishedAt
+              , feedEntryContent = ppr transcript
+              }
         Nothing -> return Nothing
   where
     ppr txt = T.concat $ map (\p -> "<p>" <> p <> "</p>") (T.lines txt)
@@ -91,10 +92,11 @@ saveAsFeed tids = do
 mkFeed :: [FeedEntry] -> IO Feed
 mkFeed entries = do
     time <- getCurrentTime
-    return Feed { feedTitle = "TED talks"
-         , feedLinkSelf = "http://ted2srt.org/atom.xml"
-         , feedLinkHome = "http://ted2srt.org/atom.xml"
-         , feedAuthor = "rnons"
-         , feedUpdated = time
-         , feedEntries = entries
-         }
+    return Feed
+        { feedTitle = "TED2srt"
+        , feedLinkSelf = "http://ted2srt.org/static/atom.xml"
+        , feedLinkHome = "http://ted2srt.org"
+        , feedAuthor = "rnons"
+        , feedUpdated = time
+        , feedEntries = entries
+        }
