@@ -1,17 +1,25 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 import           Control.Monad (forM_, void)
 import           Control.Monad.IO.Class (liftIO)
-import           Data.Aeson (encode)
+import           Data.Aeson (decodeStrict, encode)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as L
+import           Data.Maybe (catMaybes, mapMaybe, fromJust)
+import           Data.Monoid ((<>))
 import qualified Data.Text as T
-import           Database.Redis
+import qualified Data.Text.IO as T
+import           Data.Time (getCurrentTime)
+import           Database.Redis ( connect, defaultConnectInfo, runRedis
+                                , multiExec, get, set, del, mget, rpush)
 import           Network.HTTP.Conduit (simpleHttp)
+import           Prelude
 import           Text.HTML.DOM (parseLBS)
+import qualified Text.XML as X
 import           Text.XML.Cursor
 
-import Handler.Util (marshal)
-import Web.TED (queryTalk, slug)
+import Handler.Util (RedisTalk(..), marshal, tedTalkUrl)
+import Web.TED hiding (content)
 
 
 type TalkId = Int
@@ -23,6 +31,7 @@ main = do
         tids = take limit (parseTids cursor)
 
     saveToRedis tids
+    X.writeFile X.def "static/atom.xml" . template =<< mkFeed =<< saveAsFeed tids
   where
     limit = 5
     rurl = "http://feeds.feedburner.com/tedtalks_video"
@@ -47,10 +56,45 @@ saveToRedis tids = do
                     Just talk -> do
                         dbtalk <- liftIO $ marshal talk
                         void $ runRedis conn $ multiExec $ do
-                            set (C.pack $ T.unpack $ slug talk)
+                            set (C.pack $ T.unpack $ Web.TED.slug talk)
                                 (C.pack $ show tid)
                             set (C.pack $ show tid)
                                 (L.toStrict $ encode dbtalk)
             Left err        -> error $ show err
   where
     key = "latest"
+
+talkToFeedEntry :: RedisTalk -> IO (Maybe FeedEntry)
+talkToFeedEntry RedisTalk {..} = do
+    path <- toSub $
+        Subtitle "" slug ["en"] mSlug mPad TXT
+    case path of
+        Just path' -> do
+          transcript <- T.readFile path'
+          return $ Just FeedEntry { feedEntryTitle = name
+                    , feedEntryLink  = tedTalkUrl slug
+                    , feedEntryUpdated = fromJust publishedAt
+                    , feedEntryContent = ppr transcript
+                    }
+        Nothing -> return Nothing
+  where
+    ppr txt = T.concat $ map (\p -> "<p>" <> p <> "</p>") (T.lines txt)
+
+saveAsFeed :: [TalkId] -> IO [FeedEntry]
+saveAsFeed tids = do
+    conn <- connect defaultConnectInfo
+    emtalks <- runRedis conn $ mget $ map (C.pack . show) tids
+    let talks = mapMaybe decodeStrict $ catMaybes $
+                either (const [Nothing]) Prelude.id emtalks
+    return . catMaybes =<< mapM talkToFeedEntry talks
+
+mkFeed :: [FeedEntry] -> IO Feed
+mkFeed entries = do
+    time <- getCurrentTime
+    return Feed { feedTitle = "TED talks"
+         , feedLinkSelf = "http://ted2srt.org/atom.xml"
+         , feedLinkHome = "http://ted2srt.org/atom.xml"
+         , feedAuthor = "rnons"
+         , feedUpdated = time
+         , feedEntries = entries
+         }
