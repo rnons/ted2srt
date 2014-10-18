@@ -9,6 +9,7 @@ module Web.TED
   -- * Re-exports
   , module Web.TED.API
   , module Web.TED.TalkPage
+  , module Web.TED.Feed
   ) where
 
 import           Control.Exception as E
@@ -32,6 +33,7 @@ import qualified Text.XML.Cursor as XC
 
 import Web.TED.API
 import Web.TED.TalkPage
+import Web.TED.Feed
 
 
 data Caption = Caption
