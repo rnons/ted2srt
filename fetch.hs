@@ -14,13 +14,26 @@ import Handler.Util (marshal)
 import Web.TED (queryTalk, slug)
 
 
+type TalkId = Int
+
 main :: IO ()
 main = do
     res <- simpleHttp rurl
-    conn <- connect defaultConnectInfo
     let cursor = fromDocument $ parseLBS res
         tids = take limit (parseTids cursor)
 
+    saveToRedis tids
+  where
+    limit = 5
+    rurl = "http://feeds.feedburner.com/tedtalks_video"
+    -- 105 tids
+    parseTids :: Cursor -> [TalkId]
+    parseTids cur = map (read . T.unpack) $ cur $// element "jwplayer:talkId"
+                                                &// content
+
+saveToRedis :: [TalkId] -> IO ()
+saveToRedis tids = do
+    conn <- connect defaultConnectInfo
     runRedis conn $ multiExec $
         del [key] >> rpush key (map (C.pack . show) tids)
     forM_ tids $ \tid -> do
@@ -41,9 +54,3 @@ main = do
             Left err        -> error $ show err
   where
     key = "latest"
-    limit = 5
-    rurl = "http://feeds.feedburner.com/tedtalks_video"
-    -- 105 tids
-    parseTids :: Cursor -> [Int]
-    parseTids cur = map (read . T.unpack) $ cur $// element "jwplayer:talkId"
-                                                &// content
