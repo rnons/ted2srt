@@ -18,7 +18,7 @@ import           Text.HTML.DOM (parseLBS)
 import qualified Text.XML as X
 import           Text.XML.Cursor
 
-import Handler.Util (RedisTalk(..), marshal, tedTalkUrl)
+import Handler.Util (RedisTalk(..), marshal)
 import Web.TED hiding (content)
 
 
