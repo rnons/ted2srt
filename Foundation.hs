@@ -163,7 +163,7 @@ getTalksR rurl = do
                 _         -> redirect HomeR
         Left _ -> redirect HomeR
   where
-    layout :: Int -> Talk -> TalkCache -> Handler Html
+    layout :: Int -> RedisTalk -> TalkCache -> Handler Html
     layout tid dbtalk talk = defaultLayout $ do
         let prefix = downloadUrl <> mSlug dbtalk
             audio = prefix <> ".mp3"
@@ -262,7 +262,7 @@ getAboutR = defaultLayout $ do
     $(widgetFile "topbar")
     $(widgetFile "about")
 
-getTalk :: Connection -> Int -> IO Talk
+getTalk :: Connection -> Int -> IO RedisTalk
 getTalk conn tid = do
     (Right (Just talk')) <- runRedis conn $
        get (C8.pack $ show tid)

@@ -5,6 +5,7 @@ module Handler.Util where
 import           Data.Aeson (FromJSON, ToJSON)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
+import           Data.Time (UTCTime)
 import qualified Data.Text as T
 import           GHC.Generics (Generic)
 import           Prelude hiding (id)
@@ -15,13 +16,14 @@ import qualified Web.TED as API
 tedTalkUrl :: Text -> Text
 tedTalkUrl s = "http://www.ted.com/talks/" <> s
 
-marshal :: API.Talk -> IO Talk
+marshal :: API.Talk -> IO RedisTalk
 marshal talk = do
     (mediaSlug, mediaPad) <- API.getSlugAndPad $ tedTalkUrl $ API.slug talk
-    return Talk { name = API.name talk
+    return RedisTalk { name = API.name talk
                 , description = API.description talk
                 , slug = API.slug talk
                 , image = API.talkImg talk
+                , publishedAt = API.published_at talk
                 , mSlug = mediaSlug
                 , mPad = mediaPad
                 }
@@ -53,16 +55,17 @@ jsonPath tid = do
     cached <- doesFileExist path
     return (path, cached)
 
-data Talk = Talk
+data RedisTalk = RedisTalk
     { name          :: Text
     , description   :: Text
     , slug          :: Text
     , image         :: Text
+    , publishedAt   :: Maybe UTCTime
     , mSlug         :: Text
     , mPad          :: Double
     } deriving (Generic, Show)
-instance FromJSON Talk
-instance ToJSON Talk
+instance FromJSON RedisTalk
+instance ToJSON RedisTalk
 
 data TalkCache = TalkCache
     { caLanguages   :: [(Text, Text)]
