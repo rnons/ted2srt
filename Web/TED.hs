@@ -176,13 +176,21 @@ oneTxt sub = do
                con = cursor $// element "span"
                             >=> attributeIs "class" "talk-transcript__para__text"
                             &// XC.content
-               txt = scanl1 (\x1 x2 -> if x2 == "\n" then if x1 == " "
-                                             then "\n\n" else " " else x2) con
+               txt = scanl1 scanFunc con
            -- Prepend the UTF-8 byte order mark to do Windows user a favor.
            withBinaryFile path WriteMode $ \h ->
                hPutStr h "\xef\xbb\xbf"
            T.appendFile path $ T.concat txt
            return $ Just path
+  where
+    -- Insert a blank line between paragraphs
+    scanFunc :: Text -> Text -> Text
+    scanFunc " " "\n" = "\n\n"
+    scanFunc _   "\n" = " "
+    scanFunc _   x2   = stripLB x2
+    -- Strip inline \n
+    stripLB :: Text -> Text
+    stripLB = T.map (\c -> if c == '\n' then ' ' else c)
 
 oneLrc :: Subtitle -> IO (Maybe FilePath)
 oneLrc sub = do
