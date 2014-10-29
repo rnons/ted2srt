@@ -5,4 +5,4 @@
   \ | #
   <a href="@{AboutR}">about
   \ | #
-  <a href="/static/atom.xml">feed
+  <a href="/feed">feed
