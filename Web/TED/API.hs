@@ -157,7 +157,7 @@ queryTalk tid = E.catch
             Left er -> error er)
     (\e -> print (e :: E.SomeException) >> return Nothing)
   where
-    rurl = "https://api.ted.com/v1/talks/" ++ show tid ++
+    rurl = "http://api.ted.com/v1/talks/" ++ show tid ++
            ".json?external=false&podcasts=true&api-key=2a9uggd876y5qua7ydghfzrq"
 
 -- | "languages": { "en": { "name": "English", "native": true } }
@@ -191,6 +191,6 @@ searchTalk q = do
         Left er -> error er
   where
     query = B8.unpack $ urlEncode True $ B8.pack $ T.unpack q
-    rurl = "https://api.ted.com/v1/search.json?q=" <> query <>
+    rurl = "http://api.ted.com/v1/search.json?q=" <> query <>
            "&categories=talks&api-key=2a9uggd876y5qua7ydghfzrq"
 
