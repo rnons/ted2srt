@@ -32,7 +32,7 @@ import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time (UTCTime)
-import           Data.Time.Format (parseTime, defaultTimeLocale)
+import           Data.Time.Format (parseTimeM, defaultTimeLocale)
 import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit (simpleHttp)
 import           Network.HTTP.Types (urlEncode)
@@ -78,7 +78,7 @@ instance FromJSON Talk where
                            v .: "speakers"
       where
         parseUTime :: String -> Maybe UTCTime
-        parseUTime = parseTime defaultTimeLocale "%Y-%m-%d %H:%M:%S"
+        parseUTime = parseTimeM True defaultTimeLocale "%Y-%m-%d %H:%M:%S"
     parseJSON _          = mzero
 
 data Image = Image
