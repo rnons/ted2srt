@@ -32,11 +32,10 @@ import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time (UTCTime)
-import           Data.Time.Format (parseTime)
+import           Data.Time.Format (parseTime, defaultTimeLocale)
 import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit (simpleHttp)
 import           Network.HTTP.Types (urlEncode)
-import           System.Locale (defaultTimeLocale)
 
 -- | Response of https://api.ted.com/v1/talks/:id.json
 data QueryResponse = QueryResponse

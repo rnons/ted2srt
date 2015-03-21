@@ -28,7 +28,7 @@ library
                     , old-locale
                     , regex-posix >= 0.95
                     , text >= 1.1
-                    , time
+                    , time >= 1.5
                     , unordered-containers >= 0.2
                     , xml-conduit >= 1.2
     ghc-options:         -Wall -fno-warn-unused-do-bind
@@ -50,7 +50,7 @@ executable fetch
                     , old-locale
                     , regex-posix >= 0.95
                     , text >= 1.1
-                    , time
+                    , time >= 1.5
                     , transformers
                     , unordered-containers >= 0.2
                     , xml-conduit >= 1.2
@@ -85,7 +85,7 @@ executable ted2srt
                     , system-filepath >= 0.4
                     , template-haskell >= 2.8
                     , text >= 1.1
-                    , time
+                    , time >= 1.5
                     , unordered-containers >= 0.2
                     , xml-conduit >= 1.2
                     , yesod >= 1.4

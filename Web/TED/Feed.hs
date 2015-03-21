@@ -12,9 +12,8 @@ module Web.TED.Feed
 import qualified Data.Map as Map
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           Data.Time (UTCTime, formatTime)
+import           Data.Time (UTCTime, formatTime, defaultTimeLocale)
 import           Text.XML
-import           System.Locale (defaultTimeLocale)
 
 
 data Feed = Feed
