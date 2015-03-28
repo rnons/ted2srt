@@ -19,14 +19,15 @@ tedTalkUrl s = "http://www.ted.com/talks/" <> s
 marshal :: API.Talk -> IO RedisTalk
 marshal talk = do
     (mediaSlug, mediaPad) <- API.getSlugAndPad $ tedTalkUrl $ API.slug talk
-    return RedisTalk { name = API.name talk
-                , description = API.description talk
-                , slug = API.slug talk
-                , image = API.talkImg talk
-                , publishedAt = API.published_at talk
-                , mSlug = mediaSlug
-                , mPad = mediaPad
-                }
+    return RedisTalk { id = API.id talk
+                     , name = API.name talk
+                     , description = API.description talk
+                     , slug = API.slug talk
+                     , image = API.talkImg talk
+                     , publishedAt = API.published_at talk
+                     , mSlug = mediaSlug
+                     , mPad = mediaPad
+                     }
 
 talkUrl, newTalkUrl :: Text
 talkUrl = "http://www.ted.com/talks/"
@@ -56,7 +57,8 @@ jsonPath tid = do
     return (path, cached)
 
 data RedisTalk = RedisTalk
-    { name          :: Text
+    { id            :: Int
+    , name          :: Text
     , description   :: Text
     , slug          :: Text
     , image         :: Text

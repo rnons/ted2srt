@@ -13,7 +13,8 @@ import           Data.Time (getCurrentTime)
 import           Database.Redis ( connect, defaultConnectInfo, runRedis
                                 , multiExec, get, set, del, mget, rpush)
 import           Network.HTTP.Conduit (simpleHttp)
-import           Prelude
+import           Prelude hiding (id)
+import qualified Prelude
 import           Text.HTML.DOM (parseLBS)
 import qualified Text.XML as X
 import           Text.XML.Cursor
