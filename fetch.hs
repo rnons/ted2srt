@@ -68,7 +68,7 @@ saveToRedis tids = do
 talkToFeedEntry :: RedisTalk -> IO (Maybe FeedEntry)
 talkToFeedEntry RedisTalk {..} = do
     path <- toSub $
-        Subtitle "" slug ["en"] mSlug mPad TXT
+        Subtitle 0 slug ["en"] mSlug mPad TXT
     case path of
         Just path' -> do
           transcript <- T.readFile path'

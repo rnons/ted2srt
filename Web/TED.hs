@@ -53,7 +53,7 @@ data FileType = SRT | VTT | TXT | LRC
     deriving (Show, Eq)
 
 data Subtitle = Subtitle
-    { talkId            :: Text
+    { talkId            :: Int
     , talkslug          :: Text
     , language          :: [Text]
     , filename           :: Text
@@ -119,7 +119,7 @@ oneSub sub = do
        then return $ Just path
        else do
            let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/"
-                     <> talkId sub <> "/lang/" <> head (language sub)
+                     <> T.pack (show $ talkId sub) <> "/lang/" <> head (language sub)
            E.catch (do
                res <- simpleHttp rurl
                let decoded = decode res :: Maybe Caption
@@ -200,7 +200,7 @@ oneLrc sub = do
        then return $ Just path
        else do
            let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/"
-                     <> talkId sub <> "/lang/en"
+                     <> T.pack (show $ talkId sub) <> "/lang/en"
            E.catch (do
                res <- simpleHttp rurl
                let decoded = decode res :: Maybe Caption
