@@ -4,7 +4,7 @@
 
 import           Control.Applicative((<$>), (<*>))
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Trans.Either (left)
+import           Control.Monad.Trans.Either (EitherT, left)
 import           Data.Aeson (encode, decodeStrict)
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.ByteString.Lazy as L
@@ -34,6 +34,9 @@ type TedApi =
   :<|> "talks" :> Capture "slug" Text :> Get '[JSON] RedisTalk
   :<|> "talks" :> Capture "tid" Int :> "subtitles" :> Capture "format" FileType :> QueryParam "lang" Text :> Get '[JSON] Text
 
+type Handler t = EitherT (Int, String) IO t
+
+getNewstH :: Connection -> Handler [RedisTalk]
 getNewstH conn = do
     emtalks <- liftIO $ runRedis conn $ do
         elatest <- lrange "latest" 0 4
@@ -42,6 +45,7 @@ getNewstH conn = do
                     either (const [Nothing]) Prelude.id emtalks
     return talks
 
+getTalkH :: Connection -> Text -> Handler RedisTalk
 getTalkH conn slug = do
     emtid <- liftIO $ runRedis conn $ get $ C8.pack $ T.unpack slug
 
@@ -88,6 +92,7 @@ getTalkH conn slug = do
                 _         -> left (404, "not found")
         Left _ -> left (404, "not found")
 
+getTalkSubtitleH :: Connection -> Int -> FileType -> Maybe Text -> Handler Text
 getTalkSubtitleH conn tid format lang = do
     path <- liftIO $ do
         talk <- getTalkFromRedis conn tid
