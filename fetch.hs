@@ -10,8 +10,9 @@ import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Time (getCurrentTime)
+import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import           Database.Redis ( connect, defaultConnectInfo, runRedis
-                                , multiExec, get, set, del, mget, rpush)
+                                , multiExec, get, set, del, mget, rpush, zadd)
 import           Network.HTTP.Conduit (simpleHttp)
 import           Prelude hiding (id)
 import qualified Prelude
@@ -61,6 +62,7 @@ saveToRedis tids = do
                                 (C.pack $ show tid)
                             set (C.pack $ show tid)
                                 (L.toStrict $ encode dbtalk)
+                            zadd "tids" [(realToFrac $ utcTimeToPOSIXSeconds $ fromJust $ publishedAt dbtalk, C.pack $ show tid)]
             Left err        -> error $ show err
   where
     key = "latest"
