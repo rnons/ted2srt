@@ -34,7 +34,7 @@ type TedApi =
   :<|> "talks" :> Capture "slug" Text :> Get '[JSON] RedisTalk
   :<|> "talks" :> Capture "tid" Int :> "subtitles" :> Capture "format" FileType :> QueryParam "lang" Text :> Get '[JSON] Text
 
-type Handler t = EitherT (Int, String) IO t
+type Handler t = EitherT ServantErr IO t
 
 getNewstH :: Connection -> Handler [RedisTalk]
 getNewstH conn = do
@@ -59,7 +59,7 @@ getTalkH conn slug = do
                 TxSuccess (Just talk, Just cache) ->
                     return (fromJust $ decodeStrict talk)
                            -- (fromJust $ decodeStrict cache)
-                TxError _ -> left (404, "not found")
+                TxError _ -> left err404
                 _ -> do
                     talk' <- liftIO $ queryTalk $ read $ C8.unpack tid
                     case talk' of
@@ -69,14 +69,14 @@ getTalkH conn slug = do
                                 setex ("cache:" <> tid) (3600*24)
                                       (L.toStrict $ encode value)
                             getTalkH conn slug
-                        Nothing   -> left (404, "not found")
+                        Nothing   -> left err404
         Right Nothing    -> do
             mtid <- liftIO $ getTalkId $ talkUrl <> slug
             case mtid of
                 Just tid -> do
                     talk' <- liftIO $ queryTalk tid
                     case talk' of
-                        Nothing   -> left (404, "not found")
+                        Nothing   -> left err404
                         Just talk -> do
                             dbtalk <- liftIO $ marshal talk
                             let value = apiTalkToValue talk
@@ -89,8 +89,8 @@ getTalkH conn slug = do
                                       (3600*24)
                                       (L.toStrict $ encode value)
                             return dbtalk
-                _         -> left (404, "not found")
-        Left _ -> left (404, "not found")
+                _         -> left err404
+        Left _ -> left err404
 
 getTalkSubtitleH :: Connection -> Int -> FileType -> Maybe Text -> Handler Text
 getTalkSubtitleH conn tid format lang = do
@@ -101,7 +101,7 @@ getTalkSubtitleH conn tid format lang = do
         Just p -> do
             text <- liftIO $ T.readFile p
             return text
-        _      -> left (404, "not found")
+        _      -> left err404
 
 getTalkFromRedis :: Connection -> Int -> IO RedisTalk
 getTalkFromRedis conn tid = do
