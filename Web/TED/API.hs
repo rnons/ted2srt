@@ -21,7 +21,7 @@ module Web.TED.API
 
 import           Control.Applicative ((<$>), (<*>))
 import qualified Control.Exception as E
-import           Control.Monad (liftM, mzero)
+import           Control.Monad (mzero)
 import           Data.Aeson
 import qualified Data.ByteString.Char8 as B8
 import           Data.Aeson.Types (defaultOptions, Options(..))
@@ -43,16 +43,26 @@ data QueryResponse = QueryResponse
     } deriving (Generic, Show)
 instance FromJSON QueryResponse
 
+newtype TEDTime = TEDTime { fromTEDTime :: UTCTime }
+
+instance FromJSON TEDTime where
+    parseJSON = withText "TEDTime" $ \t ->
+        case parseTimeM True defaultTimeLocale timeFormat (T.unpack t) of
+            Just time -> return $ TEDTime time
+            Nothing   -> fail $ "Failed to parse TED time: " ++ T.unpack t
+      where
+        timeFormat = "%Y-%m-%d %H:%M:%S"
+
 -- | Some talks (performance) has no language infomation e.g. 581.
 data Talk = Talk
     { id           :: Int
     , name         :: Text
     , description  :: Text
     , slug         :: Text
-    , recorded_at  :: Text
-    , published_at :: Maybe UTCTime
-    , updated_at   :: Text
-    , viewed_count :: Int
+    , recordedAt   :: UTCTime
+    , publishedAt  :: UTCTime
+    , updatedAt    :: UTCTime
+    , viewedCount  :: Int
     , images       :: [Image]
     , media        :: Value
     , languages    :: Maybe Value
@@ -61,24 +71,21 @@ data Talk = Talk
     , speakers     :: [Speaker]
     } deriving (Generic, Show)
 instance FromJSON Talk where
-    parseJSON (Object v) = Talk <$>
-                           v .: "id" <*>
-                           v .: "name" <*>
-                           v .: "description" <*>
-                           v .: "slug" <*>
-                           v .: "recorded_at" <*>
-                           liftM parseUTime (v .: "published_at") <*>
-                           v .: "updated_at" <*>
-                           v .: "viewed_count" <*>
-                           v .: "images" <*>
-                           v .: "media" <*>
-                           v .:? "languages" <*>
-                           v .: "tags" <*>
-                           v .: "themes" <*>
-                           v .: "speakers"
-      where
-        parseUTime :: String -> Maybe UTCTime
-        parseUTime = parseTimeM True defaultTimeLocale "%Y-%m-%d %H:%M:%S"
+    parseJSON (Object v) =
+        Talk <$> v .: "id"
+             <*> v .: "name"
+             <*> v .: "description"
+             <*> v .: "slug"
+             <*> (v .: "recorded_at" >>= return . fromTEDTime)
+             <*> (v .: "published_at" >>= return . fromTEDTime)
+             <*> (v .: "updated_at" >>= return . fromTEDTime)
+             <*> v .: "viewed_count"
+             <*> v .: "images"
+             <*> v .: "media"
+             <*> v .:? "languages"
+             <*> v .: "tags"
+             <*> v .: "themes"
+             <*> v .: "speakers"
     parseJSON _          = mzero
 
 data Image = Image
@@ -172,10 +179,10 @@ talkLanguages t =
 
 -- | Whether "audio-podcast" field is present
 talkHasAudio :: Talk -> Bool
-talkHasAudio t = 
+talkHasAudio t =
     case media t of
         Object ms -> isJust $ HM.lookup "internal" ms >>=
-                            \(Object im) -> HM.lookup "audio-podcast" im 
+                            \(Object im) -> HM.lookup "audio-podcast" im
         _         -> False
 
 -- | "images": { ["image": { "size": , "url": }] }
