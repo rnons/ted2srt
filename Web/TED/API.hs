@@ -24,7 +24,7 @@ import qualified Control.Exception as E
 import           Control.Monad (mzero)
 import           Data.Aeson
 import qualified Data.ByteString.Char8 as B8
-import           Data.Aeson.Types (defaultOptions, Options(..))
+import           Data.Aeson.Types (defaultOptions, Options(..), parseMaybe)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (sort)
 import           Data.Maybe (isJust)
@@ -52,6 +52,20 @@ instance FromJSON TEDTime where
             Nothing   -> fail $ "Failed to parse TED time: " ++ T.unpack t
       where
         timeFormat = "%Y-%m-%d %H:%M:%S"
+
+newtype Languages = Languages { fromLanguages :: [(Text, Text)] }
+
+instance FromJSON Languages where
+    parseJSON = withObject "languages" $ \langs ->
+        let langCode = HM.keys langs
+            langName = flip map (HM.elems langs) $ \lang ->
+                case parseMaybe parseLanguage lang of
+                    Just name -> name
+                    Nothing   -> "Failed"
+        in  return $ Languages $ sort $ zip langName langCode
+      where
+        parseLanguage = withObject "language" $ \lang ->
+            withText "name" return $ lang HM.! "name"
 
 -- | Some talks (performance) has no language infomation e.g. 581.
 data Talk = Talk
