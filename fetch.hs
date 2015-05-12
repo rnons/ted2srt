@@ -5,7 +5,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson (decodeStrict, encode)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as L
-import           Data.Maybe (catMaybes, mapMaybe, fromJust)
+import           Data.Maybe (catMaybes, mapMaybe)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -21,7 +21,7 @@ import qualified Text.XML as X
 import           Text.XML.Cursor
 
 import Handler.Util (RedisTalk(..), marshal)
-import Web.TED hiding (content)
+import Web.TED hiding (content, publishedAt)
 
 
 type TalkId = Int
@@ -62,7 +62,7 @@ saveToRedis tids = do
                                 (C.pack $ show tid)
                             set (C.pack $ show tid)
                                 (L.toStrict $ encode dbtalk)
-                            zadd "tids" [(realToFrac $ utcTimeToPOSIXSeconds $ fromJust $ publishedAt dbtalk, C.pack $ show tid)]
+                            zadd "tids" [(realToFrac $ utcTimeToPOSIXSeconds $ publishedAt dbtalk, C.pack $ show tid)]
             Left err        -> error $ show err
   where
     key = "latest"
@@ -77,7 +77,7 @@ talkToFeedEntry RedisTalk {..} = do
           return $ Just FeedEntry
               { feedEntryTitle = name
               , feedEntryLink  = "http://ted2srt.org/talks/" <> slug
-              , feedEntryUpdated = fromJust publishedAt
+              , feedEntryUpdated = publishedAt
               , feedEntryContent = ppr transcript
               }
         Nothing -> return Nothing

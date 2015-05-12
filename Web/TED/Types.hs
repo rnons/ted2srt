@@ -7,6 +7,7 @@ module Web.TED.Types
   , TM (..)
   , Sp (..)
   , Speaker (..)
+  , Image (..)
   , Img (..)
   , Tag (..)
   ) where

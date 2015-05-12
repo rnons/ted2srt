@@ -24,7 +24,7 @@ marshal talk = do
                      , description = API.description talk
                      , slug = API.slug talk
                      , image = API.talkImg talk
-                     , publishedAt = API.published_at talk
+                     , publishedAt = API.publishedAt talk
                      , mSlug = mediaSlug
                      , mPad = mediaPad
                      }
@@ -62,7 +62,7 @@ data RedisTalk = RedisTalk
     , description   :: Text
     , slug          :: Text
     , image         :: Text
-    , publishedAt   :: Maybe UTCTime
+    , publishedAt   :: UTCTime
     , mSlug         :: Text
     , mPad          :: Double
     } deriving (Generic, Show)
@@ -78,6 +78,6 @@ instance ToJSON TalkCache
 
 apiTalkToValue :: API.Talk -> TalkCache
 apiTalkToValue talk =
-    TalkCache { caLanguages = API.talkLanguages talk
+    TalkCache { caLanguages = API.languages talk
               , caAudio = API.talkHasAudio talk
               }

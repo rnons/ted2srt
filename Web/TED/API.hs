@@ -8,8 +8,7 @@ module Web.TED.API
   , SearchTalk (..)
   , queryTalk
   , searchTalk
-  -- , talkImg
-  -- , talkLanguages
+  , talkImg
   , talkHasAudio
   ) where
 
@@ -81,8 +80,8 @@ talkHasAudio t =
         _         -> False
 
 -- | "images": { ["image": { "size": , "url": }] }
--- talkImg :: Talk -> Text
--- talkImg t = url $ image (images t !! 1)
+talkImg :: Talk -> Text
+talkImg t = url $ image (images t !! 1)
 
 searchTalk :: Text -> IO [SearchTalk]
 searchTalk q = do
