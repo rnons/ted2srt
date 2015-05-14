@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import           Control.Applicative((<$>), (<*>))
-import           Control.Monad (forM)
+import           Control.Monad (forM, liftM)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans.Either (EitherT, left)
 import           Data.Aeson (encode, decodeStrict)
@@ -106,23 +106,22 @@ getTalkSubtitleH conn tid format lang = do
         _      -> left err404
 
 getSearchH :: Connection -> Maybe Text -> Handler [RedisTalk]
-getSearchH conn (Just q) = do
-    searchtalks <- liftIO $ API.searchTalk q
-    dbtalks <- forM searchtalks $ \t -> do
-        mtalk <- liftIO $ runRedis conn $ get (C8.pack $ show $ API.s_id t)
+getSearchH conn (Just q) = liftIO $ do
+    searchtalks <- API.searchTalk q
+    liftM catMaybes $ forM searchtalks $ \t -> do
+        mtalk <- runRedis conn $ get (C8.pack $ show $ API.s_id t)
         case mtalk of
             Right (Just talk') -> return $ decodeStrict talk'
             _                    -> do
-                talk' <- liftIO $ queryTalk $ API.s_id t
+                talk' <- queryTalk $ API.s_id t
                 case talk' of
                     Nothing -> return Nothing
                     Just talk -> do
-                        dbtalk <- liftIO $ marshal talk
-                        liftIO $ runRedis conn $
+                        dbtalk <- marshal talk
+                        runRedis conn $
                             set (C8.pack $ show $ API.s_id t)
                                 (L.toStrict $ encode dbtalk)
                         return $ Just dbtalk
-    return $ catMaybes dbtalks
 getSearchH _ Nothing = left err400
 
 getTalkFromRedis :: Connection -> Int -> IO RedisTalk
