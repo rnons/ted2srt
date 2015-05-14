@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import           Control.Applicative((<$>), (<*>))
+import           Control.Monad (forM)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans.Either (EitherT, left)
 import           Data.Aeson (encode, decodeStrict)
@@ -33,6 +34,7 @@ type TedApi =
        "newest" :> Get '[JSON] [RedisTalk]
   :<|> "talks" :> Capture "slug" Text :> Get '[JSON] RedisTalk
   :<|> "talks" :> Capture "tid" Int :> "subtitles" :> Capture "format" FileType :> QueryParam "lang" Text :> Get '[JSON] Text
+  :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [RedisTalk]
 
 type Handler t = EitherT ServantErr IO t
 
@@ -103,6 +105,26 @@ getTalkSubtitleH conn tid format lang = do
             return text
         _      -> left err404
 
+getSearchH :: Connection -> Maybe Text -> Handler [RedisTalk]
+getSearchH conn (Just q) = do
+    searchtalks <- liftIO $ API.searchTalk q
+    dbtalks <- forM searchtalks $ \t -> do
+        mtalk <- liftIO $ runRedis conn $ get (C8.pack $ show $ API.s_id t)
+        case mtalk of
+            Right (Just talk') -> return $ decodeStrict talk'
+            _                    -> do
+                talk' <- liftIO $ queryTalk $ API.s_id t
+                case talk' of
+                    Nothing -> return Nothing
+                    Just talk -> do
+                        dbtalk <- liftIO $ marshal talk
+                        liftIO $ runRedis conn $
+                            set (C8.pack $ show $ API.s_id t)
+                                (L.toStrict $ encode dbtalk)
+                        return $ Just dbtalk
+    return $ catMaybes dbtalks
+getSearchH _ Nothing = left err400
+
 getTalkFromRedis :: Connection -> Int -> IO RedisTalk
 getTalkFromRedis conn tid = do
     -- (Right (Just talk')) <- runRedis conn $
@@ -118,7 +140,11 @@ tedApi :: Proxy TedApi
 tedApi = Proxy
 
 tedServer :: Connection -> Server TedApi
-tedServer conn = getNewstH conn :<|> getTalkH conn :<|> getTalkSubtitleH conn
+tedServer conn =
+        getNewstH conn
+   :<|> getTalkH conn
+   :<|> getTalkSubtitleH conn
+   :<|> getSearchH conn
 
 app :: Connection -> Application
 app = serve tedApi . tedServer
