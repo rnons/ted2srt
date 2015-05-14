@@ -7,13 +7,14 @@ import           Control.Monad (forM, liftM)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans.Either (EitherT, left)
 import           Data.Aeson (encode, decodeStrict)
-import qualified Data.ByteString.Char8 as C8
+import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as L
 import           Data.Maybe (catMaybes, mapMaybe, fromJust, fromMaybe)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import           Database.Redis hiding (decode)
 import           Network.Wai (Application)
 import           Network.Wai.Handler.Warp (run)
@@ -49,7 +50,7 @@ getNewstH conn = do
 
 getTalkH :: Connection -> Text -> Handler RedisTalk
 getTalkH conn slug = do
-    emtid <- liftIO $ runRedis conn $ get $ C8.pack $ T.unpack slug
+    emtid <- liftIO $ runRedis conn $ get $ C.pack $ T.unpack slug
 
     case emtid of
         Right (Just tid) -> do
@@ -63,7 +64,7 @@ getTalkH conn slug = do
                            -- (fromJust $ decodeStrict cache)
                 TxError _ -> left err404
                 _ -> do
-                    talk' <- liftIO $ queryTalk $ read $ C8.unpack tid
+                    talk' <- liftIO $ queryTalk $ read $ C.unpack tid
                     case talk' of
                         Just talk -> do
                             let value = apiTalkToValue talk
@@ -83,11 +84,11 @@ getTalkH conn slug = do
                             dbtalk <- liftIO $ marshal talk
                             let value = apiTalkToValue talk
                             liftIO $ runRedis conn $ multiExec $ do
-                                set (C8.pack $ T.unpack $ API.slug talk)
-                                    (C8.pack $ show tid)
-                                set (C8.pack $ show tid)
+                                set (C.pack $ T.unpack $ API.slug talk)
+                                    (C.pack $ show tid)
+                                set (C.pack $ show tid)
                                     (L.toStrict $ encode dbtalk)
-                                setex ("cache:" <> C8.pack (show tid))
+                                setex ("cache:" <> C.pack (show tid))
                                       (3600*24)
                                       (L.toStrict $ encode value)
                             return dbtalk
@@ -109,7 +110,7 @@ getSearchH :: Connection -> Maybe Text -> Handler [RedisTalk]
 getSearchH conn (Just q) = liftIO $ do
     searchtalks <- API.searchTalk q
     liftM catMaybes $ forM searchtalks $ \t -> do
-        mtalk <- runRedis conn $ get (C8.pack $ show $ API.s_id t)
+        mtalk <- runRedis conn $ get (C.pack $ show $ API.s_id t)
         case mtalk of
             Right (Just talk') -> return $ decodeStrict talk'
             _                    -> do
@@ -118,16 +119,17 @@ getSearchH conn (Just q) = liftIO $ do
                     Nothing -> return Nothing
                     Just talk -> do
                         dbtalk <- marshal talk
-                        runRedis conn $
-                            set (C8.pack $ show $ API.s_id t)
+                        runRedis conn $ multiExec $ do
+                            set (C.pack $ show $ API.s_id t)
                                 (L.toStrict $ encode dbtalk)
+                            zadd "tids" [(realToFrac $ utcTimeToPOSIXSeconds $ publishedAt dbtalk, C.pack $ show $ API.s_id t)]
                         return $ Just dbtalk
 getSearchH _ Nothing = left err400
 
 getTalkFromRedis :: Connection -> Int -> IO RedisTalk
 getTalkFromRedis conn tid = do
     -- (Right (Just talk')) <- runRedis conn $
-    result <- runRedis conn $ get (C8.pack $ show tid)
+    result <- runRedis conn $ get (C.pack $ show tid)
     case result of
         Right (Just talk') -> do
             print talk'
