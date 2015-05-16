@@ -32,21 +32,28 @@ instance FromText FileType where
     fromText _     = Nothing
 
 type TedApi =
-       "newest" :> Get '[JSON] [RedisTalk]
+       "talks" :> QueryParam "tid" Integer :> QueryParam "limit" Integer :> Get '[JSON] [RedisTalk]
   :<|> "talks" :> Capture "slug" Text :> Get '[JSON] RedisTalk
   :<|> "talks" :> Capture "tid" Int :> "subtitles" :> Capture "format" FileType :> QueryParam "lang" Text :> Get '[JSON] Text
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [RedisTalk]
 
 type Handler t = EitherT ServantErr IO t
 
-getNewstH :: Connection -> Handler [RedisTalk]
-getNewstH conn = do
+getTalksH :: Connection -> Maybe Integer -> Maybe Integer -> Handler [RedisTalk]
+getTalksH conn mStartTid mLimit = do
     emtalks <- liftIO $ runRedis conn $ do
-        elatest <- lrange "latest" 0 4
+        emrank <- zrevrank "tids" (C.pack $ show startTid)
+        let start = maybe 0 (+ 1) (either (const Nothing) Prelude.id emrank)
+        elatest <- zrevrange "tids" start (start + limit - 1)
         mget $ either (const []) Prelude.id elatest
     let talks = mapMaybe decodeStrict $ catMaybes $
                     either (const [Nothing]) Prelude.id emtalks
     return talks
+  where
+    defaultLimit = 10
+    startTid = fromMaybe 0 mStartTid
+    limit' = fromMaybe defaultLimit mLimit
+    limit = if limit' > defaultLimit then defaultLimit else limit'
 
 getTalkH :: Connection -> Text -> Handler RedisTalk
 getTalkH conn slug = do
@@ -142,7 +149,7 @@ tedApi = Proxy
 
 tedServer :: Connection -> Server TedApi
 tedServer conn =
-        getNewstH conn
+        getTalksH conn
    :<|> getTalkH conn
    :<|> getTalkSubtitleH conn
    :<|> getSearchH conn
