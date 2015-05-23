@@ -18,6 +18,7 @@ import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import           Database.Redis hiding (decode)
 import           Network.Wai (Application)
 import           Network.Wai.Handler.Warp (run)
+import           Network.Wai.Middleware.RequestLogger (logStdout)
 import           Servant
 
 import Web.TED (FileType(..), Subtitle(..), getTalkId, queryTalk, toSub)
@@ -155,7 +156,7 @@ tedServer conn =
    :<|> getSearchH conn
 
 app :: Connection -> Application
-app = serve tedApi . tedServer
+app = logStdout . serve tedApi . tedServer
 
 main :: IO ()
 main = do
