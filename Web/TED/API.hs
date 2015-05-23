@@ -81,7 +81,7 @@ talkHasAudio t =
 
 -- | "images": { ["image": { "size": , "url": }] }
 talkImg :: Talk -> Text
-talkImg t = url $ image (images t !! 1)
+talkImg t = url $ image (images t !! 2)
 
 searchTalk :: Text -> IO [SearchTalk]
 searchTalk q = do

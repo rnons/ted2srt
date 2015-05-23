@@ -76,6 +76,13 @@ data TalkCache = TalkCache
 instance FromJSON TalkCache
 instance ToJSON TalkCache
 
+data TalkResp = TalkResp
+    { talk :: RedisTalk
+    , languages :: Maybe [(Text, Text)]
+    } deriving (Generic, Show)
+instance FromJSON TalkResp
+instance ToJSON TalkResp
+
 apiTalkToValue :: API.Talk -> TalkCache
 apiTalkToValue talk =
     TalkCache { caLanguages = API.languages talk
