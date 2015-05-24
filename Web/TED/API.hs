@@ -6,6 +6,7 @@
 module Web.TED.API
   ( Talk (..)
   , SearchTalk (..)
+  , Language (..)
   , queryTalk
   , searchTalk
   , talkImg

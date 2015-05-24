@@ -70,7 +70,7 @@ instance FromJSON RedisTalk
 instance ToJSON RedisTalk
 
 data TalkCache = TalkCache
-    { caLanguages   :: [(Text, Text)]
+    { caLanguages   :: [API.Language]
     , caAudio       :: Bool
     } deriving (Generic, Show)
 instance FromJSON TalkCache
@@ -78,7 +78,7 @@ instance ToJSON TalkCache
 
 data TalkResp = TalkResp
     { talk :: RedisTalk
-    , languages :: Maybe [(Text, Text)]
+    , languages :: Maybe [API.Language]
     } deriving (Generic, Show)
 instance FromJSON TalkResp
 instance ToJSON TalkResp

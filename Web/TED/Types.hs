@@ -1,15 +1,17 @@
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE RecordWildCards  #-}
 module Web.TED.Types
   ( Talk (..)
   , SearchTalk (..)
-  , Theme (..)
-  , TM (..)
-  , Sp (..)
-  , Speaker (..)
   , Image (..)
   , Img (..)
+  , Language (..)
   , Tag (..)
+  , Theme (..)
+  , TM (..)
+  , Speaker (..)
+  , Sp (..)
   ) where
 
 import           Control.Applicative ((<$>), (<*>))
@@ -35,7 +37,21 @@ instance FromJSON TEDTime where
       where
         timeFormat = "%Y-%m-%d %H:%M:%S"
 
-newtype Languages = Languages { fromLanguages :: [(Text, Text)] }
+data Language = Language
+    { languageName :: Text
+    , languageCode :: Text
+    } deriving (Show)
+instance FromJSON Language where
+    parseJSON (Object v) =
+        Language <$> v .: "name"
+                 <*> v .: "code"
+    parseJSON _          = mzero
+instance ToJSON Language where
+    toJSON Language{..} =
+        object [ "name" .= languageName
+               , "code" .= languageCode
+               ]
+newtype Languages = Languages { fromLanguages :: [Language] }
 
 instance FromJSON Languages where
     parseJSON = withObject "languages" $ \langs ->
@@ -44,7 +60,7 @@ instance FromJSON Languages where
                 case parseMaybe parseLanguage lang of
                     Just name -> name
                     Nothing   -> "Failed"
-        in  return $ Languages $ sort $ zip langName langCode
+        in  return $ Languages $ map (uncurry Language) $ sort $ zip langName langCode
       where
         parseLanguage = withObject "language" $ \lang ->
             withText "name" return $ lang HM.! "name"
@@ -101,7 +117,7 @@ data Talk = Talk
     , viewedCount  :: Int
     , images       :: [Image]
     , media        :: Value
-    , languages    :: [(Text, Text)]
+    , languages    :: [Language]
     , tags         :: [Tag]
     , themes       :: [Theme]
     , speakers     :: [Speaker]
