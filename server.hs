@@ -16,6 +16,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import           Database.Redis hiding (decode)
+import qualified Filesystem.Path.CurrentOS as FS
 import           Network.Wai (Application)
 import           Network.Wai.Handler.Warp (run)
 import           Network.Wai.Middleware.RequestLogger (logStdout)
@@ -36,6 +37,7 @@ type TedApi =
        "talks" :> QueryParam "tid" Integer :> QueryParam "limit" Integer :> Get '[JSON] [RedisTalk]
   :<|> "talks" :> Capture "slug" Text :> QueryParam "languages" Bool :> Get '[JSON] TalkResp
   :<|> "talks" :> Capture "tid" Int :> "subtitles" :> Capture "format" FileType :> QueryParam "lang" Text :> Get '[JSON] Text
+  :<|> "talks" :> Capture "tid" Int :> "downloads" :> "subtitles" :> Capture "format" FileType :> QueryParam "lang" Text :> Get '[PlainText] (Headers '[Header "Content-Disposition" String] Text)
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [RedisTalk]
 
 type Handler t = EitherT ServantErr IO t
@@ -119,6 +121,21 @@ getTalkSubtitleH conn tid format lang = do
             return text
         _      -> left err404
 
+downloadTalkSubtitleH :: Connection
+                      -> Int
+                      -> FileType
+                      -> Maybe Text
+                      -> Handler (Headers '[Header "Content-Disposition" String] Text)
+downloadTalkSubtitleH conn tid format lang = do
+    talk <- liftIO $ getTalkFromRedis conn tid
+    path <- liftIO $ toSub $ Subtitle tid (slug talk) [fromMaybe "en" lang] (mSlug talk) (mPad talk) format
+    case path of
+        Just p  -> do
+            let filename = FS.encodeString $ FS.filename $ FS.decodeString p
+                headerContent = "attachment; filename=" ++ filename
+            liftIO (T.readFile p) >>= return . addHeader headerContent
+        _       -> left err404
+
 getSearchH :: Connection -> Maybe Text -> Handler [RedisTalk]
 getSearchH conn (Just q) = liftIO $ do
     searchtalks <- API.searchTalk q
@@ -158,6 +175,7 @@ tedServer conn =
         getTalksH conn
    :<|> getTalkH conn
    :<|> getTalkSubtitleH conn
+   :<|> downloadTalkSubtitleH conn
    :<|> getSearchH conn
 
 app :: Connection -> Application
