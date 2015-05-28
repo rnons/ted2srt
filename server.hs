@@ -36,8 +36,8 @@ instance FromText FileType where
 type TedApi =
        "talks" :> QueryParam "tid" Integer :> QueryParam "limit" Integer :> Get '[JSON] [RedisTalk]
   :<|> "talks" :> Capture "slug" Text :> QueryParam "languages" Bool :> Get '[JSON] TalkResp
-  :<|> "talks" :> Capture "tid" Int :> "subtitles" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[JSON] Text
-  :<|> "talks" :> Capture "tid" Int :> "downloads" :> "subtitles" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] (Headers '[Header "Content-Disposition" String] Text)
+  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[JSON] Text
+  :<|> "talks" :> Capture "tid" Int :> "downloads" :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] (Headers '[Header "Content-Disposition" String] Text)
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [RedisTalk]
 
 type Handler t = EitherT ServantErr IO t
