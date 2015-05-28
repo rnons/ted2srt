@@ -1,0 +1,345 @@
+body {
+    font: normal 16px/20px sans-serif;
+}
+#logo_homepage {
+    font: bold 30px sans-serif;
+    color: rgba(255, 43, 6, 1.0);
+    margin: auto;
+    position: relative;
+    text-align: center;
+    height: 32px;
+    padding: 42px 0;
+}
+#logo {
+    font: bold 20px/32px sans-serif;
+    color: rgba(255, 43, 6, 1.0);
+    padding: 0 30px 0 0;
+    float: left;
+}
+#logo:hover {
+    color: rgba(255, 43, 6, 0.7);
+}
+#search_form_homepage {
+    margin: auto;
+    padding: 0;
+    position: relative;
+    height: 33px;
+}
+#search_form {
+    margin: auto;
+    position: relative;
+    width: 480px;
+    float: left;
+}
+#search_input {
+    background: #FFFFFF;
+    float: right;
+    right: 60px;
+    width: 364px;
+    height: 26px;
+    border: 1px solid #727272;
+    padding: 2px 7px 3px;
+    margin: 0;
+    outline: 0px none currentColor;
+}
+#search_input:focus {
+    border-color: rgba(255, 43, 6, 0.7);
+    outline-width: 0;
+}
+#search_button {
+    float: right;
+    width: 60px;
+    height: 33px;
+    padding: 0;
+    margin: 0;
+    background-color: rgba(255, 43, 6, 0.9);
+    color: #ffffff;
+    font: bold 18px monospace;
+    border: 0.5px solid #ff2b06;
+}
+#search_button:hover {
+    background-color: rgba(255, 43, 6, 0.7);
+    cursor: pointer;
+}
+.talk {
+    min-height: 100px;
+    margin: 10px 0;
+}
+.talk a {
+    color: #ff2b06;
+}
+.talk img {
+    float: left;
+    padding-right: 5px;
+}
+fieldset {
+    border: 1.5px solid #727272;
+    margin-top: 20px;
+}
+legend {
+    color: #3f3f3f;
+    font-weight: bold;
+}
+#main {
+    left: 21px;
+    right: 250px;
+    padding: 16px 16px;
+}
+#sidepane li {
+    color: #424242;
+}
+#sidepane li:hover {
+    color: #ff2b06;
+    cursor: pointer;
+}
+#main li {
+    width: 200px;
+    padding: 5px 0;
+    display: inline-block;
+}
+#main li::first-letter {
+    font-size: 120%;
+}
+#main .selected {
+    background-color: rgba(255, 43, 6, 0.9);
+    color: #fff;
+}
+a {
+    text-decoration: none;
+    color: #424242;
+}
+a:hover {
+    color: #ff2b06;
+}
+.button {
+    border: 0px;
+    width: 100px;
+    margin: 20px auto;
+    position: relative;
+    padding: 10px 16px;
+    background-color: rgba(255, 43, 6, 1.0);
+    color: #ffffff;
+    font: bold 16px sans-serif;
+    text-align: center;
+}
+.button:hover {
+    background-color: rgba(255, 43, 6, 0.8);
+    cursor: pointer;
+}
+.center {
+    text-align: center;
+}
+footer {
+    border-top: 1px solid #a2a2a2;
+    color: #727272;
+    background-color: white;
+    margin-top: 25px;
+    padding: 5px 0;
+    position: fixed;
+    width: 100%;
+    bottom: 0px;
+}
+#container {
+    margin: 10px auto;
+    width: 90%;
+}
+#container a {
+    color: #ff2b06;
+}
+#container a:hover {
+    text-decoration: underline;
+}
+#container img {
+    width: 100%;
+    max-width: 640px;
+    padding: 10px;
+}
+h2,h3 {
+    color: #3f3f3f;
+}
+#jw-wrapper {
+    width: 80%;
+    margin: 0 auto;
+    max-width: 800px;
+    min-width: 320px;
+}
+@media screen and (max-width: 767px) {
+    body {
+        min-width: 300px;
+    }
+    #logo_homepage {
+        height: 32px;
+        padding: 42px 0;
+    }
+    #search_form_homepage {
+        width: 300px;
+    }
+    #search_input {
+        width: 224px;
+    }
+    #search_form {
+        width: 300px;
+    }
+    #feature {
+        position: relative;
+        width: 80%;
+        min-width: 300px;
+        margin: 30px auto 40px;
+    }
+    .tile {
+        font-size: 14px;
+        height: 89px;
+        margin-top: 5px;
+    }
+    .tile img {
+        float: left;
+        width: 119px;
+    }
+    .tile div {
+        overflow: hidden;
+        padding-left: 10px;
+    }
+    #topbar {
+        position: relative;
+        height: 64px;
+    }
+    #logo {
+        float: none;
+    }
+    #main {
+        position: relative;
+        margin: auto;
+        padding: 10px 0 0 0;
+        left: 0;
+        right: 0;
+    }
+    .intro {
+        font-size: 14px;
+    }
+    fieldset {
+        padding: 0;
+    }
+    #sidepane {
+        position: relative;
+    }
+    #jw-wrapper {
+        width: 95%;
+    }
+}
+@media screen and (min-width: 768px) {
+    body {
+        font-size: 16px;
+        margin: 0;
+    }
+    #topbar {
+        height: 32px;
+        border-bottom: 1.5px solid #727272;
+        padding: 16px 35px;
+        box-shadow: 0 0 2px #727272;
+    }
+    #search_form_homepage {
+        width: 440px;
+    }
+    .message {
+        position: fixed;
+        width: 100%;
+        text-align: center;
+        color: red;
+    }
+    .errors {
+        color: #424242;
+        font-size: 12px;
+        font-style: italic;
+    }
+    #feature {
+        position: relative;
+        width: 480px;
+        height: 180px;
+        margin: 40px auto;
+    }
+    #feature img {
+        width: 100%;
+        height: 100%;
+    }
+    .tile {
+        position: absolute;
+    }
+    .tile:nth-child(1) {
+        left: 0px;
+        top: 0px;
+        height: 179px;
+        width: 239px;
+    }
+    .tile:nth-child(2) {
+        left: 240px;
+        top: 0px;
+        height: 89px;
+        width: 119px;
+    }
+    .tile:nth-child(3) {
+        left: 240px;
+        top: 90px;
+        height: 89px;
+        width: 119px;
+    }
+    .tile:nth-child(4) {
+        left: 360px;
+        top: 0px;
+        height: 89px;
+        width: 119px;
+    }
+    .tile:nth-child(5) {
+        left: 360px;
+        top: 90px;
+        height: 89px;
+        width: 119px;
+    }
+    #title {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 219px;
+        height: 79px;
+        background-color: rgba(255, 43, 6, 0.9);
+        color: #ffffff;
+        font: bold 16px/20px sans-serif;
+        padding: 5px 10px;
+        z-index: 42;
+        opacity: 0;
+    }
+    .tile:hover > a #title {
+        opacity: 1;
+        transition-duration: 0.4s;
+    }
+    #main {
+        position: absolute;
+    }
+    fieldset {
+        padding: 20px 40px;
+    }
+    #sidepane {
+        position: absolute;
+        border: 1px solid #727272;
+        right: 12px;
+        width: 180px;
+        padding: 12px 12px 0 32px;
+        margin-top: 46px;
+    }
+    #sidepane ul {
+        padding-left: 20px;
+    }
+    #sidepane li {
+        padding: 5px 0;
+        list-style-type: none;
+    }
+    .search {
+        width: 90%;
+        min-width: 720px;
+        margin-left: 35px;
+    }
+}
+@media screen and (min-width: 768px) and (min-height: 400px) {
+    #homepage_wrapper {
+        margin-top: 172px;
+    }
+}
