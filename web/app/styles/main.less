@@ -28,9 +28,15 @@ li {
 
 a {
   text-decoration: none;
+  color: #333;
   &:hover {
     text-decoration: underline;
+    color: @primary-red;
   }
+}
+
+p {
+  line-height: 1.6;
 }
 
 .container {
@@ -146,15 +152,36 @@ header {
   }
 }
 
-#talk {
+#talk-page {
+  h4 {
+    margin: 0;
+    padding: 5px 0 5px 10px;
+    font-size: 1rem;
+    background-color: fade(@black, 12);
+    border-bottom: @separator;
+  }
+  #talk-info {
+    padding: 0 170px 0 10px;
+    img {
+      width: 240px;
+      height: 180px;
+      float: left;
+      margin-right: 20px;
+    }
+    p {
+      min-height: 180px;
+    }
+  }
   #languages {
-    padding-right: 160px;
+    margin-right: 170px;
+    margin-left: 10px;
+    border: @border;
+    border-radius: 4px;
     li {
       cursor: pointer;
       width: 220px;
       display: inline-block;
       padding: 5px 10px;
-      font-size: 1.2rem;
       margin: 5px 10px;
       &:first-letter {
         font-size: 1.2em;
@@ -173,13 +200,10 @@ header {
       border: @border;
       border-radius: 4px;
     }
-    h4 {
-      margin: 0;
-      padding: 5px 0 5px 10px;
-      font-size: 1rem;
-    }
     li {
-      border-top: @separator;
+      &:not(:last-child) {
+        border-bottom: @separator;
+      }
       a {
         display: inline-block;
         padding: 5px 0 5px 20px;
@@ -204,9 +228,6 @@ header {
         height: 180px;
         margin-left: -260px;
         float: left;
-      }
-      p {
-        line-height: 1.6;
       }
     }
   }

@@ -31,13 +31,32 @@ var talkPageHandler = function(slug) {
   request.onload = function() {
     if (request.status >= 200 && request.status < 400) {
       var data = JSON.parse(request.responseText);
+      addTalkInfo(data.talk);
       data.languages.forEach(addLanguage);
       addVideoDownloads(data.talk.mSlug);
       addTranscriptsHandler(data.talk.id);
     }
   };
   request.send();
-  var $languages = document.querySelector('#languages ul');
+
+  var addTalkInfo = function(talk) {
+    var template = [
+      '<h3><a href="{{slug}}">{{title}}</a></h3>',
+      '<a href="{{slug}}"><img src="{{src}}"></a>',
+      '<p>{{description}}</p>',
+      ].join('\n');
+    var mkTalkSrc = function(slug) {
+      return 'https://www.ted.com/talks/' + slug;
+    };
+    document.getElementById('talk-info')
+      .innerHTML = template.replace(/{{slug}}/g, mkTalkSrc(talk.slug))
+                           .replace('{{src}}', talk.image)
+                           .replace('{{title}}', talk.name)
+                           .replace('{{description}}', talk.description);
+
+  };
+
+  var $languages = document.querySelector('#languages');
   var languageTemplate = '<li data-lang="{{code}}">{{name}}</li>';
   var addLanguage, setSelected;
   var selected = [];
@@ -131,7 +150,7 @@ var searchPageHandler = function(params) {
       '<p>{{description}}</p>',
       ].join('\n');
     var li = document.createElement('li');
-    li.innerHTML = template.replace('{{slug}}', talk.slug)
+    li.innerHTML = template.replace(/{{slug}}/g, talk.slug)
                            .replace('{{src}}', talk.image)
                            .replace('{{title}}', talk.name)
                            .replace('{{description}}', talk.description);
@@ -165,7 +184,7 @@ var routes = {
           '</form>',
         '</div>',
       '</header>',
-      '<div id="talk" class="container">',
+      '<div id="talk-page" class="container">',
         '<div id="downloads">',
           '<div id="video"></div>',
           '<div id="subtitles">',
@@ -178,7 +197,8 @@ var routes = {
             '</li></ul>',
           '</div>',
         '</div>',
-        '<div id="languages"><ul></ul></div>',
+        '<div id="talk-info"></div>',
+        '<div><ul id="languages"><h4>Languages</h4></ul></div>',
       '</div>'
       ].join('\n');
     talkPageHandler(slug);
@@ -191,7 +211,7 @@ var routes = {
       params[qs[0]] = qs[1];
     });
     $container.innerHTML = [
-      '<div id="search-page">',
+      '<div id="search-page" class="container">',
         '<ul id="result"></ul>',
       '</div>'
       ].join('\n');
