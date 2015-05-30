@@ -25,10 +25,9 @@ library
                     , html-conduit >= 1.1
                     , http-conduit >= 2.1
                     , http-types >= 0.8
-                    , old-locale
                     , regex-posix >= 0.95
                     , text >= 1.1
-                    , time >= 1.5
+                    , time
                     , unordered-containers >= 0.2
                     , xml-conduit >= 1.2
     ghc-options:         -Wall -fno-warn-unused-do-bind
@@ -47,52 +46,42 @@ executable fetch
                     , html-conduit >= 1.1
                     , http-conduit >= 2.1
                     , http-types >= 0.8
-                    , old-locale
                     , regex-posix >= 0.95
                     , text >= 1.1
-                    , time >= 1.5
+                    , time
                     , transformers
                     , unordered-containers >= 0.2
                     , xml-conduit >= 1.2
-                    , yesod >= 1.4
                     , ted2srt
     ghc-options:         -Wall -fno-warn-unused-do-bind -O2
     default-language:    Haskell2010
 
-executable ted2srt
-    main-is:            ted2srt.hs
-    -- other-modules:
+executable server
+    main-is:            server.hs
     default-extensions: OverloadedStrings
-    other-extensions:   DeriveGeneric, DeriveDataTypeable, GADTs, FlexibleContexts, TemplateHaskell, TypeFamilies, CPP, MultiParamTypeClasses, QuasiQuotes
     build-depends:    base == 4.*
                     , aeson >= 0.7
                     , bytestring >= 0.10
                     , conduit >= 1.1
                     , containers >= 0.5
                     , directory >= 1.2
-                    , blaze-markup >= 0.6
-                    , data-default >= 0.5
-                    , hamlet >= 1.2
+                    , either
                     , hedis >= 0.6
-                    , hjsmin >= 0.1
                     , html-conduit >= 1.1
                     , http-conduit >= 2.1
                     , http-types >= 0.8
-                    , lifted-base >= 0.2
-                    , old-locale
                     , regex-posix >= 0.95
-                    , shakespeare >= 2.0
-                    , system-filepath >= 0.4
-                    , template-haskell >= 2.8
+                    , servant-server >= 0.4
+                    , system-filepath
                     , text >= 1.1
-                    , time >= 1.5
+                    , time
+                    , transformers
                     , unordered-containers >= 0.2
+                    , wai
+                    , wai-extra
+                    , warp
                     , xml-conduit >= 1.2
-                    , yesod >= 1.4
-                    , yesod-core >= 1.4
-                    , yesod-static >= 1.4
                     , ted2srt
-  -- hs-source-dirs:
-    cpp-options:         -DPRODUCTION
     ghc-options:         -Wall -fno-warn-unused-do-bind -O2
     default-language:    Haskell2010
+
