@@ -211,6 +211,15 @@ var routes = {
       params[qs[0]] = qs[1];
     });
     $container.innerHTML = [
+      '<header>',
+        '<div class="container">',
+          '<div id="logo"><a href="/">:: TED -> [SRT]</a></div>',
+          '<form id="search" method="GET" action="/search">',
+            '<input type="text" name="q" required>',
+            '<input type="submit">',
+          '</form>',
+        '</div>',
+      '</header>',
       '<div id="search-page" class="container">',
         '<ul id="result"></ul>',
       '</div>'
