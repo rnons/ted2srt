@@ -70,7 +70,7 @@ var talkPageHandler = function(slug) {
   };
   var addVideoDownloads = function (mediaSlug) {
     var template = [
-      '<ul><li>',
+      '<ul><h4>Video</h4><li>',
         '<a href="{{720p}}" title="Right click to save (1280x720)" target="_blank">720p</a>',
       '</li><li>',
         '<a href="{{480p}}" title="Right click to save (854x480)" target="_blank">480p</a>',
@@ -143,7 +143,7 @@ var $container = document.getElementById('container');
 var routes = {
   '/': function() {
     $container.innerHTML = [
-      '<div id="homepage">',
+      '<div id="homepage" class="container">',
         '<div id="logo">:: TED -> [SRT]</div>',
         '<form id="search" method="GET" action="/search">',
           '<input type="text" name="q" required>',
@@ -156,17 +156,26 @@ var routes = {
   },
   '/talks/:slug': function(slug) {
     $container.innerHTML = [
-      '<div id="talk">',
+      '<header>',
+        '<div class="container">',
+          '<div id="logo"><a href="/">:: TED -> [SRT]</a></div>',
+          '<form id="search" method="GET" action="/search">',
+            '<input type="text" name="q" required>',
+            '<input type="submit">',
+          '</form>',
+        '</div>',
+      '</header>',
+      '<div id="talk" class="container">',
         '<div id="downloads">',
           '<div id="video"></div>',
           '<div id="subtitles">',
-            '<ul><li>',
-              '<a id="srt">SRT</a>',
+            '<ul><h4>Transcripts</h4><li>',
+              '<a id="srt" href="javascript:void(0)">SRT</a>',
             '</li><li>',
-              '<a id="txt">TXT</a>',
+              '<a id="txt" href="javascript:void(0)">TXT</a>',
             '</li><li>',
-              '<a id="lrc">LRC</a>',
-            '</li><ul>',
+              '<a id="lrc" href="javascript:void(0)">LRC</a>',
+            '</li></ul>',
           '</div>',
         '</div>',
         '<div id="languages"><ul></ul></div>',

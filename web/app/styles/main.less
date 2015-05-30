@@ -4,6 +4,8 @@
 @primary-black: #212121;
 @black: #000;
 @white: #fff;
+@border: 1px solid fade(@black, 26);
+@separator: 1px solid fade(@black, 12);
 
 *, *:before, *:after {
     box-sizing: border-box;
@@ -14,6 +16,10 @@ body {
   font-size: 16px;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #333;
+}
+
+ul {
+  padding: 0;
 }
 
 li {
@@ -27,9 +33,26 @@ a {
   }
 }
 
-#container {
+.container {
   width: @page-width;
   margin: auto;
+}
+
+#search {
+  input[type=text] {
+    width: 100%;
+    padding: 10px;
+    outline: none;
+    font-size: 1rem;
+    line-height: 18px;
+    border: @border;
+    &:focus {
+      border-color: @primary-red;
+    }
+  }
+  input[type=submit] {
+    display: none;
+  }
 }
 
 #homepage {
@@ -40,21 +63,8 @@ a {
     color: @primary-red;
   }
   #search {
-    width: 480px;
     margin: 40px auto 60px;
-    input[type=text] {
-      width: 100%;
-      padding: 10px;
-      outline: none;
-      font-size: 1rem;
-      border: 1px solid fade(@black, 12);
-      &:focus {
-        border-color: @primary-red;
-      }
-    }
-    input[type=submit] {
-      display: none;
-    }
+    width: 480px;
   }
   #talks {
     position: relative;
@@ -113,12 +123,32 @@ a {
   }
 }
 
+header {
+  padding: 20px;
+  border-bottom: @border;
+  .container {
+    width: 940px;
+  }
+  #logo {
+    float: left;
+    margin-right: 20px;
+    font-size: 1.4rem;
+    line-height: 40px;
+    a {
+      color: @primary-red;
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+  #search {
+    overflow: hidden;
+  }
+}
+
 #talk {
   #languages {
     padding-right: 160px;
-    ul {
-      padding: 0;
-    }
     li {
       cursor: pointer;
       width: 220px;
@@ -126,7 +156,6 @@ a {
       padding: 5px 10px;
       font-size: 1.2rem;
       margin: 5px 10px;
-      border-radius: 4px;
       &:first-letter {
         font-size: 1.2em;
       }
@@ -138,10 +167,23 @@ a {
   }
   #downloads {
     float: right;
-    width: 160px;
+    width: 140px;
+    margin: 0 10px;
+    ul {
+      border: @border;
+      border-radius: 4px;
+    }
+    h4 {
+      margin: 0;
+      padding: 5px 0 5px 10px;
+      font-size: 1rem;
+    }
     li {
-      cursor: pointer;
+      border-top: @separator;
       a {
+        display: inline-block;
+        padding: 5px 0 5px 20px;
+        width: 100%;
         text-decoration: none;
         color: @primary-black;
         &:hover {
