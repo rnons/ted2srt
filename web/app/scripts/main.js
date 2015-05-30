@@ -144,6 +144,7 @@ var routes = {
   '/': function() {
     $container.innerHTML = [
       '<div id="homepage">',
+        '<div id="logo">:: TED -> [SRT]</div>',
         '<form id="search" method="GET" action="/search">',
           '<input type="text" name="q" required>',
           '<input type="submit">',
