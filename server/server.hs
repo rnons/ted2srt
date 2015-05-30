@@ -183,5 +183,5 @@ app = logStdout . serve tedApi . tedServer
 
 main :: IO ()
 main = do
-    conn <- connect defaultConnectInfo
+    conn <- connect defaultConnectInfo { connectDatabase = 1 }
     run 3001 $ app conn

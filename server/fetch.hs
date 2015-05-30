@@ -12,7 +12,8 @@ import qualified Data.Text.IO as T
 import           Data.Time (getCurrentTime)
 import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import           Database.Redis ( connect, defaultConnectInfo, runRedis
-                                , multiExec, get, set, del, mget, rpush, zadd)
+                                , multiExec, get, set, del, mget, rpush, zadd
+                                , connectDatabase)
 import           Network.HTTP.Conduit (simpleHttp)
 import           Prelude hiding (id)
 import qualified Prelude
@@ -44,7 +45,7 @@ main = do
 
 saveToRedis :: [TalkId] -> IO ()
 saveToRedis tids = do
-    conn <- connect defaultConnectInfo
+    conn <- connect defaultConnectInfo { connectDatabase = 1 }
     runRedis conn $ multiExec $
         del [key] >> rpush key (map (C.pack . show) tids)
     forM_ tids $ \tid -> do
@@ -86,7 +87,7 @@ talkToFeedEntry RedisTalk {..} = do
 
 saveAsFeed :: [TalkId] -> IO [FeedEntry]
 saveAsFeed tids = do
-    conn <- connect defaultConnectInfo
+    conn <- connect defaultConnectInfo { connectDatabase = 1 }
     emtalks <- runRedis conn $ mget $ map (C.pack . show) tids
     let talks = mapMaybe decodeStrict $ catMaybes $
                 either (const [Nothing]) Prelude.id emtalks
