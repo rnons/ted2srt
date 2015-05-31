@@ -1,4 +1,7 @@
 /* jshint devel:true */
+/* global Router */
+(function(){
+  'use strict';
 var homepageHandler = function() {
   var request = new XMLHttpRequest();
   request.open('GET', '/api/talks', true);
@@ -57,7 +60,6 @@ var talkPageHandler = function(slug) {
   };
 
   var $languages = document.querySelector('#languages');
-  var languageTemplate = '<li data-lang="{{code}}">{{name}}</li>';
   var addLanguage, setSelected;
   var selected = [];
   setSelected = function(e) {
@@ -68,10 +70,14 @@ var talkPageHandler = function(slug) {
     index = selected.indexOf(languageCode);
     if (length < 2) {
       li.classList.toggle('selected');
-      index === -1 ? selected.push(languageCode) : selected.splice(index, 1);
+      if (index === -1) {
+        selected.push(languageCode);
+      } else {
+        selected.splice(index, 1);
+      }
     } else if (length === 2) {
       li.classList.remove('selected');
-      if (index !== -1) selected.splice(index, 1);
+      if (index !== -1) { selected.splice(index, 1); }
     }
   };
 
@@ -81,9 +87,9 @@ var talkPageHandler = function(slug) {
     li.innerHTML = language.name;
     li.addEventListener('click', setSelected);
     $languages.appendChild(li);
-  }
+  };
 
-  var downloadUrl = "http://download.ted.com/talks/";
+  var downloadUrl = 'http://download.ted.com/talks/';
   var mkVideoUrl = function(slug, quality) {
     return downloadUrl + slug + '-' + quality + '.mp4';
   };
@@ -99,7 +105,7 @@ var talkPageHandler = function(slug) {
         '<a href="{{288p}}" title="Right click to save (512x288)" target="_blank">288p</a>',
       '</li></ul>'
       ].join('\n');
-    $video = document.getElementById('video');
+    var $video = document.getElementById('video');
     $video.innerHTML = template.replace('{{720p}}', mkVideoUrl(mediaSlug, '1500k'))
                                .replace('{{480p}}', mkVideoUrl(mediaSlug, '950k'))
                                .replace('{{360p}}', mkVideoUrl(mediaSlug, '600k'))
@@ -112,11 +118,11 @@ var talkPageHandler = function(slug) {
       queryString = 'lang=en';
     } else {
       queryString = selected.map(function(code) {
-        return 'lang=' + code
-      }).join('&')
+        return 'lang=' + code;
+      }).join('&');
     }
     return '/api/talks/' + tid + '/downloads/transcripts/' + format + '?' + queryString;
-  }
+  };
 
   var addTranscriptsHandler = function(tid) {
     document.querySelector('#subtitles ul').addEventListener('click', function(e) {
@@ -155,7 +161,7 @@ var searchPageHandler = function(params) {
                            .replace('{{title}}', talk.name)
                            .replace('{{description}}', talk.description);
     $result.appendChild(li);
-  }
+  };
 };
 
 var $container = document.getElementById('container');
@@ -228,10 +234,11 @@ var routes = {
   }
 };
 
-var router = Router(routes).configure({html5history: true});
+var router = new Router(routes).configure({html5history: true});
 
 router.notfound = function() {
   console.log('not found');
 };
 
 router.init();
+})();
