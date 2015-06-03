@@ -73,35 +73,20 @@ p {
     width: 480px;
   }
   #talks {
-    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: space-between;
     width: 960px;
-    height: 360px;
+    height: 359px;
     margin: auto;
     .tile {
-      position: absolute;
+      position: relative;
       height: 179px;
       width: 239px;
       &:nth-child(1) {
-        left: 0px;
-        top: 0px;
         height: 359px;
         width: 479px;
-      }
-      &:nth-child(2) {
-        left: 480px;
-        top: 0px;
-      }
-      &:nth-child(3) {
-        left: 480px;
-        top: 180px;
-      }
-      &:nth-child(4) {
-        left: 720px;
-        top: 0px;
-      }
-      &:nth-child(5) {
-        left: 720px;
-        top: 180px;
       }
       &:hover {
         p {
