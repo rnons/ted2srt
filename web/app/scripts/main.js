@@ -45,8 +45,10 @@ var talkPageHandler = function(slug) {
   var addTalkInfo = function(talk) {
     var template = [
       '<h3><a href="{{slug}}">{{title}}</a></h3>',
-      '<a href="{{slug}}"><img src="{{src}}"></a>',
-      '<p>{{description}}</p>',
+      '<div id="talk-info-body">',
+        '<a href="{{slug}}"><img src="{{src}}"></a>',
+        '<p>{{description}}</p>',
+      '</div>'
       ].join('\n');
     var mkTalkSrc = function(slug) {
       return 'https://www.ted.com/talks/' + slug;
@@ -59,7 +61,7 @@ var talkPageHandler = function(slug) {
 
   };
 
-  var $languages = document.querySelector('#languages');
+  var $languages = document.querySelector('#languages ul');
   var addLanguage, setSelected;
   var selected = [];
   setSelected = function(e) {
@@ -191,6 +193,10 @@ var routes = {
         '</div>',
       '</header>',
       '<div id="talk-page" class="container">',
+        '<div id="main">',
+          '<div id="talk-info"></div>',
+          '<div id="languages"><ul><h4>Languages</h4></ul></div>',
+        '</div>',
         '<div id="downloads">',
           '<div id="video"></div>',
           '<div id="subtitles">',
@@ -203,8 +209,6 @@ var routes = {
             '</li></ul>',
           '</div>',
         '</div>',
-        '<div id="talk-info"></div>',
-        '<div><ul id="languages"><h4>Languages</h4></ul></div>',
       '</div>'
       ].join('\n');
     talkPageHandler(slug);
