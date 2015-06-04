@@ -12,6 +12,8 @@
 }
 
 body {
+  margin: 0;
+  padding: 8px;
   background: #fafafa;
   font-size: 16px;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -40,7 +42,9 @@ p {
 }
 
 .container {
-  width: @page-width;
+  width: 100%;
+  max-width: @page-width;
+  min-width: 320px;
   margin: auto;
 }
 
@@ -70,25 +74,15 @@ p {
   }
   #search {
     margin: 40px auto 60px;
-    width: 480px;
+    width: 100%;
+    max-width: 480px;
   }
   #talks {
     display: flex;
     flex-wrap: wrap;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 960px;
-    height: 360px;
     margin: auto;
     .tile {
       position: relative;
-      height: 178px;
-      width: 238px;
-      margin: 1px;
-      &:nth-child(1) {
-        width: 478px;
-        height: 100%;
-      }
       &:hover {
         p {
           opacity: 1;
@@ -215,6 +209,34 @@ header {
         margin-left: -260px;
         float: left;
       }
+    }
+  }
+}
+
+@media all and (min-width: 496px) {
+  #homepage {
+    #talks {
+      width: 480px;
+      flex-direction: row;
+      .tile {
+        height: 178px;
+        width: 238px;
+        margin: 1px;
+        &:nth-child(1) {
+          width: 478px;
+          height: 358px;
+        }
+      }
+    }
+  }
+}
+
+@media all and (min-width: 960px) {
+  #homepage {
+    #talks {
+      flex-direction: column;
+      width: 960px;
+      height: 360px;
     }
   }
 }
