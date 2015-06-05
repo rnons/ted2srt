@@ -138,7 +138,7 @@ header {
   display: flex;
   flex-wrap: wrap;
   > * {
-    flex: 1 1 auto;
+    flex: 1 auto;
   }
   h4 {
     margin: 0;
@@ -166,7 +166,6 @@ header {
     border-radius: 4px;
     li {
       cursor: pointer;
-      width: 220px;
       display: inline-block;
       padding: 5px 10px;
       margin: 5px 10px;
@@ -218,6 +217,17 @@ header {
   }
 }
 
+@media all and (max-width: 495px) {
+  #talk-page {
+    #languages {
+      li {
+        width: 100%;
+        margin: 0;
+      }
+    }
+  }
+}
+
 @media all and (min-width: 496px) {
   .container {
     width: 480px;
@@ -251,6 +261,11 @@ header {
         margin-right: 1em;
       }
     }
+    #languages {
+      li {
+        width: 219px;
+      }
+    }
   }
 }
 
@@ -268,8 +283,8 @@ header {
   #talk-page {
     width: 960px;
     #main {
-      flex: 3 0 60%;
-      margin-right: 5em;
+      flex: 5 0 0;
+      margin-right: 6em;
     }
     #talk-info-body {
       a {
@@ -277,6 +292,9 @@ header {
         height: 180px;
         margin-right: 1em;
       }
+    }
+    #downloads {
+      flex: 1 0 0;
     }
   }
 }
