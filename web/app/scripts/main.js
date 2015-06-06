@@ -210,6 +210,7 @@ var routes = {
               '<a id="lrc" href="javascript:void(0)">LRC</a>',
             '</li></ul>',
           '</div>',
+          '<div id="watch"><a href="/watch">▶︎ Play</a></div>',
         '</div>',
       '</div>'
       ].join('\n');
