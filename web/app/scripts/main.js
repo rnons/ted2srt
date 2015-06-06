@@ -29,11 +29,13 @@ var homepageHandler = function() {
 var talkPageHandler = function(slug) {
   var request = new XMLHttpRequest();
   var url = '/api/talks/' + slug + '?languages=true';
-  request.open('GET', url, true);
+  var talk = null;
 
+  request.open('GET', url, true);
   request.onload = function() {
     if (request.status >= 200 && request.status < 400) {
       var data = JSON.parse(request.responseText);
+      talk = data.talk;
       addTalkInfo(data.talk);
       data.languages.forEach(addLanguage);
       addVideoDownloads(data.talk.mSlug);
@@ -114,7 +116,11 @@ var talkPageHandler = function(slug) {
                                .replace('{{288p}}', mkVideoUrl(mediaSlug, '320k'));
   };
 
-  var mkTranscriptUrl = function(tid, format) {
+  var mkTranscriptUrl = function(tid, format, download) {
+    var pathSlug = '/transcripts/';
+    if (download) {
+      pathSlug += 'download/';
+    }
     var queryString = '';
     if (selected.length === 0) {
       queryString = 'lang=en';
@@ -123,16 +129,37 @@ var talkPageHandler = function(slug) {
         return 'lang=' + code;
       }).join('&');
     }
-    return '/api/talks/' + tid + '/downloads/transcripts/' + format + '?' + queryString;
+    return '/api/talks/' + tid + pathSlug + format + '?' + queryString;
   };
 
   var addTranscriptsHandler = function(tid) {
     document.querySelector('#subtitles ul').addEventListener('click', function(e) {
       if (e.target.id) {
-        window.location = mkTranscriptUrl(tid, e.target.id);
+        window.location = mkTranscriptUrl(tid, e.target.id, true);
       }
     });
   };
+
+  document.getElementById('watch').addEventListener('click', function() {
+    var template = [
+      '<video controls autoplay>',
+        '<source src="{{video_src}}" type="video/mp4">',
+        '<track kind="captions" src="{{vtt_src}}" default>',
+      '</video>',
+      ].join('\n');
+    var $playerContainer = document.getElementById('player-container');
+    $playerContainer.style.display = 'flex';
+    $playerContainer.innerHTML =
+      template.replace('{{video_src}}', mkVideoUrl(talk.mSlug, '950k'))
+              .replace('{{vtt_src}}', mkTranscriptUrl(talk.id, 'vtt', false));
+  });
+
+  document.getElementById('player-container').addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.style.display = 'none';
+      this.innerHTML = '';
+    }
+  });
 };
 
 var searchPageHandler = function(params) {
@@ -210,8 +237,10 @@ var routes = {
               '<a id="lrc" href="javascript:void(0)">LRC</a>',
             '</li></ul>',
           '</div>',
-          '<div id="watch"><a href="/watch">▶︎ Play</a></div>',
+          '<div id="watch"><a href="javascript:void(0)">▶︎ Play</a></div>',
         '</div>',
+      '</div>',
+      '<div id="player-container">',
       '</div>'
       ].join('\n');
     talkPageHandler(slug);
