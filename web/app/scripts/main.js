@@ -45,7 +45,7 @@ var talkPageHandler = function(slug) {
   var addTalkInfo = function(talk) {
     var template = [
       '<h3><a href="{{slug}}">{{title}}</a></h3>',
-      '<div id="talk-info-body">',
+      '<div class="talk-info-body">',
         '<a href="{{slug}}"><img src="{{src}}"></a>',
         '<p>{{description}}</p>',
       '</div>'
@@ -153,9 +153,11 @@ var searchPageHandler = function(params) {
   $result = document.getElementById('result');
   addSearchResult = function(talk) {
     var template = [
-      '<a href="/talks/{{slug}}"><img src="{{src}}"></a>',
       '<h3><a href="/talks/{{slug}}">{{title}}</a></h3>',
-      '<p>{{description}}</p>',
+      '<div class="talk-info-body">',
+        '<a href="/talks/{{slug}}"><img src="{{src}}"></a>',
+        '<p>{{description}}</p>',
+      '</div>'
       ].join('\n');
     var li = document.createElement('li');
     li.innerHTML = template.replace(/{{slug}}/g, talk.slug)

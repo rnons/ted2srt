@@ -134,6 +134,17 @@ header {
   }
 }
 
+.talk-info-body {
+  display: flex;
+  flex-wrap: wrap;
+  > a {
+    margin-bottom: 1em;
+  }
+  > p {
+    flex: 1;
+  }
+}
+
 #talk-page {
   display: flex;
   flex-wrap: wrap;
@@ -149,17 +160,6 @@ header {
   }
   #talk-info {
     margin-bottom: 1em;
-  }
-  #talk-info-body {
-    display: flex;
-    flex-wrap: wrap;
-    a {
-      display: block;
-      margin-bottom: 1em;
-    }
-    p {
-      flex: 1;
-    }
   }
   #languages {
     border: @border;
@@ -202,21 +202,6 @@ header {
   }
 }
 
-#search-page {
-  #result {
-    padding-left: 260px;
-    li {
-      min-height: 180px;
-      img {
-        width: 240px;
-        height: 180px;
-        margin-left: -260px;
-        float: left;
-      }
-    }
-  }
-}
-
 @media all and (max-width: 495px) {
   #talk-page {
     #languages {
@@ -252,15 +237,17 @@ header {
       text-align: center;
     }
   }
+  .talk-info-body {
+    a {
+      width: 480px;
+      height: 360px;
+    }
+    > p {
+      flex: 1 auto;
+    }
+  }
   #talk-page {
     width: 480px;
-    #talk-info-body {
-      a {
-        width: 480px;
-        height: 360px;
-        margin-right: 1em;
-      }
-    }
     #languages {
       li {
         width: 219px;
@@ -280,18 +267,21 @@ header {
       height: 360px;
     }
   }
+  .talk-info-body {
+    > a {
+      width: 240px;
+      height: 180px;
+      margin-right: 1em;
+    }
+    > p {
+      flex: 1 0;
+    }
+  }
   #talk-page {
     width: 960px;
     #main {
       flex: 5 0 0;
       margin-right: 6em;
-    }
-    #talk-info-body {
-      a {
-        width: 240px;
-        height: 180px;
-        margin-right: 1em;
-      }
     }
     #downloads {
       flex: 1 0 0;
