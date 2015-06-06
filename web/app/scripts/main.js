@@ -36,6 +36,7 @@ var talkPageHandler = function(slug) {
     if (request.status >= 200 && request.status < 400) {
       var data = JSON.parse(request.responseText);
       talk = data.talk;
+      document.title = talk.name + ' - TED2srt';
       addTalkInfo(data.talk);
       data.languages.forEach(addLanguage);
       addVideoDownloads(data.talk.mSlug);
@@ -168,8 +169,8 @@ var searchPageHandler = function(params) {
 
   request.onload = function() {
     if (request.status >= 200 && request.status < 400) {
+      document.title = params.q + ' - TED2srt search';
       var data = JSON.parse(request.responseText);
-      console.log(data);
       data.forEach(addSearchResult);
     }
   };
