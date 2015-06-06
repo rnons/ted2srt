@@ -36,8 +36,8 @@ instance FromText FileType where
 type TedApi =
        "talks" :> QueryParam "tid" Integer :> QueryParam "limit" Integer :> Get '[JSON] [RedisTalk]
   :<|> "talks" :> Capture "slug" Text :> QueryParam "languages" Bool :> Get '[JSON] TalkResp
-  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[JSON] Text
-  :<|> "talks" :> Capture "tid" Int :> "downloads" :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] (Headers '[Header "Content-Disposition" String] Text)
+  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] Text
+  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> "download" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] (Headers '[Header "Content-Disposition" String] Text)
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [RedisTalk]
 
 type Handler t = EitherT ServantErr IO t
@@ -110,15 +110,16 @@ getTalkH conn slug mWithLanguage = do
   where
     withLanguage = fromMaybe False mWithLanguage
 
+getSubtitlePath :: Connection -> Int -> FileType -> [Text] -> IO (Maybe FilePath)
+getSubtitlePath conn tid format lang = do
+    talk <- getTalkFromRedis conn tid
+    toSub $ Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) format
+
 getTalkSubtitleH :: Connection -> Int -> FileType -> [Text] -> Handler Text
 getTalkSubtitleH conn tid format lang = do
-    path <- liftIO $ do
-        talk <- getTalkFromRedis conn tid
-        toSub $ Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) format
+    path <- liftIO $ getSubtitlePath conn tid format lang
     case path of
-        Just p -> do
-            text <- liftIO $ T.readFile p
-            return text
+        Just p -> liftIO $ T.readFile p >>= return
         _      -> left err404
 
 downloadTalkSubtitleH :: Connection
@@ -127,8 +128,7 @@ downloadTalkSubtitleH :: Connection
                       -> [Text]
                       -> Handler (Headers '[Header "Content-Disposition" String] Text)
 downloadTalkSubtitleH conn tid format lang = do
-    talk <- liftIO $ getTalkFromRedis conn tid
-    path <- liftIO $ toSub $ Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) format
+    path <- liftIO $ getSubtitlePath conn tid format lang
     case path of
         Just p  -> do
             let filename = FS.encodeString $ FS.filename $ FS.decodeString p
@@ -162,7 +162,6 @@ getTalkFromRedis conn tid = do
     result <- runRedis conn $ get (C.pack $ show tid)
     case result of
         Right (Just talk') -> do
-            print talk'
             return $ fromJust $ decodeStrict talk'
         Right Nothing -> error "nothing"
         Left err -> error $ show err
