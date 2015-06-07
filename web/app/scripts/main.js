@@ -16,11 +16,20 @@ var homepageHandler = function() {
 
   var $talks = document.getElementById('talks');
   function addTalk(talk) {
-    var template = '<a href="/talks/{{slug}}"><img src="{{src}}"><p>{{title}}</p></a>';
+    var template = [
+      '<a href="/talks/{{slug}}">',
+        '<img src="{{src}}">',
+        '<div class="info">',
+          '<p class="title">{{title}}</p>',
+          '<p class="speaker">{{speaker}}</p>',
+        '</div>',
+      '</a>'
+      ].join('\n');
     var div = document.createElement('div');
     div.innerHTML = template.replace('{{slug}}', talk.slug)
                             .replace('{{src}}', talk.image)
-                            .replace('{{title}}', talk.name);
+                            .replace('{{speaker}}', talk.name.split(':')[0])
+                            .replace('{{title}}', talk.name.split(':')[1]);
     div.className = 'tile';
     $talks.appendChild(div);
   }

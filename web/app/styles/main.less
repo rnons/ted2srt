@@ -90,23 +90,22 @@ p {
     .tile {
       position: relative;
       margin: 1px;
-      &:hover {
-        p {
-          opacity: 1;
-          transition-duration: 0.4s;
-        }
-      }
-
-      p {
-        opacity: 0;
+      .info {
         position: absolute;
         bottom: 0;
-        margin: 0;
         width: 100%;
         padding: 8px 12px;
-        background-color: @primary-red;
+        background-color: fade(@black, 54);
         color: white;
-        font-size: 1.2em;
+        p {
+          margin: 0;
+          &.speaker {
+            font-size: 0.8em;
+          }
+          &.title {
+            font-weight: bold;
+          }
+        }
       }
     }
   }
@@ -253,6 +252,9 @@ header {
         &:nth-child(1) {
           width: 478px;
           height: 358px;
+          .info {
+            font-size: 1.2em;
+          }
         }
       }
     }
