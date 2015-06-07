@@ -90,6 +90,11 @@ p {
     .tile {
       position: relative;
       margin: 1px;
+      &:hover {
+        box-shadow: 0 8px 8px fade(@black, 54);
+        z-index: 7;
+      }
+
       .info {
         position: absolute;
         bottom: 0;
