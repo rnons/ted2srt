@@ -35,7 +35,7 @@ instance FromText FileType where
 
 type TedApi =
        "talks" :> QueryParam "tid" Integer :> QueryParam "limit" Integer :> Get '[JSON] [RedisTalk]
-  :<|> "talks" :> Capture "slug" Text :> QueryParam "languages" Bool :> Get '[JSON] TalkResp
+  :<|> "talks" :> Capture "slug" Text :> Get '[JSON] TalkResp
   :<|> "talks" :> Capture "tid" Int :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] Text
   :<|> "talks" :> Capture "tid" Int :> "transcripts" :> "download" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] (Headers '[Header "Content-Disposition" String] Text)
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [RedisTalk]
@@ -58,8 +58,8 @@ getTalksH conn mStartTid mLimit = do
     limit' = fromMaybe defaultLimit mLimit
     limit = if limit' > defaultLimit then defaultLimit else limit'
 
-getTalkH :: Connection -> Text -> Maybe Bool -> Handler TalkResp
-getTalkH conn slug mWithLanguage = do
+getTalkH :: Connection -> Text -> Handler TalkResp
+getTalkH conn slug = do
     emtid <- liftIO $ runRedis conn $ get $ C.pack $ T.unpack slug
 
     case emtid of
@@ -71,8 +71,7 @@ getTalkH conn slug mWithLanguage = do
             case result of
                 TxSuccess (Just talk, Just cache) ->
                     let retTalk = fromJust $ decodeStrict talk
-                        retLang = if withLanguage then caLanguages <$> decodeStrict cache
-                                                  else Nothing
+                        retLang = caLanguages <$> decodeStrict cache
                     in return $ TalkResp retTalk retLang
                 TxError _ -> left err404
                 _ -> do
@@ -83,7 +82,7 @@ getTalkH conn slug mWithLanguage = do
                             liftIO $ runRedis conn $
                                 setex ("cache:" <> tid) (3600*24)
                                       (L.toStrict $ encode value)
-                            getTalkH conn slug mWithLanguage
+                            getTalkH conn slug
                         Nothing   -> left err404
         Right Nothing    -> do
             mtid <- liftIO $ getTalkId $ talkUrl <> slug
@@ -103,12 +102,9 @@ getTalkH conn slug mWithLanguage = do
                                 setex ("cache:" <> C.pack (show tid))
                                       (3600*24)
                                       (L.toStrict $ encode value)
-                            return $ TalkResp dbtalk
-                               (if withLanguage then Just (API.languages talk) else Nothing)
+                            return $ TalkResp dbtalk (Just (API.languages talk))
                 _         -> left err404
         Left _ -> left err404
-  where
-    withLanguage = fromMaybe False mWithLanguage
 
 getSubtitlePath :: Connection -> Int -> FileType -> [Text] -> IO (Maybe FilePath)
 getSubtitlePath conn tid format lang = do
