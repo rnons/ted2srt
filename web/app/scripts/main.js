@@ -84,6 +84,7 @@ var routes = {
     homepageHandler();
   },
   '/talks/:slug': function(slug) {
+    var params = app.utils.parseQueryString();
     $container.innerHTML = [
       '<header>',
         '<div class="container">',
@@ -116,15 +117,10 @@ var routes = {
       '<div id="player-container">',
       '</div>'
       ].join('\n');
-    app.talkPageHandler(slug);
+    app.talkPageHandler(slug, params);
   },
   '/search': function() {
-    var querys = window.location.search.split('?')[1].split('&');
-    var params = {};
-    querys.forEach(function(q) {
-      var qs = q.split('=');
-      params[qs[0]] = qs[1];
-    });
+    var params = app.utils.parseQueryString();
     $container.innerHTML = [
       '<header>',
         '<div class="container">',
