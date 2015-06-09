@@ -84,7 +84,7 @@ gulp.task('serve', ['styles', 'fonts'], function () {
       },
       middleware: [
         require('connect-modrewrite')([
-          '^[^\\.]*$ /index.html [L]'
+          '!.*\.(js|css)$ /index.html [L]'
         ])
       ]
     }
