@@ -1,8 +1,13 @@
 (function() {
   'use strict';
+  var TED_URL_REGEX = /^https:\/\/www.ted.com\/talks\/(\w+)/;
 
   var app = window.app || (window.app = {});
   app.searchPageHandler = function(params) {
+    var match;
+    if (match = TED_URL_REGEX.exec(decodeURIComponent(params.q))) {
+      document.location = '/talks/' + match[1];
+    }
     var request = new XMLHttpRequest();
     request.open('GET', '/api/search?q=' + params.q, true);
 

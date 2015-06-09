@@ -104,7 +104,7 @@
   var addTranscriptsHandler = function(tid) {
     document.querySelector('#subtitles ul').addEventListener('click', function(e) {
       if (e.target.id) {
-        window.location = mkTranscriptUrl(tid, e.target.id, true);
+        document.location = mkTranscriptUrl(tid, e.target.id, true);
       }
     });
   };
@@ -134,7 +134,12 @@
 
   var app = window.app || (window.app = {});
   app.talkPageHandler = function(slug, params) {
-    var queryLangs = params.lang;
+    var queryLangs;
+    if (params) {
+      queryLangs = params.lang || [];
+    } else {
+      queryLangs = [];
+    }
     if (queryLangs instanceof Array) {
       if (queryLangs.length > 2) {
         queryLangs = queryLangs.slice(0, 2);
