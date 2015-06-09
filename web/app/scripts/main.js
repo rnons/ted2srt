@@ -35,39 +35,6 @@ var homepageHandler = function() {
   }
 };
 
-var searchPageHandler = function(params) {
-  var request = new XMLHttpRequest();
-  request.open('GET', '/api/search?q=' + params.q, true);
-
-  request.onload = function() {
-    if (request.status >= 200 && request.status < 400) {
-      document.title = params.q + ' - TED2srt search';
-      var data = JSON.parse(request.responseText);
-      data.forEach(addSearchResult);
-    }
-  };
-  request.send();
-
-  var addSearchResult;
-  var $result;
-  $result = document.getElementById('result');
-  addSearchResult = function(talk) {
-    var template = [
-      '<h3><a href="/talks/{{slug}}">{{title}}</a></h3>',
-      '<div class="talk-info-body">',
-        '<a href="/talks/{{slug}}"><img src="{{src}}"></a>',
-        '<p>{{description}}</p>',
-      '</div>'
-      ].join('\n');
-    var li = document.createElement('li');
-    li.innerHTML = template.replace(/{{slug}}/g, talk.slug)
-                           .replace('{{src}}', talk.image)
-                           .replace('{{title}}', talk.name)
-                           .replace('{{description}}', talk.description);
-    $result.appendChild(li);
-  };
-};
-
 var $container = document.getElementById('container');
 var routes = {
   '/': function() {
@@ -135,7 +102,7 @@ var routes = {
         '<ul id="result"></ul>',
       '</div>'
       ].join('\n');
-    searchPageHandler(params);
+    app.searchPageHandler(params);
   }
 };
 
