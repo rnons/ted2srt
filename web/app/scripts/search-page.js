@@ -8,6 +8,9 @@
     if (match = TED_URL_REGEX.exec(decodeURIComponent(params.q))) {
       document.location = '/talks/' + match[1];
     }
+    var $input = document.querySelector('#search input[name=q]');
+    $input.value = params.q;
+    $input.focus()
     var request = new XMLHttpRequest();
     request.open('GET', '/api/search?q=' + params.q, true);
 
