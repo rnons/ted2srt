@@ -2,10 +2,13 @@
   <ion-content>
     <ion-list>
       <ion-item ng-repeat="talk in talks"
-                class="item-thumbnail-left"
                 ng-href="#/talks/{{talk.slug}}">
-        <img ng-src="{{talk.image}}">
-        <h2>{{talk.name}}</h2>
+        <div class="Media">
+          <img class="Media-figure Image" ng-src="{{talk.image}}">
+          <div class="Media-body">
+            <h2>{{talk.name}}</h2>
+          </div>
+        </div>
       </ion-item>
     </ion-list>
   </ion-content>
