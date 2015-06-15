@@ -1,0 +1,12 @@
+<ion-view>
+  <ion-content>
+    <ion-list>
+      <ion-item ng-repeat="talk in talks"
+                class="item-thumbnail-left"
+                ng-href="#/talks/{{talk.slug}}">
+        <img ng-src="{{talk.image}}">
+        <h2>{{talk.name}}</h2>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
