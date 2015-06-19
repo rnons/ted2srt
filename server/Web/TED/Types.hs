@@ -54,9 +54,9 @@ instance ToJSON Language where
 newtype Languages = Languages { fromLanguages :: [Language] }
 
 instance FromJSON Languages where
-    parseJSON = withObject "languages" $ \langs ->
-        let langCode = HM.keys langs
-            langName = flip map (HM.elems langs) $ \lang ->
+    parseJSON (Object v) =
+        let langCode = HM.keys v
+            langName = flip map (HM.elems v) $ \lang ->
                 case parseMaybe parseLanguage lang of
                     Just name -> name
                     Nothing   -> "Failed"
@@ -64,6 +64,7 @@ instance FromJSON Languages where
       where
         parseLanguage = withObject "language" $ \lang ->
             withText "name" return $ lang HM.! "name"
+    parseJSON _ = mzero
 
 data Image = Image
     { image        :: Img
