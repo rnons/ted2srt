@@ -23,7 +23,7 @@ marshal talk = do
                      , name = API.name talk
                      , description = API.description talk
                      , slug = API.slug talk
-                     , image = API.talkImg talk
+                     , image = API.images talk
                      , publishedAt = API.publishedAt talk
                      , mSlug = mediaSlug
                      , mPad = mediaPad
@@ -61,7 +61,7 @@ data RedisTalk = RedisTalk
     , name          :: Text
     , description   :: Text
     , slug          :: Text
-    , image         :: Text
+    , image         :: API.Image
     , publishedAt   :: UTCTime
     , mSlug         :: Text
     , mPad          :: Double

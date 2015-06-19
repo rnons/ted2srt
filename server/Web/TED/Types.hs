@@ -5,7 +5,6 @@ module Web.TED.Types
   ( Talk (..)
   , SearchTalk (..)
   , Image (..)
-  , Img (..)
   , Language (..)
   , Tag (..)
   , Theme (..)
@@ -24,6 +23,7 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time (UTCTime)
 import           Data.Time.Format (parseTimeM, defaultTimeLocale)
+import qualified Data.Vector as V
 import           GHC.Generics (Generic)
 
 
@@ -36,6 +36,25 @@ instance FromJSON TEDTime where
             Nothing   -> fail $ "Failed to parse TED time: " ++ T.unpack t
       where
         timeFormat = "%Y-%m-%d %H:%M:%S"
+
+data Image = Image
+    { small :: Text
+    , medium :: Text
+    } deriving (Generic, Show)
+instance FromJSON Image
+instance ToJSON Image
+
+newtype TEDImage = TEDImage { fromTEDImage :: Image }
+
+instance FromJSON TEDImage where
+    parseJSON (Array v) =
+        let urls = V.map parseImage v
+        in  TEDImage <$> (Image <$> (urls V.! 1) <*> (urls V.! 2))
+      where
+        parseImage (Object o) =
+            o .: "image" >>= (.: "url")
+        parseImage _ = mzero
+    parseJSON _ = mzero
 
 data Language = Language
     { languageName :: Text
@@ -65,17 +84,6 @@ instance FromJSON Languages where
         parseLanguage = withObject "language" $ \lang ->
             withText "name" return $ lang HM.! "name"
     parseJSON _ = mzero
-
-data Image = Image
-    { image        :: Img
-    } deriving (Generic, Show)
-instance FromJSON Image
-
-data Img = Img
-    { size          :: Text
-    , url           :: Text
-    } deriving (Generic, Show)
-instance FromJSON Img
 
 data Tag = Tag
     { tag           :: Text
@@ -116,7 +124,7 @@ data Talk = Talk
     , publishedAt  :: UTCTime
     , updatedAt    :: UTCTime
     , viewedCount  :: Int
-    , images       :: [Image]
+    , images       :: Image
     , media        :: Value
     , languages    :: [Language]
     , tags         :: [Tag]
@@ -133,7 +141,7 @@ instance FromJSON Talk where
              <*> liftM fromTEDTime (v .: "published_at")
              <*> liftM fromTEDTime (v .: "updated_at")
              <*> v .: "viewed_count"
-             <*> v .: "images"
+             <*> liftM fromTEDImage (v .: "images")
              <*> v .: "media"
              <*> (v .: "languages" >>= return . fromLanguages)
              <*> v .: "tags"
