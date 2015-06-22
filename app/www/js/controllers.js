@@ -1,11 +1,9 @@
 angular.module('reted.controllers', [])
 
-.controller('TalksCtrl', function($scope, $http) {
-  $http.get('/api/talks')
-    .success(function (data) {
-      console.log(data);
-      $scope.talks = data;
-    });
+.controller('TalksCtrl', function($scope, $http, Talks) {
+  Talks.fetch().then(function () {
+    $scope.talks = Talks.all();
+  });
 })
 
 .controller('TalkCtrl', function($scope, $http, $stateParams) {
@@ -21,4 +19,4 @@ angular.module('reted.controllers', [])
     .then(function (response) {
       $scope.talk.transcript = '<p>' + response.data.split('\n\n').join('</p><p>') + '</p>';
     });
-})
+});

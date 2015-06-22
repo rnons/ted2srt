@@ -1,7 +1,7 @@
 // Ionic Starter App
 
 // angular.module is a global place for creating, registering and retrieving Angular modules
-angular.module('reted', ['ionic', 'reted.controllers'])
+angular.module('reted', ['ionic', 'reted.controllers', 'reted.services'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
