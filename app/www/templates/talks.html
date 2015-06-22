@@ -4,9 +4,10 @@
       <ion-item ng-repeat="talk in talks"
                 ng-href="#/talks/{{talk.slug}}">
         <div class="Media">
-          <img class="Media-figure Image" ng-src="{{talk.image}}">
+          <img class="Media-figure Image" ng-src="{{talk.images.small}}">
           <div class="Media-body">
-            <h2>{{talk.name}}</h2>
+            <h2>{{talk.name.split(':')[1]}}</h2>
+            <p>{{talk.name.split(':')[0]}}</p>
           </div>
         </div>
       </ion-item>
