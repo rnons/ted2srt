@@ -27,7 +27,7 @@ var homepageHandler = function() {
       ].join('\n');
     var div = document.createElement('div');
     div.innerHTML = template.replace('{{slug}}', talk.slug)
-                            .replace('{{src}}', talk.image)
+                            .replace('{{src}}', talk.images.medium)
                             .replace('{{speaker}}', talk.name.split(':')[0])
                             .replace('{{title}}', talk.name.split(':')[1]);
     div.className = 'tile';

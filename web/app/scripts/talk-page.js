@@ -15,7 +15,7 @@
     };
     document.getElementById('talk-info')
       .innerHTML = template.replace(/{{slug}}/g, mkTalkSrc(talk.slug))
-                           .replace('{{src}}', talk.image)
+                           .replace('{{src}}', talk.images.medium)
                            .replace('{{title}}', talk.name)
                            .replace('{{description}}', talk.description);
 

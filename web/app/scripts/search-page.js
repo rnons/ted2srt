@@ -36,7 +36,7 @@
         ].join('\n');
       var li = document.createElement('li');
       li.innerHTML = template.replace(/{{slug}}/g, talk.slug)
-                             .replace('{{src}}', talk.image)
+                             .replace('{{src}}', talk.images.medium)
                              .replace('{{title}}', talk.name)
                              .replace('{{description}}', talk.description);
       $result.appendChild(li);
