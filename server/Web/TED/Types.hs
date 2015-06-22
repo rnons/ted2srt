@@ -46,6 +46,7 @@ instance ToJSON Image
 
 newtype TEDImage = TEDImage { fromTEDImage :: Image }
 
+-- | "images": [{ "image": { "size": , "url": } }]
 instance FromJSON TEDImage where
     parseJSON (Array v) =
         let urls = V.map parseImage v
@@ -72,6 +73,7 @@ instance ToJSON Language where
                ]
 newtype Languages = Languages { fromLanguages :: [Language] }
 
+-- | "languages": { "en": { "name": "English", "native": true } }
 instance FromJSON Languages where
     parseJSON (Object v) =
         let langCode = HM.keys v

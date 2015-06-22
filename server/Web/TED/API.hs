@@ -61,17 +61,6 @@ queryTalk tid = E.catch
     rurl = "http://api.ted.com/v1/talks/" ++ show tid ++
            ".json?external=false&podcasts=true&api-key=2a9uggd876y5qua7ydghfzrq"
 
--- | "languages": { "en": { "name": "English", "native": true } }
--- talkLanguages :: Talk -> [(Text, Text)]
--- talkLanguages t =
---     case languages t of
---         Just (Object langs) ->
---             let langCode = HM.keys langs
---                 langName = map ((\(String str) -> str) . (\(Object hm) -> hm HM.! "name"))
---                                (HM.elems langs)
---             in  sort $ zip langName langCode
---         _                   -> []
-
 -- | Whether "audio-podcast" field is present
 talkHasAudio :: Talk -> Bool
 talkHasAudio t =
@@ -79,10 +68,6 @@ talkHasAudio t =
         Object ms -> isJust $ HM.lookup "internal" ms >>=
                             \(Object im) -> HM.lookup "audio-podcast" im
         _         -> False
-
--- | "images": { ["image": { "size": , "url": }] }
--- talkImg :: Talk -> Text
--- talkImg t = url $ image (images t !! 2)
 
 searchTalk :: Text -> IO [SearchTalk]
 searchTalk q = do
@@ -94,4 +79,3 @@ searchTalk q = do
     query = B8.unpack $ urlEncode True $ B8.pack $ T.unpack q
     rurl = "http://api.ted.com/v1/search.json?q=" <> query <>
            "&categories=talks&api-key=2a9uggd876y5qua7ydghfzrq"
-
