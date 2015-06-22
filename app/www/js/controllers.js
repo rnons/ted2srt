@@ -1,4 +1,4 @@
-angular.module('starter.controllers', [])
+angular.module('reted.controllers', [])
 
 .controller('TalksCtrl', function($scope, $http) {
   $http.get('/api/talks')
