@@ -78,11 +78,11 @@ instance FromJSON Languages where
             langName = flip map (HM.elems v) $ \lang ->
                 case parseMaybe parseLanguage lang of
                     Just name -> name
-                    Nothing   -> "Failed"
+                    Nothing   -> error "Failed to parse languages"
         in  return $ Languages $ map (uncurry Language) $ sort $ zip langName langCode
       where
-        parseLanguage = withObject "language" $ \lang ->
-            withText "name" return $ lang HM.! "name"
+        parseLanguage (Object o) = o .: "name"
+        parseLanguage _ = mzero
     parseJSON _ = mzero
 
 data Tag = Tag
@@ -143,7 +143,7 @@ instance FromJSON Talk where
              <*> v .: "viewed_count"
              <*> liftM fromTEDImage (v .: "images")
              <*> v .: "media"
-             <*> (v .: "languages" >>= return . fromLanguages)
+             <*> liftM fromLanguages (v .: "languages")
              <*> v .: "tags"
              <*> v .: "themes"
              <*> v .: "speakers"
