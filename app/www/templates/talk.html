@@ -1,8 +1,9 @@
 <ion-view>
   <ion-content>
-    <h1>{{ talk.title }}</h1>
-    <h3>{{ talk.speaker }}</h3>
-    <article class="Transcript"
-             ng-bind-html="talk.transcript"></article>
+    <article class="TalkPage">
+      <h2>{{ talk.title }}</h2>
+      <h4>{{ talk.speaker }}</h4>
+      <p ng-bind-html="talk.transcript"></p>
+    </article>
   </ion-content>
 </ion-view>

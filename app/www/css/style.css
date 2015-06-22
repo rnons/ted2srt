@@ -21,6 +21,12 @@ body {
   height: auto;
 }
 
+.TalkPage {
+  padding: 8px;
+  line-height: 1.6;
+}
+
+// override ionic built-in styles
 .item-content h2 {
   white-space: initial;
 }
