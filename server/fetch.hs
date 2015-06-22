@@ -34,7 +34,7 @@ main = do
         tids = take limit (parseTids cursor)
 
     saveToRedis tids
-    X.writeFile X.def "static/atom.xml" . template =<< mkFeed =<< saveAsFeed tids
+    X.writeFile X.def "atom.xml" . template =<< mkFeed =<< saveAsFeed tids
   where
     limit = 5
     rurl = "http://feeds.feedburner.com/tedtalks_video"
@@ -98,7 +98,7 @@ mkFeed entries = do
     time <- getCurrentTime
     return Feed
         { feedTitle = "TED2srt"
-        , feedLinkSelf = "http://ted2srt.org/static/atom.xml"
+        , feedLinkSelf = "http://ted2srt.org/atom.xml"
         , feedLinkHome = "http://ted2srt.org"
         , feedAuthor = "rnons"
         , feedUpdated = time
