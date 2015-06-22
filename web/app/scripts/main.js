@@ -48,7 +48,7 @@ var routes = {
         '<div id="talks"></div>',
       '</div>',
       '<footer class="Footer Footer--absolute">',
-        'TED2srt by <a href="https://twitter.com/rnons">rnons</a> | <a href="https://github.com/rnons/ted2srt">source code</a> | <a href="http://ted2srt.org/atom.xml">feed</a>',
+        'TED2srt by <a href="https://twitter.com/rnons" target="_blank">rnons</a> | <a href="https://github.com/rnons/ted2srt" target="_blank">source code</a> | <a href="http://ted2srt.org/atom.xml" target="_blank">feed</a>',
       '</footer>'
       ].join('\n');
     homepageHandler();
@@ -87,7 +87,7 @@ var routes = {
       '<div id="player-container">',
       '</div>',
       '<footer class="Footer">',
-        'TED2srt by <a href="https://twitter.com/rnons">rnons</a> | <a href="https://github.com/rnons/ted2srt">source code</a> | <a href="http://ted2srt.org/atom.xml">feed</a>',
+        'TED2srt by <a href="https://twitter.com/rnons" target="_blank">rnons</a> | <a href="https://github.com/rnons/ted2srt" target="_blank">source code</a> | <a href="http://ted2srt.org/atom.xml" target="_blank">feed</a>',
       '</footer>'
       ].join('\n');
     app.talkPageHandler(slug, params);
@@ -108,7 +108,7 @@ var routes = {
         '<ul id="result"></ul>',
       '</div>',
       '<footer class="Footer">',
-        'TED2srt by <a href="https://twitter.com/rnons">rnons</a> | <a href="https://github.com/rnons/ted2srt">source code</a> | <a href="http://ted2srt.org/atom.xml">feed</a>',
+        'TED2srt by <a href="https://twitter.com/rnons" target="_blank">rnons</a> | <a href="https://github.com/rnons/ted2srt" target="_blank">source code</a> | <a href="http://ted2srt.org/atom.xml" target="_blank">feed</a>',
       '</footer>'
       ].join('\n');
     app.searchPageHandler(params);
