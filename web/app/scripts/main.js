@@ -46,7 +46,10 @@ var routes = {
           '<input type="submit">',
         '</form>',
         '<div id="talks"></div>',
-      '</div>'
+      '</div>',
+      '<footer class="Footer Footer--absolute">',
+        'TED2srt by <a href="https://twitter.com/rnons">rnons</a> | <a href="https://github.com/rnons/ted2srt">source code</a> | <a href="http://ted2srt.org/atom.xml">feed</a>',
+      '</footer>'
       ].join('\n');
     homepageHandler();
   },
@@ -82,7 +85,10 @@ var routes = {
         '</div>',
       '</div>',
       '<div id="player-container">',
-      '</div>'
+      '</div>',
+      '<footer class="Footer">',
+        'TED2srt by <a href="https://twitter.com/rnons">rnons</a> | <a href="https://github.com/rnons/ted2srt">source code</a> | <a href="http://ted2srt.org/atom.xml">feed</a>',
+      '</footer>'
       ].join('\n');
     app.talkPageHandler(slug, params);
   },
@@ -100,7 +106,10 @@ var routes = {
       '</header>',
       '<div id="search-page" class="container">',
         '<ul id="result"></ul>',
-      '</div>'
+      '</div>',
+      '<footer class="Footer">',
+        'TED2srt by <a href="https://twitter.com/rnons">rnons</a> | <a href="https://github.com/rnons/ted2srt">source code</a> | <a href="http://ted2srt.org/atom.xml">feed</a>',
+      '</footer>'
       ].join('\n');
     app.searchPageHandler(params);
   }

@@ -72,6 +72,7 @@ p {
 }
 
 #homepage {
+  padding-bottom: 6em;
   #logo {
     margin-top: 100px;
     text-align: center;
@@ -229,6 +230,25 @@ header {
   display: none;
   justify-content: center;
   align-items: center;
+}
+
+.Site {
+  position: relative;
+  min-height: 100vh;
+}
+
+.Footer {
+  margin-top: 3em;
+  padding: 1em;
+  text-align: center;
+  border-top: @border;
+}
+
+.Footer--absolute {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
 
 @media all and (max-width: 495px) {
