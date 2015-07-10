@@ -103,6 +103,18 @@ var routes = {
       '</div>',
       ].join('\n');
     app.searchPageHandler(params);
+  },
+  '/random': function() {
+    var request = new XMLHttpRequest();
+    request.open('GET', '/api/talks/random', true);
+
+    request.onload = function() {
+      if (request.status >= 200 && request.status < 400) {
+        var data = JSON.parse(request.responseText);
+        document.location = 'talks/' + data.slug;
+      }
+    };
+    request.send();
   }
 };
 
