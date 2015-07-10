@@ -23,6 +23,7 @@ import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import           Database.Redis hiding (decode)
 import qualified Filesystem.Path.CurrentOS as FS
 import           Servant
+import           System.Random (randomRIO)
 
 import Web.TED (FileType(..), Subtitle(..), getTalkId, queryTalk, toSub)
 import qualified Web.TED as API
@@ -37,6 +38,7 @@ instance FromText FileType where
 
 type TedApi =
        "talks" :> QueryParam "tid" Integer :> QueryParam "limit" Integer :> Get '[JSON] [RedisTalk]
+  :<|> "talks" :> "random" :> Get '[JSON] RedisTalk
   :<|> "talks" :> Capture "slug" Text :> Get '[JSON] TalkResp
   :<|> "talks" :> Capture "tid" Int :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] Text
   :<|> "talks" :> Capture "tid" Int :> "transcripts" :> "download" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] (Headers '[Header "Content-Disposition" String] Text)
@@ -154,9 +156,18 @@ getSearchH conn (Just q) = liftIO $ do
                         return $ Just dbtalk
 getSearchH _ Nothing = left err400
 
+getRandomTalkH :: Connection -> Handler RedisTalk
+getRandomTalkH conn = liftIO $ do
+    mCount <- runRedis conn $ zcard "tids"
+    case mCount of
+        Right count -> do
+            r <- randomRIO (0, count-1)
+            mTid <- runRedis conn $ zrange "tids" r r
+            getTalkFromRedis conn $ either (const 0) (read . C.unpack . head) mTid
+        Left err -> error $ show err
+
 getTalkFromRedis :: Connection -> Int -> IO RedisTalk
 getTalkFromRedis conn tid = do
-    -- (Right (Just talk')) <- runRedis conn $
     result <- runRedis conn $ get (C.pack $ show tid)
     case result of
         Right (Just talk') -> do
@@ -170,6 +181,7 @@ tedApi = Proxy
 tedServer :: Connection -> Server TedApi
 tedServer conn =
         getTalksH conn
+   :<|> getRandomTalkH conn
    :<|> getTalkH conn
    :<|> getTalkSubtitleH conn
    :<|> downloadTalkSubtitleH conn
