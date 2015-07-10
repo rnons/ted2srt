@@ -1,5 +1,5 @@
 name:                ted2srt
-version:             2.20150622
+version:             2.20150710
 synopsis:            Watch and download TED talks with bilingual subtitles.
 -- description:
 homepage:            http://ted2srt.org
@@ -72,6 +72,7 @@ executable server
                     , html-conduit >= 1.1
                     , http-conduit >= 2.1
                     , http-types >= 0.8
+                    , random
                     , regex-posix >= 0.95
                     , servant-server >= 0.4
                     , system-filepath
