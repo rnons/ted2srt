@@ -31,14 +31,18 @@
         '<h3><a href="/talks/{{slug}}">{{title}}</a></h3>',
         '<div class="talk-info-body">',
           '<a href="/talks/{{slug}}"><img src="{{src}}"></a>',
-          '<p>{{description}}</p>',
+          '<p>',
+            '{{description}}',
+            '<span class="Time">Published: {{publishedAt}}</span>',
+          '</p>',
         '</div>'
         ].join('\n');
       var li = document.createElement('li');
       li.innerHTML = template.replace(/{{slug}}/g, talk.slug)
                              .replace('{{src}}', talk.images.medium)
                              .replace('{{title}}', talk.name)
-                             .replace('{{description}}', talk.description);
+                             .replace('{{description}}', talk.description)
+                             .replace('{{publishedAt}}', app.utils.pprDate(talk.publishedAt));
       $result.appendChild(li);
     };
   };

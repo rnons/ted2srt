@@ -7,7 +7,10 @@
       '<h3><a href="{{slug}}">{{title}}</a></h3>',
       '<div class="talk-info-body">',
         '<a href="{{slug}}"><img src="{{src}}"></a>',
-        '<p>{{description}}</p>',
+        '<p>',
+          '{{description}}',
+          '<span class="Time">Published: {{publishedAt}}</span>',
+        '</p>',
       '</div>'
       ].join('\n');
     var mkTalkSrc = function(slug) {
@@ -17,7 +20,8 @@
       .innerHTML = template.replace(/{{slug}}/g, mkTalkSrc(talk.slug))
                            .replace('{{src}}', talk.images.medium)
                            .replace('{{title}}', talk.name)
-                           .replace('{{description}}', talk.description);
+                           .replace('{{description}}', talk.description)
+                           .replace('{{publishedAt}}', app.utils.pprDate(talk.publishedAt));
 
   };
 

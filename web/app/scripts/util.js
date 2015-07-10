@@ -25,4 +25,13 @@
     });
     return params;
   };
+
+  app.utils.pprDate = function(dateString) {
+    var date = new Date(dateString);
+    var year, month, dayOfMonth;
+    year = date.getFullYear();
+    month = date.getMonth() + 1;
+    dayOfMonth = date.getDate();
+    return [year, month, dayOfMonth].join('-');
+  };
 })();
