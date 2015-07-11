@@ -89,7 +89,7 @@ getTalkH conn slug = do
                             getTalkH conn slug
                         Nothing   -> left err404
         Right Nothing    -> do
-            mtid <- liftIO $ getTalkId $ talkUrl <> slug
+            mtid <- liftIO $ getTalkId $ mkTalkUrl slug
             case mtid of
                 Just tid -> do
                     talk' <- liftIO $ queryTalk tid
