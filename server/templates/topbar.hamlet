@@ -1,7 +1,0 @@
-<div #topbar>
-  <a href=@{HomeR}>
-    <div #logo>
-      :: TED -> [SRT]
-  <form #search_form method=GET action=@{HomeR}>
-    <input #search_button type=submit value=SRT>
-    <input #search_input name=q type=textfield required placeholder="Talk url or Keywords">
