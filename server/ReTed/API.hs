@@ -27,7 +27,7 @@ import           System.Random (randomRIO)
 
 import Web.TED (FileType(..), Subtitle(..), getTalkId, queryTalk, toSub)
 import qualified Web.TED as API
-import Handler.Util
+import ReTed.Types
 
 instance FromText FileType where
     fromText "srt" = Just SRT
