@@ -80,7 +80,8 @@
   };
   var addVideoDownloads = function (mediaSlug) {
     var template = [
-      '<ul><h4>Video</h4><li>',
+      '<h4 class="Panel-title">Video</h4>',
+      '<ul class="Panel-body"><li>',
         '<a href="{{720p}}" title="Right click to save (1280x720)" target="_blank">720p</a>',
       '</li><li>',
         '<a href="{{480p}}" title="Right click to save (854x480)" target="_blank">480p</a>',

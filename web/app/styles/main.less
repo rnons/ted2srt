@@ -42,6 +42,10 @@ a {
   }
 }
 
+h3 {
+  margin-top: 0;
+}
+
 p {
   margin-top: 0;
   line-height: 1.6;
@@ -117,6 +121,7 @@ p {
 }
 
 header {
+  margin-bottom: 1em;
   padding: 20px 0;
   border-bottom: @border;
   .container {
@@ -156,19 +161,10 @@ header {
   > * {
     flex: 1 auto;
   }
-  h4 {
-    margin: 0;
-    padding: 5px 0 5px 10px;
-    font-size: 1rem;
-    background-color: fade(@black, 12);
-    border-bottom: @separator;
-  }
   #talk-info {
     margin-bottom: 1em;
   }
   #languages {
-    border: @border;
-    border-radius: 4px;
     li {
       cursor: pointer;
       display: inline-block;
@@ -184,11 +180,6 @@ header {
     }
   }
   #downloads {
-    ul {
-      border: @border;
-      border-radius: 4px;
-      margin: 1em 0;
-    }
     li {
       &:not(:last-child) {
         border-bottom: @separator;
@@ -254,6 +245,23 @@ header {
   display: block;
   font-style: italic;
   color: fade(@black, 54);
+}
+
+.Panel {
+  border: @border;
+  border-radius: 4px;
+  margin-bottom: 1em;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.Panel-title {
+  margin: 0;
+  padding: 5px 0 5px 10px;
+  font-size: 1rem;
+  background-color: fade(@black, 12);
+  border-bottom: @separator;
 }
 
 @media all and (max-width: 495px) {
