@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings  #-}
 module ReTed.Types where
 
-import           Data.Aeson (FromJSON, ToJSON)
+import           Data.Aeson
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import           Data.Time (UTCTime)
@@ -47,12 +47,18 @@ data TalkCache = TalkCache
 instance FromJSON TalkCache
 instance ToJSON TalkCache
 
-data TalkResp = TalkResp
-    { talk :: RedisTalk
-    , languages :: Maybe [API.Language]
-    } deriving (Generic, Show)
-instance FromJSON TalkResp
-instance ToJSON TalkResp
+data TalkResp = TalkResp RedisTalk [API.Language]
+instance ToJSON TalkResp where
+    toJSON (TalkResp talk languages) =
+        object [ "id" .= id talk
+               , "name" .= name talk
+               , "description" .= description talk
+               , "slug" .= slug talk
+               , "images" .= images talk
+               , "publishedAt" .= publishedAt talk
+               , "mSlug" .= mSlug talk
+               , "languages" .= languages
+               ]
 
 apiTalkToValue :: API.Talk -> TalkCache
 apiTalkToValue talk =

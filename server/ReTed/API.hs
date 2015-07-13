@@ -75,7 +75,7 @@ getTalkH conn slug = do
             case result of
                 TxSuccess (Just talk, Just cache) ->
                     let retTalk = fromJust $ decodeStrict talk
-                        retLang = caLanguages <$> decodeStrict cache
+                        retLang = caLanguages $ fromJust $ decodeStrict cache
                     in return $ TalkResp retTalk retLang
                 TxError _ -> left err404
                 _ -> do
@@ -106,7 +106,7 @@ getTalkH conn slug = do
                                 setex ("cache:" <> C.pack (show tid))
                                       (3600*24)
                                       (L.toStrict $ encode value)
-                            return $ TalkResp dbtalk (Just (API.languages talk))
+                            return $ TalkResp dbtalk (API.languages talk)
                 _         -> left err404
         Left _ -> left err404
 
