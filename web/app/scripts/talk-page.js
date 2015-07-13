@@ -159,14 +159,14 @@
     request.onload = function() {
       if (request.status >= 200 && request.status < 400) {
         var data = JSON.parse(request.responseText);
-        document.title = data.talk.name + ' - TED2srt';
-        addTalkInfo(data.talk);
+        document.title = data.name + ' - TED2srt';
+        addTalkInfo(data);
         data.languages.forEach(function(lang) {
           addLanguage(lang, queryLangs);
         });
-        addVideoDownloads(data.talk.mSlug);
-        addTranscriptsHandler(data.talk.id);
-        bindEvents(data.talk);
+        addVideoDownloads(data.mSlug);
+        addTranscriptsHandler(data.id);
+        bindEvents(data);
       }
     };
     request.send();
