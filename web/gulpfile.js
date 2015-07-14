@@ -3,8 +3,24 @@
 // generated on 2015-05-16 using generator-gulp-webapp 0.3.0
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
+var babelify = require('babelify');
+var browserify = require('browserify');
+var buffer = require('vinyl-buffer');
+var source = require('vinyl-source-stream');
 var browserSync = require('browser-sync');
 var reload = browserSync.reload;
+
+gulp.task('scripts', function () {
+  return browserify('app/scripts/main.js', { debug: true })
+    .transform(babelify)
+    .bundle()
+    .on('error', function (err) { console.log('Error : ' + err.message); })
+    .pipe(source('main.js'))
+    .pipe(buffer())
+    .pipe($.uglify())
+    .pipe(gulp.dest('.tmp/scripts'))
+    .pipe(reload({stream: true}));
+});
 
 gulp.task('styles', function () {
   return gulp.src('app/styles/main.less')
@@ -28,11 +44,11 @@ gulp.task('jshint', function () {
 });
 
 gulp.task('html', ['styles'], function () {
-  var assets = $.useref.assets({searchPath: ['.tmp', 'app', '.']});
+  var assets = $.useref.assets({searchPath: ['.tmp', '.']});
 
   return gulp.src('app/*.html')
     .pipe(assets)
-    .pipe($.if('*.js', $.uglify()))
+    .pipe($.if('**/vendor.js', $.uglify()))
     .pipe($.if('*.css', $.csso()))
     .pipe(assets.restore())
     .pipe($.useref())
@@ -71,7 +87,7 @@ gulp.task('extras', function () {
 
 gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
 
-gulp.task('serve', ['styles', 'fonts'], function () {
+gulp.task('serve', ['scripts', 'styles', 'fonts'], function () {
   browserSync({
     ghostMode: false,
     notify: false,
@@ -93,11 +109,11 @@ gulp.task('serve', ['styles', 'fonts'], function () {
   // watch for changes
   gulp.watch([
     'app/*.html',
-    'app/scripts/**/*.js',
     'app/images/**/*',
     '.tmp/fonts/**/*'
   ]).on('change', reload);
 
+  gulp.watch('app/scripts/**/*.js', ['scripts']);
   gulp.watch('app/styles/**/*.less', ['styles']);
   gulp.watch('app/fonts/**/*', ['fonts']);
   gulp.watch('bower.json', ['wiredep', 'fonts']);
