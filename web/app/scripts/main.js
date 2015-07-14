@@ -1,7 +1,9 @@
-/* jshint devel:true */
 /* global Router */
-(function(){
-  'use strict';
+
+import {talkPageHandler} from './talk-page.js';
+import {searchPageHandler} from './search-page.js';
+import * as utils from './util.js';
+
 var homepageHandler = function() {
   var request = new XMLHttpRequest();
   request.open('GET', '/api/talks', true);
@@ -51,7 +53,7 @@ var routes = {
     homepageHandler();
   },
   '/talks/:slug': function(slug) {
-    var params = app.utils.parseQueryString();
+    var params = utils.parseQueryString();
     $container.innerHTML = [
       '<header>',
         '<div class="container">',
@@ -88,10 +90,10 @@ var routes = {
       '<div id="player-container">',
       '</div>',
       ].join('\n');
-    app.talkPageHandler(slug, params);
+    talkPageHandler(slug, params);
   },
   '/search': function() {
-    var params = app.utils.parseQueryString();
+    var params = utils.parseQueryString();
     $container.innerHTML = [
       '<header>',
         '<div class="container">',
@@ -106,7 +108,7 @@ var routes = {
         '<ul id="result"></ul>',
       '</div>',
       ].join('\n');
-    app.searchPageHandler(params);
+    searchPageHandler(params);
   },
   '/random': function() {
     var request = new XMLHttpRequest();
@@ -129,4 +131,3 @@ router.notfound = function() {
 };
 
 router.init();
-})();
