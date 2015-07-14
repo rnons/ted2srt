@@ -1,4 +1,4 @@
-import * as utils from './util.js';
+import utils from './util.js';
 var selected = [];
 
 var addTalkInfo = function(talk) {

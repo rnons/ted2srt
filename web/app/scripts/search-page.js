@@ -1,4 +1,4 @@
-import * as utils from './util.js';
+import utils from './util.js';
 var TED_URL_REGEX = /^https?:\/\/www.ted.com\/talks\/(\w+)/;
 
 export function searchPageHandler(params) {

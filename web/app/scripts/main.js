@@ -2,7 +2,7 @@
 
 import {talkPageHandler} from './talk-page.js';
 import {searchPageHandler} from './search-page.js';
-import * as utils from './util.js';
+import utils from './util.js';
 
 var homepageHandler = function() {
   var request = new XMLHttpRequest();

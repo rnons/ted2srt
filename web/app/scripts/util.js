@@ -1,4 +1,4 @@
-export var parseQueryString = function() {
+function parseQueryString() {
   if (!document.location.search) return;
   var querys = document.location.search.split('?')[1].split('&');
   var params = {};
@@ -19,13 +19,18 @@ export var parseQueryString = function() {
     }
   });
   return params;
-};
+}
 
-export var pprDate = function(dateString) {
+function pprDate(dateString) {
   var date = new Date(dateString);
   var year, month, dayOfMonth;
   year = date.getFullYear();
   month = date.getMonth() + 1;
   dayOfMonth = date.getDate();
   return [year, month, dayOfMonth].join('-');
+}
+
+export default {
+  parseQueryString: parseQueryString,
+  pprDate: pprDate
 };
