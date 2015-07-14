@@ -1,6 +1,3 @@
-/*global -$ */
-'use strict';
-// generated on 2015-05-16 using generator-gulp-webapp 0.3.0
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 var babelify = require('babelify');
@@ -10,6 +7,8 @@ var source = require('vinyl-source-stream');
 var browserSync = require('browser-sync');
 var reload = browserSync.reload;
 
+const isProd = (process.env.NODE_ENV === 'production') ? true : false;
+
 gulp.task('scripts', function () {
   return browserify('app/scripts/main.js', { debug: true })
     .transform(babelify)
@@ -17,7 +16,7 @@ gulp.task('scripts', function () {
     .on('error', function (err) { console.log('Error : ' + err.message); })
     .pipe(source('main.js'))
     .pipe(buffer())
-    .pipe($.uglify())
+    .pipe($.if(isProd, $.uglify()))
     .pipe(gulp.dest('.tmp/scripts'))
     .pipe(reload({stream: true}));
 });
@@ -43,7 +42,7 @@ gulp.task('jshint', function () {
     .pipe($.if(!browserSync.active, $.jshint.reporter('fail')));
 });
 
-gulp.task('html', ['styles'], function () {
+gulp.task('html', ['scripts', 'styles'], function () {
   var assets = $.useref.assets({searchPath: ['.tmp', '.']});
 
   return gulp.src('app/*.html')
