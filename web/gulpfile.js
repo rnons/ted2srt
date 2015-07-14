@@ -135,7 +135,10 @@ gulp.task('wiredep', function () {
     .pipe(gulp.dest('app'));
 });
 
-gulp.task('build', ['jshint', 'html', 'images', 'fonts', 'extras'], function () {
+gulp.task('build', isProd ? ['jshint', 'html', 'images', 'fonts', 'extras'] : null, function () {
+  if (!isProd) {
+    throw new Error('Requires NODE_ENV set to production, run `NODE_ENV=production gulp build`');
+  }
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
