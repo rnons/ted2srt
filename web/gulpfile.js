@@ -2,9 +2,10 @@ var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 var babelify = require('babelify');
 var browserify = require('browserify');
-var buffer = require('vinyl-buffer');
-var source = require('vinyl-source-stream');
 var browserSync = require('browser-sync');
+var buffer = require('vinyl-buffer');
+var karma = require('karma').server;
+var source = require('vinyl-source-stream');
 var reload = browserSync.reload;
 
 const isProd = (process.env.NODE_ENV === 'production') ? true : false;
@@ -133,6 +134,13 @@ gulp.task('wiredep', function () {
       ignorePath: /^(\.\.\/)*\.\./
     }))
     .pipe(gulp.dest('app'));
+});
+
+gulp.task('test', function (done) {
+  karma.start({
+    configFile: __dirname + '/test/karma.conf.js',
+    singleRun: true
+  }, done);
 });
 
 gulp.task('build', isProd ? ['jshint', 'html', 'images', 'fonts', 'extras'] : null, function () {
