@@ -31,6 +31,6 @@ function pprDate(dateString) {
 }
 
 export default {
-  parseQueryString: parseQueryString,
-  pprDate: pprDate
+  parseQueryString,
+  pprDate
 };
