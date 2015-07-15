@@ -2,11 +2,11 @@
 
 import {talkPageHandler} from './talk-page.js';
 import {searchPageHandler} from './search-page.js';
-import http from './http.js';
+import $http from './http.js';
 import utils from './util.js';
 
 var homepageHandler = function() {
-  http.get('/api/talks?limit=5').then((data) => {
+  $http.get('/api/talks?limit=5').then((data) => {
     data.forEach(addTalk);
   }).catch(err => {
     console.log(err);
@@ -86,7 +86,7 @@ var routes = {
       '<div id="player-container">',
       '</div>',
       ].join('\n');
-    talkPageHandler(slug, params);
+    talkPageHandler($http, slug, params);
   },
   '/search': function() {
     var params = utils.parseQueryString();
@@ -104,10 +104,10 @@ var routes = {
         '<ul id="result"></ul>',
       '</div>',
       ].join('\n');
-    searchPageHandler(params);
+    searchPageHandler($http, params);
   },
   '/random': function() {
-    http.get('/api/talks/random').then((data) => {
+    $http.get('/api/talks/random').then((data) => {
       document.location = 'talks/' + data.slug;
     }).catch(err => {
       console.log(err);

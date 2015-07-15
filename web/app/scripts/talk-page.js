@@ -135,7 +135,7 @@ var bindEvents = function(talk) {
   });
 };
 
-export function talkPageHandler(slug, params) {
+export function talkPageHandler($http, slug, params) {
   var queryLangs;
   if (params) {
     queryLangs = params.lang || [];
@@ -149,22 +149,17 @@ export function talkPageHandler(slug, params) {
   } else {
     queryLangs = [queryLangs];
   }
-  var request = new XMLHttpRequest();
-  var url = '/api/talks/' + slug;
 
-  request.open('GET', url, true);
-  request.onload = function() {
-    if (request.status >= 200 && request.status < 400) {
-      var data = JSON.parse(request.responseText);
-      document.title = data.name + ' - TED2srt';
-      addTalkInfo(data);
-      data.languages.forEach(function(lang) {
-        addLanguage(lang, queryLangs);
-      });
-      addVideoDownloads(data.mSlug);
-      addTranscriptsHandler(data.id);
-      bindEvents(data);
-    }
-  };
-  request.send();
+  $http.get(`/api/talks/${slug}`).then((data) => {
+    document.title = data.name + ' - TED2srt';
+    addTalkInfo(data);
+    data.languages.forEach(function(lang) {
+      addLanguage(lang, queryLangs);
+    });
+    addVideoDownloads(data.mSlug);
+    addTranscriptsHandler(data.id);
+    bindEvents(data);
+  }).catch(err => {
+    console.log(err);
+  });
 }

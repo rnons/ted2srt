@@ -1,7 +1,7 @@
 import utils from './util.js';
 var TED_URL_REGEX = /^https?:\/\/www.ted.com\/talks\/(\w+)/;
 
-export function searchPageHandler(params) {
+export function searchPageHandler($http, params) {
   var match = TED_URL_REGEX.exec(decodeURIComponent(params.q));
   if (match) {
     document.location = '/talks/' + match[1];
@@ -9,17 +9,13 @@ export function searchPageHandler(params) {
   var $input = document.querySelector('#search input[name=q]');
   $input.value = params.q;
   $input.focus();
-  var request = new XMLHttpRequest();
-  request.open('GET', '/api/search?q=' + params.q, true);
 
-  request.onload = function() {
-    if (request.status >= 200 && request.status < 400) {
-      document.title = params.q + ' - TED2srt search';
-      var data = JSON.parse(request.responseText);
-      data.forEach(addSearchResult);
-    }
-  };
-  request.send();
+  $http.get(`/api/search?q=${params.q}`).then((data) => {
+    document.title = params.q + ' - TED2srt search';
+    data.forEach(addSearchResult);
+  }).catch(err => {
+    console.log(err);
+  });
 
   var addSearchResult;
   var $result;
