@@ -2,19 +2,15 @@
 
 import {talkPageHandler} from './talk-page.js';
 import {searchPageHandler} from './search-page.js';
+import http from './http.js';
 import utils from './util.js';
 
 var homepageHandler = function() {
-  var request = new XMLHttpRequest();
-  request.open('GET', '/api/talks', true);
-
-  request.onload = function() {
-    if (request.status >= 200 && request.status < 400) {
-      var data = JSON.parse(request.responseText);
-      data.slice(0, 5).forEach(addTalk);
-    }
-  };
-  request.send();
+  http.get('/api/talks?limit=5').then((data) => {
+    data.forEach(addTalk);
+  }).catch(err => {
+    console.log(err);
+  });
 
   var $talks = document.getElementById('talks');
   function addTalk(talk) {
@@ -111,16 +107,11 @@ var routes = {
     searchPageHandler(params);
   },
   '/random': function() {
-    var request = new XMLHttpRequest();
-    request.open('GET', '/api/talks/random', true);
-
-    request.onload = function() {
-      if (request.status >= 200 && request.status < 400) {
-        var data = JSON.parse(request.responseText);
-        document.location = 'talks/' + data.slug;
-      }
-    };
-    request.send();
+    http.get('/api/talks/random').then((data) => {
+      document.location = 'talks/' + data.slug;
+    }).catch(err => {
+      console.log(err);
+    });
   }
 };
 
