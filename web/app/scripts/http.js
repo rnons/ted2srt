@@ -11,9 +11,9 @@ function get(url) {
       }
     };
     request.send();
-  })
+  });
 }
 
 export default {
   get
-}
+};
