@@ -69,28 +69,23 @@ var addLanguage = function(language, queryLangs) {
   }
 };
 
-var downloadUrl = 'http://download.ted.com/talks/';
-var mkVideoUrl = function(slug, quality) {
-  return downloadUrl + slug + '-' + quality + '.mp4';
-};
+let mkVideoUrl = (mediaSlug, codeRate) => {
+  return `http://download.ted.com/talks/${mediaSlug}-${codeRate}.mp4`
+}
+
 var addVideoDownloads = function (mediaSlug) {
-  var template = [
-    '<h4 class="Panel-title">Video</h4>',
-    '<ul class="Panel-body"><li>',
-      '<a href="{{720p}}" title="Right click to save (1280x720)" target="_blank">720p</a>',
-    '</li><li>',
-      '<a href="{{480p}}" title="Right click to save (854x480)" target="_blank">480p</a>',
-    '</li><li>',
-      '<a href="{{360p}}" title="Right click to save (640x360)" target="_blank">360p</a>',
-    '</li><li>',
-      '<a href="{{288p}}" title="Right click to save (512x288)" target="_blank">288p</a>',
-    '</li></ul>'
-    ].join('\n');
-  var $video = document.getElementById('video');
-  $video.innerHTML = template.replace('{{720p}}', mkVideoUrl(mediaSlug, '1500k'))
-                             .replace('{{480p}}', mkVideoUrl(mediaSlug, '950k'))
-                             .replace('{{360p}}', mkVideoUrl(mediaSlug, '600k'))
-                             .replace('{{288p}}', mkVideoUrl(mediaSlug, '320k'));
+  document.getElementById('video').innerHTML =`
+    <h4 class="Panel-title">Video</h4>
+    <ul class="Panel-body"><li>
+     <a href="${mkVideoUrl('1500k')}" title="Right click to save (1280x720)" target="_blank">720p</a>
+    </li><li>
+     <a href="${mkVideoUrl('950k')}" title="Right click to save (854x480)" target="_blank">480p</a>
+    </li><li>
+     <a href="${mkVideoUrl('600k')}" title="Right click to save (640x360)" target="_blank">360p</a>
+    </li><li>
+     <a href="${mkVideoUrl('320k')}" title="Right click to save (512x288)" target="_blank">288p</a>
+    </li></ul>
+    `
 };
 
 var mkTranscriptUrl = function(tid, format, download) {
