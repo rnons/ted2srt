@@ -21,7 +21,7 @@ import           Text.HTML.DOM (parseLBS)
 import qualified Text.XML as X
 import           Text.XML.Cursor
 
-import Handler.Util (RedisTalk(..), marshal)
+import ReTed.Types (RedisTalk(..), marshal)
 import Web.TED hiding (content, publishedAt)
 
 
