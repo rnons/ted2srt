@@ -1,4 +1,6 @@
 import utils from './util.js';
+
+const LOCAL_STORAGE_KEY = 'selected';
 var selected = [];
 
 var addTalkInfo = function(talk) {
@@ -35,6 +37,9 @@ var mkQueryString = function() {
 var pushState = function() {
   var path = document.location.origin + document.location.pathname + mkQueryString();
   window.history.pushState({path: path}, '', path);
+  if (window.localStorage) {
+    window.localStorage.setItem(LOCAL_STORAGE_KEY, selected);
+  }
 };
 
 var setSelected = function(e) {
@@ -128,18 +133,18 @@ var bindEvents = function(talk) {
 };
 
 export function talkPageHandler($http, slug, params) {
-  var queryLangs;
-  if (params) {
-    queryLangs = params.lang || [];
-  } else {
-    queryLangs = [];
-  }
-  if (queryLangs instanceof Array) {
-    if (queryLangs.length > 2) {
-      queryLangs = queryLangs.slice(0, 2);
+  let queryLangs = [];
+  if (window.localStorage) {
+    let selected = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (selected) {
+      queryLangs = selected.split(',');
     }
-  } else {
-    queryLangs = [queryLangs];
+  }
+  if (params) {
+    queryLangs = [].concat(params.lang, queryLangs);
+  }
+  if (queryLangs.length > 2) {
+    queryLangs = queryLangs.slice(0, 2);
   }
 
   $http.get(`/api/talks/${slug}`).then((data) => {
