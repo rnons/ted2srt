@@ -2,25 +2,22 @@ import utils from './util.js';
 var selected = [];
 
 var addTalkInfo = function(talk) {
-  var template = [
-    '<h3><a href="{{slug}}">{{title}}</a></h3>',
-    '<div class="talk-info-body">',
-      '<a href="{{slug}}"><img src="{{src}}"></a>',
-      '<p>',
-        '{{description}}',
-        '<span class="Time">Published: {{publishedAt}}</span>',
-      '</p>',
-    '</div>'
-    ].join('\n');
-  var mkTalkSrc = function(slug) {
-    return 'https://www.ted.com/talks/' + slug;
-  };
-  document.getElementById('talk-info')
-    .innerHTML = template.replace(/{{slug}}/g, mkTalkSrc(talk.slug))
-                         .replace('{{src}}', talk.images.medium)
-                         .replace('{{title}}', talk.name)
-                         .replace('{{description}}', talk.description)
-                         .replace('{{publishedAt}}', utils.pprDate(talk.publishedAt));
+  const talkUrl = `https://www.ted.com/talks/${talk.slug}`,
+        publishedAt = utils.pprDate(talk.publishedAt);
+  document.getElementById('talk-info').innerHTML = `
+    <h3>
+      <a href="${talkUrl}" target="_blank">${talk.name}</a>
+    </h3>
+    <div class="talk-info-body">
+      <a href="${talkUrl}" target="_blank">
+        <img src="${talk.images.medium}">
+      </a>
+      <p>
+        ${talk.description}
+        <span class="Time">Published: ${publishedAt}</span>
+      </p>
+    </div>
+    `
 };
 
 var mkQueryString = function() {
