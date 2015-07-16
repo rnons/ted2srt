@@ -34,9 +34,7 @@ var mkQueryString = function() {
   return '?' + queryString;
 };
 
-var pushState = function() {
-  var path = document.location.origin + document.location.pathname + mkQueryString();
-  window.history.pushState({path: path}, '', path);
+var saveSelected = function() {
   if (window.localStorage) {
     window.localStorage.setItem(LOCAL_STORAGE_KEY, selected);
   }
@@ -55,11 +53,11 @@ var setSelected = function(e) {
     } else {
       selected.splice(index, 1);
     }
-    pushState();
+    saveSelected();
   } else if (length === 2) {
     li.classList.remove('selected');
     if (index !== -1) { selected.splice(index, 1); }
-    pushState();
+    saveSelected();
   }
 };
 
@@ -132,16 +130,13 @@ var bindEvents = function(talk) {
   });
 };
 
-export function talkPageHandler($http, slug, params) {
+export function talkPageHandler($http, slug) {
   let queryLangs = [];
   if (window.localStorage) {
     let selected = window.localStorage.getItem(LOCAL_STORAGE_KEY);
     if (selected) {
       queryLangs = selected.split(',');
     }
-  }
-  if (params) {
-    queryLangs = [].concat(params.lang, queryLangs);
   }
   if (queryLangs.length > 2) {
     queryLangs = queryLangs.slice(0, 2);

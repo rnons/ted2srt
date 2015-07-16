@@ -49,7 +49,6 @@ var routes = {
     homepageHandler();
   },
   '/talks/:slug': function(slug) {
-    var params = utils.parseQueryString();
     $container.innerHTML = [
       '<header>',
         '<div class="container">',
@@ -86,7 +85,7 @@ var routes = {
       '<div id="player-container">',
       '</div>',
       ].join('\n');
-    talkPageHandler($http, slug, params);
+    talkPageHandler($http, slug);
   },
   '/search': function() {
     var params = utils.parseQueryString();
