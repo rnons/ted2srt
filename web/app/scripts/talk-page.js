@@ -19,7 +19,7 @@ var addTalkInfo = function(talk) {
         <span class="Time">Published: ${publishedAt}</span>
       </p>
     </div>
-    `
+    `;
 };
 
 var mkQueryString = function() {
@@ -73,22 +73,22 @@ var addLanguage = function(language, queryLangs) {
 };
 
 let mkVideoUrl = (mediaSlug, codeRate) => {
-  return `http://download.ted.com/talks/${mediaSlug}-${codeRate}.mp4`
-}
+  return `http://download.ted.com/talks/${mediaSlug}-${codeRate}.mp4`;
+};
 
 var addVideoDownloads = function (mediaSlug) {
   document.getElementById('video').innerHTML =`
     <h4 class="Panel-title">Video</h4>
     <ul class="Panel-body"><li>
-     <a href="${mkVideoUrl('1500k')}" title="Right click to save (1280x720)" target="_blank">720p</a>
+     <a href="${mkVideoUrl(mediaSlug, '1500k')}" title="Right click to save (1280x720)" target="_blank">720p</a>
     </li><li>
-     <a href="${mkVideoUrl('950k')}" title="Right click to save (854x480)" target="_blank">480p</a>
+     <a href="${mkVideoUrl(mediaSlug, '950k')}" title="Right click to save (854x480)" target="_blank">480p</a>
     </li><li>
-     <a href="${mkVideoUrl('600k')}" title="Right click to save (640x360)" target="_blank">360p</a>
+     <a href="${mkVideoUrl(mediaSlug, '600k')}" title="Right click to save (640x360)" target="_blank">360p</a>
     </li><li>
-     <a href="${mkVideoUrl('320k')}" title="Right click to save (512x288)" target="_blank">288p</a>
+     <a href="${mkVideoUrl(mediaSlug, '320k')}" title="Right click to save (512x288)" target="_blank">288p</a>
     </li></ul>
-    `
+    `;
 };
 
 var mkTranscriptUrl = function(tid, format, download) {
