@@ -107,6 +107,15 @@ var addTranscriptsHandler = function(tid) {
   });
 };
 
+var isSafari = function() {
+  let ua = navigator.userAgent;
+  if (ua.indexOf('AppleWebKit') !== -1 && ua.indexOf('Chrome') === -1) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 var bindEvents = function(talk) {
   document.getElementById('watch').addEventListener('click', function() {
     var template = [
@@ -116,7 +125,11 @@ var bindEvents = function(talk) {
       '</video>',
       ].join('\n');
     var $playerContainer = document.getElementById('player-container');
-    $playerContainer.style.display = 'flex';
+    if (isSafari()) {
+      $playerContainer.style.display = '-webkit-flex';
+    } else {
+      $playerContainer.style.display = 'flex';
+    }
     $playerContainer.innerHTML =
       template.replace('{{video_src}}', mkVideoUrl(talk.mSlug, '950k'))
               .replace('{{vtt_src}}', mkTranscriptUrl(talk.id, 'vtt', false));
