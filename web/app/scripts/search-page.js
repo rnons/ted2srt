@@ -2,16 +2,17 @@ import utils from './util.js';
 var TED_URL_REGEX = /^https?:\/\/www.ted.com\/talks\/(\w+)/;
 
 export function searchPageHandler($http, params) {
-  var match = TED_URL_REGEX.exec(decodeURIComponent(params.q));
+  let match = TED_URL_REGEX.exec(decodeURIComponent(params.q)),
+      query = params.q.replace(/\+/g, ' ');
   if (match) {
     document.location = '/talks/' + match[1];
   }
   var $input = document.querySelector('#search input[name=q]');
-  $input.value = params.q;
+  $input.value = query;
   $input.focus();
 
-  $http.get(`/api/search?q=${params.q}`).then((data) => {
-    document.title = params.q + ' - TED2srt search';
+  $http.get(`/api/search?q=${query}`).then((data) => {
+    document.title = query + ' - TED2srt search';
     data.forEach(addSearchResult);
   }).catch(err => {
     console.log(err);
