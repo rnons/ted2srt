@@ -1,9 +1,19 @@
 angular.module('reted.controllers', [])
 
 .controller('TalksCtrl', function($scope, $http, Talks) {
-  Talks.fetch().then(function () {
-    $scope.talks = Talks.all();
-  });
+  $scope.model = {}
+  $scope.model.hasMore = true;
+
+  $scope.loadMore = function() {
+    Talks.loadMore().then(function(res) {
+      $scope.$broadcast('scroll.infiniteScrollComplete');
+      $scope.talks = Talks.all();
+      if (res.data.length < 10) {
+        $scope.model.hasMore = false;
+        $scope.$applyAsync();
+      }
+    });
+  }
 })
 
 .controller('TalkCtrl', function($scope, $http, $stateParams) {
