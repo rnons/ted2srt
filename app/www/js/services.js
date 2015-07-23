@@ -1,15 +1,16 @@
 angular.module('reted.services', [])
 
 .factory('API', function($resource) {
+  var PREFIX = (document.location.hostname === 'localhost') ? '' : 'http://ted2srt.org';
   return $resource('/api/', null, {
     getTalks: {
-      url: '/api/talks',
+      url: PREFIX + '/api/talks',
       method: 'GET',
       isArray: true
     },
 
     getTalk: {
-      url: '/api/talks/:slug',
+      url: PREFIX + '/api/talks/:slug',
       method: 'GET',
       params: {
         slug: '@slug'
@@ -17,7 +18,7 @@ angular.module('reted.services', [])
     },
 
     getTalkTranscript: {
-      url: '/api/talks/:id/transcripts/txt?lang=en',
+      url: PREFIX + '/api/talks/:id/transcripts/txt?lang=en',
       method: 'GET',
       params: {
         id: '@id'
