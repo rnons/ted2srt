@@ -5,10 +5,10 @@ angular.module('reted.controllers', [])
   $scope.model.hasMore = true;
 
   $scope.loadMore = function() {
-    Talks.loadMore().then(function(response) {
+    Talks.loadMore().then(function(data) {
       $scope.$broadcast('scroll.infiniteScrollComplete');
       $scope.talks = Talks.all();
-      if (response.data.length < 10) {
+      if (data.length < 10) {
         $scope.model.hasMore = false;
         $scope.$applyAsync();
       }
@@ -16,17 +16,17 @@ angular.module('reted.controllers', [])
   }
 })
 
-.controller('TalkCtrl', function($scope, $http, $stateParams) {
+.controller('TalkCtrl', function($scope, $stateParams, API) {
   var slug = $stateParams.slug;
   var talk = null;
-  $http.get('/api/talks/' + slug)
-    .then(function (response) {
-      $scope.talk = response.data;
+  API.getTalk({slug: slug}).$promise
+    .then(function (data) {
+      $scope.talk = data;
       $scope.talk.speaker = $scope.talk.name.split(':')[0];
       $scope.talk.title = $scope.talk.name.split(':')[1];
-      return $http.get('/api/talks/' + $scope.talk.id + '/transcripts/txt?lang=en');
+      return API.getTalkTranscript({id: $scope.talk.id}).$promise
     })
-    .then(function (response) {
-      $scope.talk.transcript = '<p>' + response.data.split('\n\n').join('</p><p>') + '</p>';
+    .then(function (data) {
+      $scope.talk.transcript = '<p>' + data.text.split('\n\n').join('</p><p>') + '</p>';
     });
 });
