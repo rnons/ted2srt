@@ -5,10 +5,10 @@ angular.module('reted.controllers', [])
   $scope.model.hasMore = true;
 
   $scope.loadMore = function() {
-    Talks.loadMore().then(function(res) {
+    Talks.loadMore().then(function(response) {
       $scope.$broadcast('scroll.infiniteScrollComplete');
       $scope.talks = Talks.all();
-      if (res.data.length < 10) {
+      if (response.data.length < 10) {
         $scope.model.hasMore = false;
         $scope.$applyAsync();
       }
@@ -21,7 +21,7 @@ angular.module('reted.controllers', [])
   var talk = null;
   $http.get('/api/talks/' + slug)
     .then(function (response) {
-      $scope.talk = response.data.talk;
+      $scope.talk = response.data;
       $scope.talk.speaker = $scope.talk.name.split(':')[0];
       $scope.talk.title = $scope.talk.name.split(':')[1];
       return $http.get('/api/talks/' + $scope.talk.id + '/transcripts/txt?lang=en');
