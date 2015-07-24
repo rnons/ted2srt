@@ -40,6 +40,16 @@ angular.module('reted.controllers', [])
   }
 })
 
+.controller('SideMenuCtrl', function($scope, $state, $ionicSideMenuDelegate, API) {
+  $scope.getRandomTalk = function() {
+    API.getRandomTalk().$promise.then(function(data) {
+      $state.go('talks', {slug: data.slug}).then(function() {
+        $ionicSideMenuDelegate.toggleLeft();
+      });
+    });
+  };
+})
+
 .controller('SearchCtrl', function($scope, $stateParams, API) {
   $scope.model = {};
   $scope.model.hasMore = false;

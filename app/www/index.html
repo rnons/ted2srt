@@ -45,9 +45,9 @@
         <ion-header-bar class="bar-stable">
           <h1 class="title">reTed</h1>
         </ion-header-bar>
-        <ion-content>
+        <ion-content ng-controller="SideMenuCtrl">
           <ion-list>
-            <ion-item menu-close href="#/random">Random</ion-item>
+            <ion-item ng-click="getRandomTalk()">Random</ion-item>
             <ion-item menu-close href="#/about">About</ion-item>
           </ion-list>
         </ion-content>

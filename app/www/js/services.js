@@ -28,6 +28,11 @@ angular.module('reted.services', [])
       }
     },
 
+    getRandomTalk: {
+      url: PREFIX + '/api/talks/random',
+      method: 'GET',
+    },
+
     search: {
       url: PREFIX + '/api/search',
       method: 'GET',
