@@ -31,9 +31,12 @@
             <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
           </ion-nav-buttons>
           <ion-nav-back-button></ion-nav-back-button>
-          <ion-nav-title>
+          <ion-nav-title ng-controller="SearchInputCtrl">
             <i class="icon ion-search placeholder-icon"></i>
-            <input type="search" placeholder="Search">
+            <form ng-submit="search()">
+              <input type="search" placeholder="Search" ng-model="model.q">
+              <input type="submit" class="ng-hide">
+            </form>
           </ion-nav-title>
         </ion-nav-bar>
         <ion-nav-view></ion-nav-view>

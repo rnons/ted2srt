@@ -26,6 +26,12 @@ angular.module('reted.services', [])
       transformResponse: function(data, headersGetter, status) {
         return {text: data};
       }
+    },
+
+    search: {
+      url: PREFIX + '/api/search',
+      method: 'GET',
+      isArray: true
     }
   })
 })

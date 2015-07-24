@@ -27,6 +27,11 @@ angular.module('reted', ['ionic', 'ngResource', 'reted.controllers', 'reted.serv
       url: '/talks/:slug',
       templateUrl: 'templates/talk.html',
       controller: 'TalkCtrl'
+    })
+    .state('search', {
+      url: '/search?q',
+      templateUrl: 'templates/talks.html',
+      controller: 'SearchCtrl'
     });
 
   $urlRouterProvider.otherwise('/');

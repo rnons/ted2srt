@@ -29,4 +29,22 @@ angular.module('reted.controllers', [])
     .then(function (data) {
       $scope.talk.transcript = '<p>' + data.text.split('\n\n').join('</p><p>') + '</p>';
     });
+})
+
+.controller('SearchInputCtrl', function($scope, $state) {
+  $scope.model = {};
+  $scope.search = function() {
+    if ($scope.model.q.trim().length) {
+      $state.go('search', {q: $scope.model.q})
+    }
+  }
+})
+
+.controller('SearchCtrl', function($scope, $stateParams, API) {
+  $scope.model = {};
+  $scope.model.hasMore = false;
+
+  API.search({q: $stateParams.q}).$promise.then(function(data) {
+    $scope.talks = data;
+  });
 });

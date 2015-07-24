@@ -35,6 +35,10 @@ body {
   font-size: 24px;
 }
 
+form {
+  display: inline-block;
+}
+
 input[type="search"] {
   display: inline-block;
   padding: 0;
