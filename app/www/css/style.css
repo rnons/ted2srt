@@ -37,6 +37,7 @@ body {
 
 form {
   display: inline-block;
+  vertical-align: top;
 }
 
 input[type="search"] {

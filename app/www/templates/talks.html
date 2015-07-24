@@ -7,7 +7,10 @@
           <img class="Media-figure Image" ng-src="{{talk.images.small}}">
           <div class="Media-body">
             <h2>{{talk.name.split(':')[1]}}</h2>
-            <p>{{talk.name.split(':')[0]}}</p>
+            <p>
+              {{talk.name.split(':')[0]}} |
+              <span>{{talk.publishedAt | date:'yyyy-M-d'}}
+            </p>
           </div>
         </div>
       </ion-item>

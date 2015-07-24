@@ -2,7 +2,10 @@
   <ion-content>
     <article class="TalkPage">
       <h2>{{ talk.title }}</h2>
-      <h4>{{ talk.speaker }}</h4>
+      <h4>
+        {{ talk.speaker }} |
+        <span>{{talk.publishedAt | date:'yyyy-M-d'}}
+      </h4>
       <p ng-bind-html="talk.transcript"></p>
     </article>
   </ion-content>
