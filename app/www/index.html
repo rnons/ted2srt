@@ -27,10 +27,13 @@
     <ion-side-menus>
       <ion-side-menu-content>
         <ion-nav-bar class="bar-assertive">
-          <ion-nav-back-button>
-          </ion-nav-back-button>
+          <ion-nav-buttons side="left">
+            <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+          </ion-nav-buttons>
+          <ion-nav-back-button></ion-nav-back-button>
           <ion-nav-title>
-            reTed
+            <i class="icon ion-search placeholder-icon"></i>
+            <input type="search" placeholder="Search">
           </ion-nav-title>
         </ion-nav-bar>
         <ion-nav-view></ion-nav-view>
