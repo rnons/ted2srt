@@ -1,5 +1,5 @@
 <ion-view>
-  <ion-content>
+  <ion-content ng-class="{'has-subheader': MainCtrl.subheaderShown}">
     <ion-list>
       <ion-item ng-repeat="talk in talks"
                 ng-href="#/talks/{{talk.slug}}">

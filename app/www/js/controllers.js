@@ -1,5 +1,15 @@
 angular.module('reted.controllers', [])
 
+.controller('MainController', function($scope, $state) {
+  var self = this;
+
+  this.search = function() {
+    if (self.q.trim().length) {
+      $state.go('search', {q: self.q})
+    }
+  }
+})
+
 .controller('TalksCtrl', function($scope, $http, Talks) {
   $scope.model = {}
   $scope.model.hasMore = true;
@@ -29,15 +39,6 @@ angular.module('reted.controllers', [])
     .then(function (data) {
       $scope.talk.transcript = '<p>' + data.text.split('\n\n').join('</p><p>') + '</p>';
     });
-})
-
-.controller('SearchInputCtrl', function($scope, $state) {
-  $scope.model = {};
-  $scope.search = function() {
-    if ($scope.model.q.trim().length) {
-      $state.go('search', {q: $scope.model.q})
-    }
-  }
 })
 
 .controller('SideMenuCtrl', function($scope, $state, $ionicSideMenuDelegate, API) {
