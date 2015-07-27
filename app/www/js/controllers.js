@@ -2,12 +2,19 @@ angular.module('reted.controllers', [])
 
 .controller('MainController', function($scope, $state) {
   var self = this;
+  self.subheaderShown = false;
 
-  this.search = function() {
+  self.search = function() {
     if (self.q.trim().length) {
       $state.go('search', {q: self.q})
     }
-  }
+  };
+
+  $scope.$on('$stateChangeSuccess', function() {
+    if ($state.current.name !== 'search') {
+      self.subheaderShown = false;
+    }
+  });
 })
 
 .controller('TalksCtrl', function($scope, $http, Talks) {
