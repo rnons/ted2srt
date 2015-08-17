@@ -1,7 +1,0 @@
-{
-  "name": "ref",
-  "private": true,
-  "dependencies": {
-    "director": "~1.2.8"
-  }
-}

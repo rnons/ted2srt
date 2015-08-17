@@ -68,14 +68,6 @@ gulp.task('images', function () {
     .pipe(gulp.dest('dist/images'));
 });
 
-gulp.task('fonts', function () {
-  return gulp.src(require('main-bower-files')({
-    filter: '**/*.{eot,svg,ttf,woff,woff2}'
-  }).concat('app/fonts/**/*'))
-    .pipe(gulp.dest('.tmp/fonts'))
-    .pipe(gulp.dest('dist/fonts'));
-});
-
 gulp.task('extras', function () {
   return gulp.src([
     'app/*.*',
@@ -87,7 +79,7 @@ gulp.task('extras', function () {
 
 gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
 
-gulp.task('serve', ['scripts', 'styles', 'fonts'], function () {
+gulp.task('serve', ['scripts', 'styles'], function () {
   browserSync({
     ghostMode: false,
     notify: false,
@@ -95,9 +87,6 @@ gulp.task('serve', ['scripts', 'styles', 'fonts'], function () {
     port: 9000,
     server: {
       baseDir: ['.tmp', 'app'],
-      routes: {
-        '/bower_components': 'bower_components'
-      },
       middleware: [
         require('connect-modrewrite')([
           '!.*\.(js|css).*$ /index.html [L]'
@@ -110,30 +99,10 @@ gulp.task('serve', ['scripts', 'styles', 'fonts'], function () {
   gulp.watch([
     'app/*.html',
     'app/images/**/*',
-    '.tmp/fonts/**/*'
   ]).on('change', reload);
 
   gulp.watch('app/scripts/**/*.js', ['scripts']);
   gulp.watch('app/styles/**/*.less', ['styles']);
-  gulp.watch('app/fonts/**/*', ['fonts']);
-  gulp.watch('bower.json', ['wiredep', 'fonts']);
-});
-
-// inject bower components
-gulp.task('wiredep', function () {
-  var wiredep = require('wiredep').stream;
-
-  gulp.src('app/styles/*.less')
-    .pipe(wiredep({
-      ignorePath: /^(\.\.\/)+/
-    }))
-    .pipe(gulp.dest('app/styles'));
-
-  gulp.src('app/*.html')
-    .pipe(wiredep({
-      ignorePath: /^(\.\.\/)*\.\./
-    }))
-    .pipe(gulp.dest('app'));
 });
 
 gulp.task('test', function (done) {
@@ -143,7 +112,7 @@ gulp.task('test', function (done) {
   }, done);
 });
 
-gulp.task('build', isProd ? ['jshint', 'html', 'images', 'fonts', 'extras'] : null, function () {
+gulp.task('build', isProd ? ['jshint', 'html', 'images', 'extras'] : null, function () {
   if (!isProd) {
     throw new Error('Requires NODE_ENV set to production, run `NODE_ENV=production gulp build`');
   }

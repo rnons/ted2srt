@@ -1,4 +1,4 @@
-/* global Router */
+import {Router} from 'director';
 
 import {talkPageHandler} from './talk-page.js';
 import {searchPageHandler} from './search-page.js';
