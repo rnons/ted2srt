@@ -6,44 +6,43 @@ import utils from './models/util';
 
 import {HomeView} from './views/home';
 import {TalkView} from './views/talk';
+import {SearchView} from './views/search';
 
 import {HomeController} from './controllers/home';
 import {TalkController} from './controllers/talk';
-import {searchPageHandler} from './search-page';
+import {SearchController} from './controllers/search';
 
-let talks = new TalksProvider();
+let Talks = new TalksProvider();
 
 var $container = document.getElementById('container');
 var routes = {
   '/': function() {
     $container.innerHTML = document.getElementById('home.html').innerHTML;
     let view = new HomeView();
-    new HomeController(talks, view);
+    new HomeController(Talks, view);
   },
   '/talks/:slug': function(slug) {
-    talks.fetchBySlug(slug).then((talk) => {
+    Talks.fetchBySlug(slug).then((talk) => {
       $container.innerHTML = document.getElementById('talk.html').innerHTML;
       let view = new TalkView();
       new TalkController(talk, view);
     })
   },
   '/search': function() {
-    var params = utils.parseQueryString();
-    $container.innerHTML = [
-      '<header>',
-        '<div class="container">',
-          '<div id="logo"><a href="/">:: TED -> [SRT]</a></div>',
-          '<form id="search" method="GET" action="/search">',
-            '<input type="text" name="q" placeholder="TED talk url or keywords" required>',
-            '<input type="submit">',
-          '</form>',
-        '</div>',
-      '</header>',
-      '<div id="search-page" class="container">',
-        '<ul id="result"></ul>',
-      '</div>',
-      ].join('\n');
-    searchPageHandler($http, params);
+    const TED_URL_REGEX = /^https?:\/\/www.ted.com\/talks\/(\w+)/;
+    let match, params, query;
+    params = utils.parseQueryString();
+    match = TED_URL_REGEX.exec(decodeURIComponent(params.q));
+    query = params.q.replace(/\+/g, ' ');
+    if (match) {
+      document.location = '/talks/' + match[1];
+    }
+
+    Talks.search(query).then((talks) => {
+      $container.innerHTML = document.getElementById('search.html').innerHTML;
+      let view = new SearchView();
+      new SearchController(talks, view, query);
+    });
   },
   '/random': function() {
     $http.get('/api/talks/random').then((data) => {

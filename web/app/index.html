@@ -96,6 +96,30 @@
         </p>
       </div>
     </script>
+    <script type="text/template" id="search.html">
+      <header>
+        <div class="container">
+          <div id="logo"><a href="/">:: TED -> [SRT]</a></div>
+          <form id="search" method="GET" action="/search">
+            <input type="text" name="q" placeholder="TED talk url or keywords" required>
+            <input type="submit">
+          </form>
+        </div>
+      </header>
+      <div id="search-page" class="container">
+        <ul id="result"></ul>
+      </div>
+    </script>
+    <script type="text/template" id="search-item.html">
+      <h3><a href="/talks/{{slug}}">{{title}}</a></h3>
+      <div class="talk-info-body">
+        <a href="/talks/{{slug}}"><img src="{{src}}"></a>
+        <p>
+          {{description}}
+          <span class="Time">Published: {{publishedAt}}</span>
+        </p>
+      </div>
+    </script>
     <script src="scripts/main.js"></script>
   </body>
 </html>

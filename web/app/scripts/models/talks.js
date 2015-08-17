@@ -42,4 +42,13 @@ export class TalksProvider {
       console.log(err);
     });
   }
+
+  search(query) {
+    return Http.get(`/api/search?q=${query}`).then((data) => {
+      let talks = data.map(this.add, this);
+      return Promise.resolve(talks);
+    }).catch(err => {
+      console.log(err);
+    });
+  }
 }
