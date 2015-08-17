@@ -7,6 +7,7 @@ class Talk {
     [this.speaker, this.title] = this.name.split(':');
     this.description = params.description;
     this.slug = params.slug;
+    this.mSlug = params.mSlug;
     this.publishedAt = params.publishedAt;
     this.images = params.images;
     this.languages = params.languages;
@@ -28,6 +29,15 @@ export class TalksProvider {
     return Http.get('/api/talks?limit=5').then((data) => {
       let talks = data.map(this.add, this);
       return Promise.resolve(talks);
+    }).catch(err => {
+      console.log(err);
+    });
+  }
+
+  fetchBySlug(slug) {
+    return Http.get(`/api/talks/${slug}`).then((data) => {
+      let talk = this.add(data);
+      return Promise.resolve(talk);
     }).catch(err => {
       console.log(err);
     });
