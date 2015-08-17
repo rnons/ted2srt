@@ -51,4 +51,13 @@ export class TalksProvider {
       console.log(err);
     });
   }
+
+  random() {
+    return Http.get('/api/talks/random').then((data) => {
+      let talk = this.add(data);
+      return Promise.resolve(talk);
+    }).catch(err => {
+      console.log(err);
+    })
+  }
 }

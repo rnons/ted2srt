@@ -13,9 +13,15 @@ import {TalkController} from './controllers/talk';
 import {SearchController} from './controllers/search';
 
 let Talks = new TalksProvider();
+let $container = document.getElementById('container');
 
-var $container = document.getElementById('container');
-var routes = {
+document.getElementById('random-talk').addEventListener('click', () => {
+  Talks.random().then((talk) => {
+    document.location = 'talks/' + talk.slug;
+  });
+});
+
+let routes = {
   '/': function() {
     $container.innerHTML = document.getElementById('home.html').innerHTML;
     let view = new HomeView();
@@ -44,16 +50,9 @@ var routes = {
       new SearchController(talks, view, query);
     });
   },
-  '/random': function() {
-    $http.get('/api/talks/random').then((data) => {
-      document.location = 'talks/' + data.slug;
-    }).catch(err => {
-      console.log(err);
-    });
-  }
 };
 
-var router = new Router(routes).configure({html5history: true});
+let router = new Router(routes).configure({html5history: true});
 
 router.notfound = function() {
   console.log('not found');
