@@ -2,14 +2,15 @@ import {Router} from 'director';
 
 import {talkPageHandler} from './talk-page.js';
 import {searchPageHandler} from './search-page.js';
+import {TalksProvider} from './models/talks';
 import $http from './http.js';
 import utils from './util.js';
 
+let Talks = new TalksProvider();
+
 var homepageHandler = function() {
-  $http.get('/api/talks?limit=5').then((data) => {
+  Talks.fetch().then((data) => {
     data.forEach(addTalk);
-  }).catch(err => {
-    console.log(err);
   });
 
   var $talks = document.getElementById('talks');
@@ -26,8 +27,8 @@ var homepageHandler = function() {
     var div = document.createElement('div');
     div.innerHTML = template.replace('{{slug}}', talk.slug)
                             .replace('{{src}}', talk.images.medium)
-                            .replace('{{speaker}}', talk.name.split(':')[0])
-                            .replace('{{title}}', talk.name.split(':')[1]);
+                            .replace('{{speaker}}', talk.speaker)
+                            .replace('{{title}}', talk.title);
     div.className = 'tile';
     $talks.appendChild(div);
   }
