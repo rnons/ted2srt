@@ -1,38 +1,13 @@
 import {Router} from 'director';
 
-import {talkPageHandler} from './talk-page.js';
-import {searchPageHandler} from './search-page.js';
 import {TalksProvider} from './models/talks';
-import $http from './http.js';
-import utils from './util.js';
+import {homepageHandler} from './controllers/home';
+import {talkPageHandler} from './talk-page';
+import {searchPageHandler} from './search-page';
+import $http from './http';
+import utils from './util';
 
 let Talks = new TalksProvider();
-
-var homepageHandler = function() {
-  Talks.fetch().then((data) => {
-    data.forEach(addTalk);
-  });
-
-  var $talks = document.getElementById('talks');
-  function addTalk(talk) {
-    var template = [
-      '<a href="/talks/{{slug}}">',
-        '<img src="{{src}}">',
-        '<div class="info">',
-          '<p class="title">{{title}}</p>',
-          '<p class="speaker">{{speaker}}</p>',
-        '</div>',
-      '</a>'
-      ].join('\n');
-    var div = document.createElement('div');
-    div.innerHTML = template.replace('{{slug}}', talk.slug)
-                            .replace('{{src}}', talk.images.medium)
-                            .replace('{{speaker}}', talk.speaker)
-                            .replace('{{title}}', talk.title);
-    div.className = 'tile';
-    $talks.appendChild(div);
-  }
-};
 
 var $container = document.getElementById('container');
 var routes = {
@@ -47,7 +22,7 @@ var routes = {
         '<div id="talks"></div>',
       '</div>',
       ].join('\n');
-    homepageHandler();
+    homepageHandler(Talks);
   },
   '/talks/:slug': function(slug) {
     $container.innerHTML = [
