@@ -1,28 +1,23 @@
 import {Router} from 'director';
 
 import {TalksProvider} from './models/talks';
-import {homepageHandler} from './controllers/home';
-import {talkPageHandler} from './talk-page';
-import {searchPageHandler} from './search-page';
 import $http from './http';
 import utils from './util';
 
-let Talks = new TalksProvider();
+import {HomeView} from './views/home';
+
+import {HomeController} from './controllers/home';
+import {talkPageHandler} from './talk-page';
+import {searchPageHandler} from './search-page';
+
+let talks = new TalksProvider();
 
 var $container = document.getElementById('container');
 var routes = {
   '/': function() {
-    $container.innerHTML = [
-      '<div id="homepage" class="container">',
-        '<div id="logo">:: TED -> [SRT]</div>',
-        '<form id="search" method="GET" action="/search">',
-          '<input type="text" name="q" placeholder="TED talk url or keywords" required>',
-          '<input type="submit">',
-        '</form>',
-        '<div id="talks"></div>',
-      '</div>',
-      ].join('\n');
-    homepageHandler(Talks);
+    $container.innerHTML = document.getElementById('home.html').innerHTML;
+    let view = new HomeView();
+    new HomeController(talks, view);
   },
   '/talks/:slug': function(slug) {
     $container.innerHTML = [

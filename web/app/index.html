@@ -24,6 +24,16 @@
       <a href="http://ted2srt.org/atom.xml" target="_blank">feed</a>
     </footer>
 
+    <script type="text/template" id="home.html">
+      <div id="homepage" class="container">
+        <div id="logo">:: TED -> [SRT]</div>
+        <form id="search" method="GET" action="/search">
+          <input type="text" name="q" placeholder="TED talk url or keywords" required>
+          <input type="submit">
+        </form>
+        <div id="talks"></div>
+      </div>
+    </script>
     <script src="scripts/main.js"></script>
   </body>
 </html>
