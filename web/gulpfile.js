@@ -11,19 +11,21 @@ var reload = browserSync.reload;
 const isProd = (process.env.NODE_ENV === 'production') ? true : false;
 
 gulp.task('scripts', function () {
+  var dest = isProd ? 'dist' : '.tmp';
   return browserify('app/scripts/main.js', { debug: true })
     .transform(babelify)
     .bundle()
     .on('error', function (err) { console.log('Error : ' + err.message); })
-    .pipe(source('main.js'))
+    .pipe(source('scripts/main.js'))
     .pipe(buffer())
     .pipe($.if(isProd, $.uglify()))
-    .pipe(gulp.dest('.tmp/scripts'))
+    .pipe(gulp.dest(dest))
     .pipe(reload({stream: true}));
 });
 
 gulp.task('styles', function () {
-  return gulp.src('app/styles/main.less')
+  var dest = isProd ? 'dist' : '.tmp';
+  return gulp.src('app/styles/main.less', {base: 'app'})
     .pipe($.less({
       paths: ['.']
     }))
@@ -31,7 +33,7 @@ gulp.task('styles', function () {
       require('autoprefixer-core')({browsers: ['last 1 version']})
     ]))
     .pipe($.sourcemaps.write())
-    .pipe(gulp.dest('.tmp/styles'))
+    .pipe(gulp.dest(dest))
     .pipe(reload({stream: true}));
 });
 

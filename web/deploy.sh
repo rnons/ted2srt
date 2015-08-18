@@ -1,4 +1,5 @@
 #!/bin/sh
+rm -rf dist
 NODE_ENV=production gulp build
 tar czf dist.tar.gz dist
 scp dist.tar.gz ted2srt:/tmp/
