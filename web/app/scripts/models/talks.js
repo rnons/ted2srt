@@ -58,6 +58,6 @@ export class TalksProvider {
       return Promise.resolve(talk);
     }).catch(err => {
       console.log(err);
-    })
+    });
   }
 }

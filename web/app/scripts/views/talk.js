@@ -1,4 +1,4 @@
-import utils from '../models/util';
+import Utils from '../models/utils';
 
 export class TalkView {
   constructor() {
@@ -17,7 +17,7 @@ export class TalkView {
 
   bind(event, handler) {
     if (event === 'selectLang') {
-      this.delegate(this.$languages, 'li', 'click', function (e) {
+      this.delegate(this.$languages, 'li', 'click', function () {
         handler(this.dataset.code);
       });
     } else if (event === 'watch') {
@@ -36,14 +36,14 @@ export class TalkView {
         <track kind="captions" src="{{vtt_src}}" default>
       </video>
       `;
-    if (utils.isSafari()) {
+    if (Utils.isSafari()) {
       this.$playerContainer.style.display = '-webkit-flex';
     } else {
       this.$playerContainer.style.display = 'flex';
     }
     this.$playerContainer.innerHTML =
-      template.replace('{{video_src}}', utils.mkVideoUrl(talk.mSlug, '950k'))
-              .replace('{{vtt_src}}', utils.mkTranscriptUrl(talk.id, selected, 'vtt', false));
+      template.replace('{{video_src}}', Utils.mkVideoUrl(talk.mSlug, '950k'))
+              .replace('{{vtt_src}}', Utils.mkTranscriptUrl(talk.id, selected, 'vtt', false));
   }
 
   closeVideo(event) {
@@ -73,12 +73,12 @@ export class TalkView {
   }
 
   downloadTranscript(talk, selected, format) {
-    document.location = utils.mkTranscriptUrl(talk.id, selected, format, true);
+    document.location = Utils.mkTranscriptUrl(talk.id, selected, format, true);
   }
 
   renderInfo(talk) {
     const talkUrl = `https://www.ted.com/talks/${talk.slug}`,
-          publishedAt = utils.pprDate(talk.publishedAt);
+          publishedAt = Utils.pprDate(talk.publishedAt);
 
     this.$talkInfo.innerHTML =
       this.templateInfo.replace(/{{talkUrl}}/g, talkUrl)
@@ -99,7 +99,7 @@ export class TalkView {
   }
 
   renderVideoDownloads(mediaSlug) {
-    let mkVideoUrl = utils.mkVideoUrl.bind(this, mediaSlug);
+    let mkVideoUrl = Utils.mkVideoUrl.bind(this, mediaSlug);
     this.$video.innerHTML =
       this.templateDownloads.replace('{{1500k}}', mkVideoUrl('1500k'))
                             .replace('{{950k}}', mkVideoUrl('950k'))
@@ -115,4 +115,4 @@ export class TalkView {
     });
     this.renderVideoDownloads(talk.mSlug);
   }
-};
+}

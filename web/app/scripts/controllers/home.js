@@ -7,4 +7,4 @@ export class HomeController {
       this.View.render(talks);
     });
   }
-};
+}

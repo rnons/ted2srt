@@ -25,4 +25,4 @@ export class HomeView {
   render(talks) {
     talks.forEach(this.renderTalk, this);
   }
-};
+}

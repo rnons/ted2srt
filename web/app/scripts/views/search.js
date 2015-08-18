@@ -1,4 +1,4 @@
-import utils from '../models/util.js';
+import Utils from '../models/utils.js';
 
 export class SearchView {
   constructor() {
@@ -14,7 +14,7 @@ export class SearchView {
                    .replace('{{src}}', talk.images.medium)
                    .replace('{{title}}', talk.name)
                    .replace('{{description}}', talk.description)
-                   .replace('{{publishedAt}}', utils.pprDate(talk.publishedAt));
+                   .replace('{{publishedAt}}', Utils.pprDate(talk.publishedAt));
     this.$result.appendChild(li);
   }
 

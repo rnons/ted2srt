@@ -1,8 +1,7 @@
 import {Router} from 'director';
 
 import {TalksProvider} from './models/talks';
-import $http from './http';
-import utils from './models/util';
+import Utils from './models/utils';
 
 import {HomeView} from './views/home';
 import {TalkView} from './views/talk';
@@ -32,12 +31,12 @@ let routes = {
       $container.innerHTML = document.getElementById('talk.html').innerHTML;
       let view = new TalkView();
       new TalkController(talk, view);
-    })
+    });
   },
   '/search': function() {
     const TED_URL_REGEX = /^https?:\/\/www.ted.com\/talks\/(\w+)/;
     let match, params, query;
-    params = utils.parseQueryString();
+    params = Utils.parseQueryString();
     match = TED_URL_REGEX.exec(decodeURIComponent(params.q));
     query = params.q.replace(/\+/g, ' ');
     if (match) {
