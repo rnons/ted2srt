@@ -1,7 +1,8 @@
 import {Router} from 'director';
 
-import {TalksProvider} from './models/talks';
+import Http from './models/http';
 import Utils from './models/utils';
+import {TalksProvider} from './models/talks';
 
 import {HomeView} from './views/home';
 import {TalkView} from './views/talk';
@@ -11,7 +12,7 @@ import {HomeController} from './controllers/home';
 import {TalkController} from './controllers/talk';
 import {SearchController} from './controllers/search';
 
-let Talks = new TalksProvider();
+let Talks = new TalksProvider(Http);
 let $container = document.getElementById('container');
 
 document.getElementById('random-talk').addEventListener('click', () => {

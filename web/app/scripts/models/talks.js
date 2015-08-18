@@ -1,5 +1,3 @@
-import Http from './http';
-
 class Talk {
   constructor(params) {
     this.id = params.id;
@@ -15,7 +13,8 @@ class Talk {
 }
 
 export class TalksProvider {
-  constructor() {
+  constructor(Http) {
+    this.Http = Http;
     this.talks = {};
     this.newest = [];
     this.slugToTalk = {};
@@ -37,7 +36,7 @@ export class TalksProvider {
     if (this.newest.length) {
       return Promise.resolve(this.newest);
     } else {
-      return Http.get('/api/talks?limit=5').then((data) => {
+      return this.Http.get('/api/talks?limit=5').then((data) => {
         this.newest = data.map(this.add, this);
         return Promise.resolve(this.newest);
       }).catch(err => {
@@ -51,7 +50,7 @@ export class TalksProvider {
     if (talk) {
       return Promise.resolve(talk);
     } else {
-      return Http.get(`/api/talks/${slug}`).then((data) => {
+      return this.Http.get(`/api/talks/${slug}`).then((data) => {
         talk = this.add(data);
         this.slugToTalk[talk.slug] = talk;
         return Promise.resolve(talk);
@@ -62,7 +61,7 @@ export class TalksProvider {
   }
 
   search(query) {
-    return Http.get(`/api/search?q=${query}`).then((data) => {
+    return this.Http.get(`/api/search?q=${query}`).then((data) => {
       let talks = data.map(this.add, this);
       return Promise.resolve(talks);
     }).catch(err => {
@@ -71,7 +70,7 @@ export class TalksProvider {
   }
 
   random() {
-    return Http.get('/api/talks/random').then((data) => {
+    return this.Http.get('/api/talks/random').then((data) => {
       let talk = this.add(data);
       return Promise.resolve(talk);
     }).catch(err => {
