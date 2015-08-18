@@ -4,7 +4,6 @@ var babelify = require('babelify');
 var browserify = require('browserify');
 var browserSync = require('browser-sync');
 var buffer = require('vinyl-buffer');
-var karma = require('karma').server;
 var source = require('vinyl-source-stream');
 var reload = browserSync.reload;
 
@@ -108,13 +107,6 @@ gulp.task('serve', ['scripts', 'styles'], function () {
 
   gulp.watch('app/scripts/**/*.js', ['scripts']);
   gulp.watch('app/styles/**/*.less', ['styles']);
-});
-
-gulp.task('test', function (done) {
-  karma.start({
-    configFile: __dirname + '/test/karma.conf.js',
-    singleRun: true
-  }, done);
 });
 
 gulp.task('build', isProd ? ['jshint', 'html', 'images', 'extras'] : null, function () {
