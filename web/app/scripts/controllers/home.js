@@ -1,10 +1,8 @@
 export class HomeController {
-  constructor(Talks, View) {
-    this.Talks = Talks;
-    this.View = View;
+  constructor(talks, view) {
+    this.talks = talks;
+    this.view = view;
 
-    this.Talks.fetch().then((talks) => {
-      this.View.render(talks);
-    });
+    this.view.render(talks);
   }
 }

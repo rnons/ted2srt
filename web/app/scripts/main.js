@@ -23,9 +23,11 @@ document.getElementById('random-talk').addEventListener('click', () => {
 
 let routes = {
   '/': function() {
-    $container.innerHTML = document.getElementById('home.html').innerHTML;
-    let view = new HomeView();
-    new HomeController(Talks, view);
+    Talks.fetch().then((talks) => {
+      $container.innerHTML = document.getElementById('home.html').innerHTML;
+      let view = new HomeView();
+      new HomeController(talks, view);
+    });
   },
   '/talks/:slug': function(slug) {
     Talks.fetchBySlug(slug).then((talk) => {
