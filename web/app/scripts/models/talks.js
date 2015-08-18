@@ -17,30 +17,48 @@ class Talk {
 export class TalksProvider {
   constructor() {
     this.talks = {};
+    this.newest = [];
+    this.slugToTalk = {};
   }
 
   add(params) {
-    let talk = new Talk(params);
-    this.talks[talk.id] = talk;
+    let id, talk;
+    id = params.id;
+    if (this.talks[id] && this.talks[id].languages) {
+      talk = this.talks[id];
+    } else {
+      talk = new Talk(params);
+      this.talks[id] = talk;
+    }
     return talk;
   }
 
   fetch() {
-    return Http.get('/api/talks?limit=5').then((data) => {
-      let talks = data.map(this.add, this);
-      return Promise.resolve(talks);
-    }).catch(err => {
-      console.log(err);
-    });
+    if (this.newest.length) {
+      return Promise.resolve(this.newest);
+    } else {
+      return Http.get('/api/talks?limit=5').then((data) => {
+        this.newest = data.map(this.add, this);
+        return Promise.resolve(this.newest);
+      }).catch(err => {
+        console.log(err);
+      });
+    }
   }
 
   fetchBySlug(slug) {
-    return Http.get(`/api/talks/${slug}`).then((data) => {
-      let talk = this.add(data);
+    let talk = this.slugToTalk[slug];
+    if (talk) {
       return Promise.resolve(talk);
-    }).catch(err => {
-      console.log(err);
-    });
+    } else {
+      return Http.get(`/api/talks/${slug}`).then((data) => {
+        talk = this.add(data);
+        this.slugToTalk[talk.slug] = talk;
+        return Promise.resolve(talk);
+      }).catch(err => {
+        console.log(err);
+      });
+    }
   }
 
   search(query) {
