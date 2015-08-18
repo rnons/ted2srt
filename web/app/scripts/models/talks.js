@@ -4,7 +4,7 @@ class Talk {
   constructor(params) {
     this.id = params.id;
     this.name = params.name;
-    [this.speaker, this.title] = this.name.split(':');
+    [this.speaker, this.title] = this.name.split(':').map((s) => s.trim());
     this.description = params.description;
     this.slug = params.slug;
     this.mSlug = params.mSlug;

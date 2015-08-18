@@ -38,7 +38,10 @@ gulp.task('styles', function () {
 });
 
 gulp.task('jshint', function () {
-  return gulp.src('app/scripts/**/*.js')
+  return gulp.src([
+      'app/scripts/**/*.js',
+      'test/**/*.js'
+    ])
     .pipe(reload({stream: true, once: true}))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
