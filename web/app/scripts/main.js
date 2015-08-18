@@ -17,7 +17,7 @@ let $container = document.getElementById('container');
 
 document.getElementById('random-talk').addEventListener('click', () => {
   Talks.random().then((talk) => {
-    document.location = 'talks/' + talk.slug;
+    document.location = '#/talks/' + talk.slug;
   });
 });
 
@@ -41,7 +41,7 @@ let routes = {
     match = TED_URL_REGEX.exec(decodeURIComponent(params.q));
     query = params.q.replace(/\+/g, ' ');
     if (match) {
-      document.location = '/talks/' + match[1];
+      document.location = '#/talks/' + match[1];
     }
 
     Talks.search(query).then((talks) => {
@@ -52,10 +52,10 @@ let routes = {
   },
 };
 
-let router = new Router(routes).configure({html5history: true});
+let router = new Router(routes);
 
 router.notfound = function() {
   console.log('not found');
 };
 
-router.init();
+router.init('/');

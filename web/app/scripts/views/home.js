@@ -2,7 +2,7 @@ export class HomeView {
   constructor() {
     this.$talks = document.getElementById('talks');
     this.template = `
-      <a href="/talks/{{slug}}">
+      <a href="#/talks/{{slug}}">
         <img src="{{src}}">
         <div class="info">
           <p class="title">{{title}}</p>

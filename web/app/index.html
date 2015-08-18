@@ -27,7 +27,7 @@
     <script type="text/template" id="home.html">
       <div id="homepage" class="container">
         <div id="logo">:: TED -> [SRT]</div>
-        <form id="search" method="GET" action="/search">
+        <form id="search" method="GET" action="#/search">
           <input type="text" name="q" placeholder="TED talk url or keywords" required>
           <input type="submit">
         </form>
@@ -37,8 +37,8 @@
     <script type="text/template" id="talk.html">
       <header>
         <div class="container">
-          <div id="logo"><a href="/">:: TED -> [SRT]</a></div>
-          <form id="search" method="GET" action="/search">
+          <div id="logo"><a href="#/">:: TED -> [SRT]</a></div>
+          <form id="search" method="GET" action="#/search">
             <input type="text" name="q" placeholder="TED talk url or keywords" required>
             <input type="submit">
           </form>
@@ -99,8 +99,8 @@
     <script type="text/template" id="search.html">
       <header>
         <div class="container">
-          <div id="logo"><a href="/">:: TED -> [SRT]</a></div>
-          <form id="search" method="GET" action="/search">
+          <div id="logo"><a href="#/">:: TED -> [SRT]</a></div>
+          <form id="search" method="GET" action="#/search">
             <input type="text" name="q" placeholder="TED talk url or keywords" required>
             <input type="submit">
           </form>
@@ -111,9 +111,9 @@
       </div>
     </script>
     <script type="text/template" id="search-item.html">
-      <h3><a href="/talks/{{slug}}">{{title}}</a></h3>
+      <h3><a href="#/talks/{{slug}}">{{title}}</a></h3>
       <div class="talk-info-body">
-        <a href="/talks/{{slug}}"><img src="{{src}}"></a>
+        <a href="#/talks/{{slug}}"><img src="{{src}}"></a>
         <p>
           {{description}}
           <span class="Time">Published: {{publishedAt}}</span>
