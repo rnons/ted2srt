@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "test": "karma start test/karma.conf.js",
-    "e2e": "mocha test/e2e/home.js --no-timeouts --harmony"
+    "e2e": "mocha test/e2e/*.js --no-timeouts --harmony"
   },
   "devDependencies": {
     "autoprefixer-core": "^4.0.2",
