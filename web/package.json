@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "test": "karma start test/karma.conf.js"
+    "test": "karma start test/karma.conf.js",
+    "e2e": "mocha test/e2e/home.js --no-timeouts --harmony"
   },
   "devDependencies": {
     "autoprefixer-core": "^4.0.2",
@@ -31,6 +32,7 @@
     "karma-firefox-launcher": "^0.1.6",
     "karma-mocha": "^0.2.0",
     "opn": "^1.0.0",
+    "selenium-webdriver": "^2.46.1",
     "sinon": "^1.15.4",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
