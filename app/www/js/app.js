@@ -5,6 +5,7 @@ angular.module('reted', [
   'ionic',
   'ngResource',
   'reted.services',
+  'reted.filters',
   'reted.directives',
   'reted.controllers',
 ])

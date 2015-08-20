@@ -21,6 +21,7 @@
     <!-- your app's js -->
     <script src="js/app.js"></script>
     <script src="js/services.js"></script>
+    <script src="js/filters.js"></script>
     <script src="js/directives.js"></script>
     <script src="js/controllers.js"></script>
   </head>
@@ -33,9 +34,11 @@
           </ion-nav-buttons>
           <ion-nav-back-button></ion-nav-back-button>
           <ion-nav-buttons side="right">
-            <button class="button button-icon icon reted-search"
+            <button class="button button-clear button-readt"
                     ng-hide="MainCtrl.subheaderShown"
-                    ng-click="MainCtrl.subheaderShown = true"></button>
+                    ng-click="MainCtrl.subheaderShown = true">
+              <i class="icon reted-search"></i>
+            </button>
           </ion-nav-buttons>
           <ion-nav-title>reTed</ion-nav-title>
         </ion-nav-bar>

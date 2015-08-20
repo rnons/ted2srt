@@ -44,3 +44,8 @@ input[type="search"] {
   font-size: 16px;
   line-height: normal;
 }
+
+.button-readt,
+.bar .button.button-readt .icon:before {
+  font-size: 24px;
+}
