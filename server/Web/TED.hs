@@ -5,7 +5,6 @@ module Web.TED
   , FileType (..)
   , Item (..)
   , toSub
-  , responseSize
   -- * Re-exports
   , module Web.TED.API
   , module Web.TED.TalkPage
@@ -15,9 +14,6 @@ module Web.TED
 import           Control.Exception as E
 import           Control.Monad
 import           Data.Aeson
-import qualified Data.ByteString.Char8 as B8
-import           Data.Conduit (($$+-))
-import qualified Data.HashMap.Strict as HM
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import           qualified Data.Text as T
@@ -266,15 +262,3 @@ subtitlePath sub =
                                      , filename sub
                                      , suffix
                                      ]
-
-responseSize :: Text -> IO Float
-responseSize rurl = E.catch
-    (do req <- parseUrl $ T.unpack rurl
-        filesize <- withManager $ \manager -> do
-            res <- http req manager
-            let hdrs = responseHeaders res
-            responseBody res $$+- return ()
-            return $ HM.fromList hdrs HM.! "Content-Length"
-        return $ read (B8.unpack filesize) / 1024 / 1024)
-    (\e -> do print (e :: E.SomeException)
-              return 0)
