@@ -9,6 +9,7 @@ class Talk {
     this.publishedAt = params.publishedAt;
     this.images = params.images;
     this.languages = params.languages;
+    this.hasAudio = params.hasAudio;
   }
 }
 

@@ -6,11 +6,13 @@ export class TalkView {
     this.$languages = document.querySelector('#languages ul');
     this.$watch = document.getElementById('watch');
     this.$playerContainer = document.getElementById('player-container');
+    this.$audio = document.getElementById('audio');
     this.$video = document.getElementById('video');
     this.$transcripts = document.querySelector('#subtitles ul');
 
     this.templateInfo = document.getElementById('talk-info.html').innerHTML;
-    this.templateDownloads = document.getElementById('video-downloads.html').innerHTML;
+    this.templateAudio = document.getElementById('audio-download.html').innerHTML;
+    this.templateVideo = document.getElementById('video-downloads.html').innerHTML;
 
     this.$playerContainer.addEventListener('click', this.closeVideo);
   }
@@ -98,13 +100,19 @@ export class TalkView {
     }
   }
 
+  renderAudioDownload(mediaSlug) {
+    let src = Utils.mkAudioUrl(mediaSlug);
+    this.$audio.classList.remove('u-hidden');
+    this.$audio.innerHTML = this.templateAudio.replace('{{src}}', src);
+  }
+
   renderVideoDownloads(mediaSlug) {
     let mkVideoUrl = Utils.mkVideoUrl.bind(this, mediaSlug);
     this.$video.innerHTML =
-      this.templateDownloads.replace('{{1500k}}', mkVideoUrl('1500k'))
-                            .replace('{{950k}}', mkVideoUrl('950k'))
-                            .replace('{{600k}}', mkVideoUrl('600k'))
-                            .replace('{{320k}}', mkVideoUrl('320k'));
+      this.templateVideo.replace('{{1500k}}', mkVideoUrl('1500k'))
+                        .replace('{{950k}}', mkVideoUrl('950k'))
+                        .replace('{{600k}}', mkVideoUrl('600k'))
+                        .replace('{{320k}}', mkVideoUrl('320k'));
   }
 
   render(talk, selected) {
@@ -113,6 +121,9 @@ export class TalkView {
     talk.languages.forEach((lang) => {
       this.renderLanguages(lang, selected);
     });
+    if (talk.hasAudio) {
+      this.renderAudioDownload(talk.mSlug);
+    }
     this.renderVideoDownloads(talk.mSlug);
   }
 }

@@ -30,6 +30,10 @@ function pprDate(dateString) {
   return [year, month, dayOfMonth].join('-');
 }
 
+function mkAudioUrl(mediaSlug) {
+  return `http://download.ted.com/talks/${mediaSlug}.mp3`;
+}
+
 function mkVideoUrl(mediaSlug, codeRate) {
   return `http://download.ted.com/talks/${mediaSlug}-${codeRate}.mp4`;
 }
@@ -68,6 +72,7 @@ export default {
   parseQueryString,
   pprDate,
   isSafari,
+  mkAudioUrl,
   mkVideoUrl,
   mkTranscriptUrl
 };
