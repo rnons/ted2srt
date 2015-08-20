@@ -5,7 +5,7 @@ class Talk {
     [this.speaker, this.title] = this.name.split(':').map((s) => s.trim());
     this.description = params.description;
     this.slug = params.slug;
-    this.mSlug = params.mSlug;
+    this.mediaSlug = params.mSlug;
     this.publishedAt = params.publishedAt;
     this.images = params.images;
     this.languages = params.languages;

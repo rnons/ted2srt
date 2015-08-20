@@ -44,7 +44,7 @@ export class TalkView {
       this.$playerContainer.style.display = 'flex';
     }
     this.$playerContainer.innerHTML =
-      template.replace('{{video_src}}', Utils.mkVideoUrl(talk.mSlug, '950k'))
+      template.replace('{{video_src}}', Utils.mkVideoUrl(talk.mediaSlug, '950k'))
               .replace('{{vtt_src}}', Utils.mkTranscriptUrl(talk.id, selected, 'vtt', false));
   }
 
@@ -122,8 +122,8 @@ export class TalkView {
       this.renderLanguages(lang, selected);
     });
     if (talk.hasAudio) {
-      this.renderAudioDownload(talk.mSlug);
+      this.renderAudioDownload(talk.mediaSlug);
     }
-    this.renderVideoDownloads(talk.mSlug);
+    this.renderVideoDownloads(talk.mediaSlug);
   }
 }
