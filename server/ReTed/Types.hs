@@ -9,20 +9,20 @@ import           Data.Time (UTCTime)
 import           GHC.Generics (Generic)
 import           Prelude hiding (id)
 
-import qualified Web.TED as API
+import qualified Web.TED as TED
 
 mkTalkUrl :: Text -> Text
 mkTalkUrl s = "http://www.ted.com/talks/" <> s
 
-marshal :: API.Talk -> IO RedisTalk
+marshal :: TED.Talk -> IO RedisTalk
 marshal talk = do
-    (mediaSlug, mediaPad) <- API.getSlugAndPad $ mkTalkUrl $ API.slug talk
-    return RedisTalk { id = API.id talk
-                     , name = API.name talk
-                     , description = API.description talk
-                     , slug = API.slug talk
-                     , images = API.images talk
-                     , publishedAt = API.publishedAt talk
+    (mediaSlug, mediaPad) <- TED.getSlugAndPad $ mkTalkUrl $ TED.slug talk
+    return RedisTalk { id = TED.id talk
+                     , name = TED.name talk
+                     , description = TED.description talk
+                     , slug = TED.slug talk
+                     , images = TED.images talk
+                     , publishedAt = TED.publishedAt talk
                      , mSlug = mediaSlug
                      , mPad = mediaPad
                      }
@@ -32,7 +32,7 @@ data RedisTalk = RedisTalk
     , name          :: Text
     , description   :: Text
     , slug          :: Text
-    , images        :: API.Image
+    , images        :: TED.Image
     , publishedAt   :: UTCTime
     , mSlug         :: Text
     , mPad          :: Double
@@ -41,15 +41,16 @@ instance FromJSON RedisTalk
 instance ToJSON RedisTalk
 
 data TalkCache = TalkCache
-    { caLanguages   :: [API.Language]
+    { caLanguages   :: [TED.Language]
     , caAudio       :: Bool
     } deriving (Generic, Show)
 instance FromJSON TalkCache
 instance ToJSON TalkCache
 
-data TalkResp = TalkResp RedisTalk [API.Language]
+-- data TalkResp = TalkResp RedisTalk [TED.Language]
+data TalkResp = TalkResp RedisTalk TalkCache
 instance ToJSON TalkResp where
-    toJSON (TalkResp talk languages) =
+    toJSON (TalkResp talk cache) =
         object [ "id" .= id talk
                , "name" .= name talk
                , "description" .= description talk
@@ -57,11 +58,12 @@ instance ToJSON TalkResp where
                , "images" .= images talk
                , "publishedAt" .= publishedAt talk
                , "mSlug" .= mSlug talk
-               , "languages" .= languages
+               , "languages" .= caLanguages cache
+               , "hasAudio" .= caAudio cache
                ]
 
-apiTalkToValue :: API.Talk -> TalkCache
-apiTalkToValue talk =
-    TalkCache { caLanguages = API.languages talk
-              , caAudio = API.talkHasAudio talk
+tedTalkToCache :: TED.Talk -> TalkCache
+tedTalkToCache talk =
+    TalkCache { caLanguages = TED.languages talk
+              , caAudio = TED.talkHasAudio talk
               }

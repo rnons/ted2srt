@@ -75,17 +75,17 @@ getTalkH conn slug = do
             case result of
                 TxSuccess (Just talk, Just cache) ->
                     let retTalk = fromJust $ decodeStrict talk
-                        retLang = caLanguages $ fromJust $ decodeStrict cache
-                    in return $ TalkResp retTalk retLang
+                        retCache = fromJust $ decodeStrict cache
+                    in return $ TalkResp retTalk retCache
                 TxError _ -> left err404
                 _ -> do
                     talk' <- liftIO $ queryTalk $ read $ C.unpack tid
                     case talk' of
                         Just talk -> do
-                            let value = apiTalkToValue talk
+                            let cache = tedTalkToCache talk
                             liftIO $ runRedis conn $
                                 setex ("cache:" <> tid) (3600*24)
-                                      (L.toStrict $ encode value)
+                                      (L.toStrict $ encode cache)
                             getTalkH conn slug
                         Nothing   -> left err404
         Right Nothing    -> do
@@ -97,7 +97,7 @@ getTalkH conn slug = do
                         Nothing   -> left err404
                         Just talk -> do
                             dbtalk <- liftIO $ marshal talk
-                            let value = apiTalkToValue talk
+                            let cache = tedTalkToCache talk
                             liftIO $ runRedis conn $ multiExec $ do
                                 set (C.pack $ T.unpack $ API.slug talk)
                                     (C.pack $ show tid)
@@ -105,8 +105,8 @@ getTalkH conn slug = do
                                     (L.toStrict $ encode dbtalk)
                                 setex ("cache:" <> C.pack (show tid))
                                       (3600*24)
-                                      (L.toStrict $ encode value)
-                            return $ TalkResp dbtalk (API.languages talk)
+                                      (L.toStrict $ encode cache)
+                            return $ TalkResp dbtalk cache
                 _         -> left err404
         Left _ -> left err404
 
