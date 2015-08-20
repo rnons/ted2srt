@@ -6,9 +6,7 @@ module Web.TED
   , Item (..)
   , toSub
   -- * Re-exports
-  , module Web.TED.API
-  , module Web.TED.TalkPage
-  , module Web.TED.Feed
+  , module TED
   ) where
 
 import           Control.Exception as E
@@ -27,9 +25,9 @@ import           Text.Printf
 import           Text.XML.Cursor (attributeIs, element, fromDocument, ($//), (&//))
 import qualified Text.XML.Cursor as XC
 
-import Web.TED.API
-import Web.TED.TalkPage
-import Web.TED.Feed
+import Web.TED.API as TED
+import Web.TED.TalkPage as TED
+import Web.TED.Feed as TED
 
 
 data Caption = Caption

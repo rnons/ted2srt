@@ -19,6 +19,7 @@ import           Data.Aeson
 import           Data.Aeson.Types (defaultOptions, Options(..), parseMaybe)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (sort)
+import           Data.Maybe (fromMaybe)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time (UTCTime)
@@ -78,9 +79,8 @@ instance FromJSON Languages where
     parseJSON (Object v) =
         let langCode = HM.keys v
             langName = flip map (HM.elems v) $ \lang ->
-                case parseMaybe parseLanguage lang of
-                    Just name -> name
-                    Nothing   -> error "Failed to parse languages"
+                fromMaybe (error "Failed to parse languages")
+                          (parseMaybe parseLanguage lang)
         in  return $ Languages $ map (uncurry Language) $ sort $ zip langName langCode
       where
         parseLanguage (Object o) = o .: "name"
