@@ -57,7 +57,7 @@ test.describe('Talk page', () => {
   test.it('should not be able to select more than two languages', () => {
     var item;
     driver.wait(until.elementsLocated(By.css('li[data-code="en"')), 1000);
-    driver.findElement(By.css('li[data-code="en"')).click()
+    driver.findElement(By.css('li[data-code="en"')).click();
     driver.findElement(By.css('li[data-code="zh-cn"')).click();
     item = driver.findElement(By.css('li[data-code="zh-tw"'));
     item.click();
@@ -73,7 +73,7 @@ test.describe('Talk page', () => {
 
   test.it('should store/read selected to/from localStorage', () => {
     driver.wait(until.elementsLocated(By.css('li[data-code="en"')), 1000);
-    driver.findElement(By.css('li[data-code="en"')).click()
+    driver.findElement(By.css('li[data-code="en"')).click();
     driver.navigate().refresh();
     driver.findElements(By.css('#languages li.selected'))
       .then((eles) => {

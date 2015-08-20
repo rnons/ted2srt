@@ -26,12 +26,12 @@ test.describe('homepage', () => {
     driver.findElements(By.className('tile'))
       .then((eles) => {
         assert.equal(eles.length, 5);
-      })
+      });
   });
 
   test.it('should redirect to search page', () => {
     var input, query, expected;
-    query = 'google',
+    query = 'google';
     expected = 'http://localhost:9001/?q=google#/search';
     driver.wait(until.elementsLocated(By.name('q')), 1000);
     input = driver.findElement(By.name('q'));
