@@ -1,5 +1,6 @@
 import gulp from 'gulp';
 import path from 'path';
+import preprocess from 'gulp-preprocess';
 import sass from 'gulp-sass';
 import webserver from 'gulp-webserver';
 
@@ -30,11 +31,13 @@ gulp.task('scripts', () => {
     .pipe(gulp.dest('./www/js'));
 
   return gulp.src('src/js/**/*.js', {base: 'src'})
+    .pipe(preprocess())
     .pipe(gulp.dest(DEST));
 });
 
 gulp.task('html', () => {
   return gulp.src('src/**/*.html')
+    .pipe(preprocess())
     .pipe(gulp.dest(DEST));
 });
 

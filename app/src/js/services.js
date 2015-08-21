@@ -1,7 +1,10 @@
 angular.module('reted.services', [])
 
 .factory('API', function($resource) {
-  var PREFIX = (document.location.hostname === 'localhost') ? '' : 'http://ted2srt.org';
+  var PREFIX = '';
+  // @if NODE_ENV='production'
+    PREFIX = 'http://ted2srt.org';
+  // @endif
   return $resource('/api/', null, {
     getTalks: {
       url: PREFIX + '/api/talks',
