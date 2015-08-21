@@ -55,11 +55,14 @@ angular.module('reted.controllers', [])
       $scope.model.audioPlayerShown = true;
       $scope.model.audioProgress = 'Loading...';
     } else if (status === 2) {
+      if ($scope.timer) {
+        $interval.cancel($scope.timer);
+      }
       $scope.model.audioPlayerShown = true;
       $scope.model.audioProgress = 'Loading...';
       $scope.model.playButtonShown = true;
       $scope.model.playButtonClass = 'ion-pause';
-      $interval(function() {
+      $scope.timer = $interval(function() {
         $scope.media.getCurrentPosition(function(pos) {
           if (!duration) {
             duration = $filter('seconds')($scope.media.getDuration());
@@ -100,6 +103,8 @@ angular.module('reted.controllers', [])
 
   $scope.$on('$destroy', function() {
     if ($scope.media) {
+      $interval.cancel($scope.timer);
+      $scope.media.stop();
       $scope.media.release();
     }
   });
