@@ -9,7 +9,8 @@
     "gulp-preprocess": "^1.2.0",
     "gulp-util": "^2.2.14",
     "gulp-webserver": "^0.9.1",
-    "shelljs": "^0.3.0"
+    "shelljs": "^0.3.0",
+    "yargs": "^3.20.0"
   },
   "cordovaPlugins": [
     "cordova-plugin-device",

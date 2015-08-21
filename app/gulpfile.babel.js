@@ -2,10 +2,13 @@ import gulp from 'gulp';
 import path from 'path';
 import preprocess from 'gulp-preprocess';
 import sass from 'gulp-sass';
+import {exec} from 'shelljs';
 import webserver from 'gulp-webserver';
+import yargs from 'yargs';
 
 const DEST = 'www';
 const isProd = (process.env.NODE_ENV === 'production') ? true : false;
+const argv = yargs.argv;
 
 gulp.task('fonts', () => {
   return gulp.src('bower_components/ionic/release/fonts/*')
@@ -65,4 +68,12 @@ gulp.task('build', ['default'], () => {
   if (!isProd) {
     throw new Error('Requires NODE_ENV set to production, run `NODE_ENV=production gulp build`');
   }
+});
+
+gulp.task('run', ['default'], () => {
+  // NODE_ENV=production gulp run --platform android
+  // gulp run -r
+  let platform = argv.platform || argv.p || 'android';
+  let reload = argv.r ? '--livereload' : '';
+  exec(`ionic run ${platform} ${reload}`);
 });
