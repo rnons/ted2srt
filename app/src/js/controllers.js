@@ -99,7 +99,9 @@ angular.module('reted.controllers', [])
   };
 
   $scope.$on('$destroy', function() {
-    $scope.media.release();
+    if ($scope.media) {
+      $scope.media.release();
+    }
   });
 })
 
