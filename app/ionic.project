@@ -7,10 +7,6 @@
       "proxyUrl": "http://localhost:3001"
     }
   ],
-  "gulpStartupTasks": [
-    "sass",
-    "watch"
-  ],
   "watchPatterns": [
     "www/**/*",
     "!www/lib/**/*"

@@ -1,10 +1,8 @@
 {
   "name": "HelloIonic",
   "private": "true",
-  "devDependencies": {
-    "ionic": "driftyco/ionic-bower#1.0.0"
-  },
   "dependencies": {
-    "angular-resource": "~1.4.3"
+    "angular-resource": "~1.4.3",
+    "ionic": "~1.1.0"
   }
 }
