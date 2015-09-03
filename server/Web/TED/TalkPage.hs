@@ -43,7 +43,7 @@ getSlugAndPad rurl = E.catch
 mediaSlug :: L8.ByteString -> Text
 mediaSlug body = T.pack $ last $ last r
   where
-    pat = "\"file\":\"http://download.ted.com/talks/(.+)-320k.mp4\\?apikey" :: String
+    pat = "\"file\":\"http://download.ted.com/talks/(.+)-320k.mp4\\?dnt" :: String
     r = L8.unpack body =~ pat :: [[String]]
 
 -- TED talk videos begin with different versions of TED promos.
