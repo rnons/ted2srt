@@ -25,6 +25,7 @@ let routes = {
   '/': function() {
     Talks.fetch().then((talks) => {
       $container.innerHTML = document.getElementById('home.html').innerHTML;
+      window.scrollTo(0, 0);
       let view = new HomeView();
       new HomeController(talks, view);
     });
@@ -32,6 +33,7 @@ let routes = {
   '/talks/:slug': function(slug) {
     Talks.fetchBySlug(slug).then((talk) => {
       $container.innerHTML = document.getElementById('talk.html').innerHTML;
+      window.scrollTo(0, 0);
       let view = new TalkView();
       new TalkController(talk, view);
     });
@@ -48,6 +50,7 @@ let routes = {
 
     Talks.search(query).then((talks) => {
       $container.innerHTML = document.getElementById('search.html').innerHTML;
+      window.scrollTo(0, 0);
       let view = new SearchView();
       new SearchController(talks, view, query);
     });
