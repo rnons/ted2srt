@@ -18,10 +18,11 @@ import           Data.Maybe (catMaybes, mapMaybe, fromJust, fromMaybe)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import           Database.Redis hiding (decode)
 import qualified Filesystem.Path.CurrentOS as FS
+import           Network.HTTP.Types (status200, status404)
+import           Network.Wai (Application, Response, responseFile, responseLBS)
 import           Servant
 import           System.Random (randomRIO)
 
@@ -40,11 +41,14 @@ type TedApi =
        "talks" :> QueryParam "tid" Integer :> QueryParam "limit" Integer :> Get '[JSON] [RedisTalk]
   :<|> "talks" :> "random" :> Get '[JSON] RedisTalk
   :<|> "talks" :> Capture "slug" Text :> Get '[JSON] TalkResp
-  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] Text
-  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> "download" :> Capture "format" FileType :> QueryParams "lang" Text :> Get '[PlainText] (Headers '[Header "Content-Disposition" String] Text)
+  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Raw
+  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> "download" :> Capture "format" FileType :> QueryParams "lang" Text :> Raw
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [RedisTalk]
 
 type Handler t = EitherT ServantErr IO t
+
+notFound :: (Response -> t) -> t
+notFound respond = respond $ responseLBS status404 [] "Not Found"
 
 getTalksH :: Connection -> Maybe Integer -> Maybe Integer -> Handler [RedisTalk]
 getTalksH conn mStartTid mLimit = do
@@ -115,26 +119,31 @@ getSubtitlePath conn tid format lang = do
     talk <- getTalkFromRedis conn tid
     toSub $ Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) format
 
-getTalkSubtitleH :: Connection -> Int -> FileType -> [Text] -> Handler Text
-getTalkSubtitleH conn tid format lang = do
+getTalkSubtitleH :: Connection -> Int -> FileType -> [Text] -> Application
+getTalkSubtitleH conn tid format lang _ respond = do
+    let cType = if format == VTT then "text/vtt" else "text/plain"
     path <- liftIO $ getSubtitlePath conn tid format lang
     case path of
-        Just p -> liftIO $ T.readFile p >>= return
-        _      -> left err404
+        Just p  -> respond $ responseFile status200 [("Content-Type", cType)] p Nothing
+        Nothing -> notFound respond
 
 downloadTalkSubtitleH :: Connection
                       -> Int
                       -> FileType
                       -> [Text]
-                      -> Handler (Headers '[Header "Content-Disposition" String] Text)
-downloadTalkSubtitleH conn tid format lang = do
+                      -> Application
+downloadTalkSubtitleH conn tid format lang _ respond = do
     path <- liftIO $ getSubtitlePath conn tid format lang
     case path of
         Just p  -> do
-            let filename = FS.encodeString $ FS.filename $ FS.decodeString p
-                headerContent = "attachment; filename=" ++ filename
-            liftIO (T.readFile p) >>= return . addHeader headerContent
-        _       -> left err404
+            let filename = C.pack $ FS.encodeString $ FS.filename $ FS.decodeString p
+            respond $ responseFile
+                status200
+                [ ("Content-Type", "text/plain")
+                , ("Content-Disposition", "attachment; filename=" <> filename)]
+                p
+                Nothing
+        Nothing -> notFound respond
 
 getSearchH :: Connection -> Maybe Text -> Handler [RedisTalk]
 getSearchH conn (Just q) = liftIO $ do
