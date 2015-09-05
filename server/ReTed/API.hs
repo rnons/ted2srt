@@ -116,8 +116,11 @@ getTalkH conn slug = do
 
 getSubtitlePath :: Connection -> Int -> FileType -> [Text] -> IO (Maybe FilePath)
 getSubtitlePath conn tid format lang = do
-    talk <- getTalkFromRedis conn tid
-    toSub $ Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) format
+    mTalk <- getTalkFromRedis conn tid
+    case mTalk of
+        Just talk -> toSub $
+            Subtitle tid (slug talk) lang (mSlug talk) (mPad talk) format
+        Nothing -> return Nothing
 
 getTalkSubtitleH :: Connection -> Int -> FileType -> [Text] -> Application
 getTalkSubtitleH conn tid format lang _ respond = do
@@ -166,23 +169,24 @@ getSearchH conn (Just q) = liftIO $ do
 getSearchH _ Nothing = left err400
 
 getRandomTalkH :: Connection -> Handler RedisTalk
-getRandomTalkH conn = liftIO $ do
-    mCount <- runRedis conn $ zcard "tids"
-    case mCount of
-        Right count -> do
-            r <- randomRIO (0, count-1)
-            mTid <- runRedis conn $ zrange "tids" r r
-            getTalkFromRedis conn $ either (const 0) (read . C.unpack . head) mTid
-        Left err -> error $ show err
+getRandomTalkH conn = do
+    mTalk <- liftIO $ do
+        mCount <- runRedis conn $ zcard "tids"
+        case mCount of
+            Right count -> do
+                r <- randomRIO (0, count-1)
+                mTid <- runRedis conn $ zrange "tids" r r
+                getTalkFromRedis conn $ either (const 0) (read . C.unpack . head) mTid
+            Left err -> error $ show err
+    maybe (left err404) return mTalk
 
-getTalkFromRedis :: Connection -> Int -> IO RedisTalk
+getTalkFromRedis :: Connection -> Int -> IO (Maybe RedisTalk)
 getTalkFromRedis conn tid = do
     result <- runRedis conn $ get (C.pack $ show tid)
-    case result of
-        Right (Just talk') -> do
-            return $ fromJust $ decodeStrict talk'
-        Right Nothing -> error "nothing"
-        Left err -> error $ show err
+    either lhr rhr result
+  where
+    lhr = error . show
+    rhr = return . maybe Nothing decodeStrict
 
 tedApi :: Proxy TedApi
 tedApi = Proxy
