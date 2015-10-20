@@ -1,4 +1,7 @@
-@import "components/variables";
+@import "base/custom_media";
+@import "base/variables";
+
+@import "components/container";
 @import "components/featured_talks";
 @import "components/logo";
 @import "components/search_form";
@@ -52,13 +55,6 @@ p {
 
 .u-hidden {
   display: none;
-}
-
-.container {
-  width: 100%;
-  max-width: var(--page-width);
-  min-width: 320px;
-  margin: auto;
 }
 
 #search {
@@ -279,9 +275,6 @@ header {
 }
 
 @media all and (min-width: 496px) {
-  .container {
-    width: 480px;
-  }
   #homepage {
     #talks {
       width: 480px;
@@ -324,9 +317,6 @@ header {
 }
 
 @media all and (min-width: 960px) {
-  .container {
-    width: 960px;
-  }
   #homepage {
     #talks {
       flex-direction: column;

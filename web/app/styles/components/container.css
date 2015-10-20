@@ -1,0 +1,11 @@
+.Container {
+  width: 100%;
+  min-width: 304px;
+  margin: auto;
+}
+
+@media (--large) {
+  .Container {
+    max-width: 960px;
+  }
+}

@@ -25,7 +25,7 @@
     </footer>
 
     <script type="text/template" id="home.html">
-      <div id="homepage" class="container">
+      <div id="homepage" class="Container">
         <div id="logo" class="Logo Logo--homepage u-margin-tl">:: TED -> [SRT]</div>
         <form id="search" class="SearchForm u-margin-vxl" method="GET" action="#/search">
           <input type="text"
@@ -35,12 +35,16 @@
                  required>
           <input type="submit" class="SearchForm-submit">
         </form>
-        <div id="talks" class="FeaturedTalks"></div>
+        <div class="AspectRatio">
+          <div class="AspectRatio-wrapper">
+            <div id="talks" class="AspectRatio-content FeaturedTalks"></div>
+          </div>
+        </div>
       </div>
     </script>
     <script type="text/template" id="talk.html">
       <header>
-        <div class="container">
+        <div class="Container">
           <div id="logo"><a href="#/">:: TED -> [SRT]</a></div>
           <form id="search" method="GET" action="#/search">
             <input type="text" name="q" placeholder="TED talk url or keywords" required>
@@ -48,7 +52,7 @@
           </form>
         </div>
       </header>
-      <div id="talk-page" class="container">
+      <div id="talk-page" class="Container">
         <div id="main">
           <div id="talk-info"></div>
           <div id="languages" class="Panel">
@@ -111,7 +115,7 @@
     </script>
     <script type="text/template" id="search.html">
       <header>
-        <div class="container">
+        <div class="Container">
           <div id="logo"><a href="#/">:: TED -> [SRT]</a></div>
           <form id="search" method="GET" action="#/search">
             <input type="text" name="q" placeholder="TED talk url or keywords" required>
@@ -119,7 +123,7 @@
           </form>
         </div>
       </header>
-      <div id="search-page" class="container">
+      <div id="search-page" class="Container">
         <ul id="result"></ul>
       </div>
     </script>
