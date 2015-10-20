@@ -9,10 +9,10 @@ var reload = browserSync.reload;
 var source = require('vinyl-source-stream');
 var url = require('url');
 
+const DEST = './dist';
 const isProd = (process.env.NODE_ENV === 'production') ? true : false;
 
 gulp.task('scripts', function () {
-  var dest = isProd ? 'dist' : '.tmp';
   return browserify('app/scripts/main.js', { debug: true })
     .transform(babelify)
     .bundle()
@@ -20,21 +20,16 @@ gulp.task('scripts', function () {
     .pipe(source('scripts/main.js'))
     .pipe(buffer())
     .pipe($.if(isProd, $.uglify()))
-    .pipe(gulp.dest(dest))
+    .pipe(gulp.dest(DEST))
     .pipe(reload({stream: true}));
 });
 
 gulp.task('styles', function () {
-  var dest = isProd ? 'dist' : '.tmp';
-  return gulp.src('app/styles/main.less', {base: 'app'})
-    .pipe($.less({
-      paths: ['.']
+  return gulp.src('app/styles/main.css', {base: 'app'})
+    .pipe($.cssnext({
+      compress: true
     }))
-    .pipe($.postcss([
-      require('autoprefixer-core')({browsers: ['last 1 version']})
-    ]))
-    .pipe($.sourcemaps.write())
-    .pipe(gulp.dest(dest))
+    .pipe(gulp.dest(DEST))
     .pipe(reload({stream: true}));
 });
 
@@ -49,22 +44,24 @@ gulp.task('jshint', function () {
     .pipe($.if(!browserSync.active, $.jshint.reporter('fail')));
 });
 
-gulp.task('html', ['scripts', 'styles'], function () {
-  var assets = $.useref.assets({searchPath: ['.tmp', '.']});
-
-  return gulp.src('app/*.html')
-    .pipe(assets)
-    .pipe($.if('**/vendor.js', $.uglify()))
-    .pipe($.if('*.css', $.csso()))
-    .pipe(assets.restore())
-    .pipe($.useref())
-    .pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
-    .pipe(gulp.dest('dist'));
+gulp.task('assets', function () {
+  return gulp.src([
+    'app/favicon.ico',
+    'app/search.xml'
+    ])
+    .pipe(gulp.dest(DEST));
 });
 
-gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
+gulp.task('html', function () {
+  return gulp.src('app/*.html')
+    .pipe($.minifyHtml({conditionals: true, loose: true}))
+    .pipe(gulp.dest(DEST))
+    .pipe(reload({stream: true}));
+});
 
-gulp.task('serve', ['scripts', 'styles'], function () {
+gulp.task('clean', require('del').bind(null, ['dist']));
+
+gulp.task('serve', ['styles', 'scripts', 'assets', 'html'], function () {
   var proxyOptions = url.parse('http://localhost:3001');
   proxyOptions.route = '/api';
   browserSync({
@@ -73,16 +70,15 @@ gulp.task('serve', ['scripts', 'styles'], function () {
     open: false,
     port: 9000,
     server: {
-      baseDir: ['.tmp', 'app'],
+      baseDir: [DEST],
       middleware: [proxy(proxyOptions)]
     }
   });
 
   // watch for changes
-  gulp.watch('app/*.html').on('change', reload);
-
+  gulp.watch('app/*.html', ['html']);
   gulp.watch('app/scripts/**/*.js', ['scripts']);
-  gulp.watch('app/styles/**/*.less', ['styles']);
+  gulp.watch('app/styles/**/*.css', ['styles']);
 });
 
 gulp.task('build', isProd ? ['jshint', 'html'] : null, function () {
