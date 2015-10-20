@@ -26,12 +26,16 @@
 
     <script type="text/template" id="home.html">
       <div id="homepage" class="container">
-        <div id="logo">:: TED -> [SRT]</div>
-        <form id="search" method="GET" action="#/search">
-          <input type="text" name="q" placeholder="TED talk url or keywords" required>
-          <input type="submit">
+        <div id="logo" class="Logo Logo--homepage u-margin-tl">:: TED -> [SRT]</div>
+        <form id="search" class="SearchForm u-margin-vxl" method="GET" action="#/search">
+          <input type="text"
+                 class="SearchForm-input"
+                 name="q"
+                 placeholder="TED talk url or keywords"
+                 required>
+          <input type="submit" class="SearchForm-submit">
         </form>
-        <div id="talks"></div>
+        <div id="talks" class="FeaturedTalks"></div>
       </div>
     </script>
     <script type="text/template" id="talk.html">

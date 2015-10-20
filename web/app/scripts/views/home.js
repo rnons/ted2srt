@@ -3,10 +3,10 @@ export class HomeView {
     this.$talks = document.getElementById('talks');
     this.template = `
       <a href="#/talks/{{slug}}">
-        <img src="{{src}}">
-        <div class="info">
-          <p class="title">{{title}}</p>
-          <p class="speaker">{{speaker}}</p>
+        <img class="FeaturedTalks-image" src="{{src}}">
+        <div class="FeaturedTalks-info">
+          <div class="FeaturedTalks-title">{{title}}</div>
+          <div class="FeaturedTalks-speaker">{{speaker}}</div>
         </div>
       </a>
       `;
@@ -18,7 +18,7 @@ export class HomeView {
                                  .replace('{{src}}', talk.images.medium)
                                  .replace('{{speaker}}', talk.speaker)
                                  .replace('{{title}}', talk.title);
-    div.className = 'tile';
+    div.className = 'FeaturedTalks-tile';
     this.$talks.appendChild(div);
   }
 

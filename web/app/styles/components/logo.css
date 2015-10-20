@@ -1,0 +1,9 @@
+.Logo {
+  color: var(--primary-red);
+}
+
+.Logo--homepage {
+  text-align: center;
+  font-size: 2rem;
+}
+

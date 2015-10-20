@@ -48,11 +48,14 @@ let routes = {
       document.location = '#/talks/' + match[1];
     }
 
+    $container.innerHTML = document.getElementById('search.html').innerHTML;
     Talks.search(query).then((talks) => {
-      $container.innerHTML = document.getElementById('search.html').innerHTML;
       window.scrollTo(0, 0);
       let view = new SearchView();
-      new SearchController(talks, view, query);
+      setTimeout(() => {
+        new SearchController(talks, view, query);
+      }, 2000);
+      // new SearchController(talks, view, query);
     });
   },
 };

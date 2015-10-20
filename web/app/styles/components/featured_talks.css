@@ -1,0 +1,48 @@
+.FeaturedTalks {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  width: 960px;
+  height: 360px;
+  margin: auto;
+}
+
+.FeaturedTalks-tile {
+  position: relative;
+  margin: 1px;
+  height: 178px;
+  width: 238px;
+}
+.FeaturedTalks-tile:hover {
+  box-shadow: 0 8px 8px var(--primary-gray);
+  z-index: 7;
+}
+.FeaturedTalks-tile:first-child {
+  width: 478px;
+  height: 358px;
+  font-size: 1.2em;
+}
+
+.FeaturedTalks-image {
+  width: 100%;
+  height: 100%;
+}
+
+.FeaturedTalks-info {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 0.4em 0.8em;
+  background-color: var(--primary-gray);
+  color: white;
+}
+
+.FeaturedTalks-title {
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+
+.FeaturedTalks-speaker {
+  font-size: 0.8em;
+  margin-bottom: 0.4em;
+}
