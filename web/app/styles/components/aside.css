@@ -1,3 +1,7 @@
+.Aside {
+  width: 100%;
+}
+
 .Aside li:not(:last-child) {
   border-bottom: var(--separator);
 }

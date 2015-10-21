@@ -1,12 +1,15 @@
 .Layout {
   display: flex;
+  flex-wrap: wrap;
 }
 
-.Layout-main {
-  flex: 5 0 0;
-  margin-right: 6rem;
-}
+@media (--large) {
+  .Layout-main {
+    flex: 5 0 0;
+    margin-right: 6rem;
+  }
 
-.Layout-aside {
-  flex: 1 0 0;
+  .Layout-aside {
+    flex: 1 0 0;
+  }
 }

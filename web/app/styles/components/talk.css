@@ -1,6 +1,8 @@
-.Talk-image {
-  width: 240px;
-  height: 180px;
+@media (--large) {
+  .Talk-image {
+    width: 240px;
+    height: 180px;
+  }
 }
 
 .Talk-image img {

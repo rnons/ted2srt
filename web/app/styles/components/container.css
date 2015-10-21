@@ -4,6 +4,11 @@
   margin: auto;
 }
 
+@media (--medium) {
+  .Container {
+    max-width: 480px;
+  }
+}
 @media (--large) {
   .Container {
     max-width: 960px;
