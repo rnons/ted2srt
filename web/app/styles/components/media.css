@@ -14,5 +14,10 @@
 }
 
 .Media-body {
-  flex: 1;
+  flex: 1 1 auto;
+}
+@media (--large) {
+  .Media-body {
+    flex: 1;
+  }
 }

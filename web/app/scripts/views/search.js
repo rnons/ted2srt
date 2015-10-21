@@ -9,6 +9,7 @@ export class SearchView {
 
   renderTalk(talk) {
     let li = document.createElement('li');
+    li.classList.add('u-margin-vm');
     li.innerHTML =
       this.template.replace(/{{slug}}/g, talk.slug)
                    .replace('{{src}}', talk.images.medium)

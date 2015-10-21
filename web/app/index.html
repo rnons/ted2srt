@@ -47,8 +47,13 @@
     </script>
     <script type="text/template" id="talk.html">
       <header class="Header Container u-margin-bm">
-        <div id="logo" class="Logo Header-logo"><a href="#/">:: TED -> [SRT]</a></div>
-        <form id="search" class="SearchForm Header-search" method="GET" action="#/search">
+        <div id="logo" class="Logo Header-logo">
+          <a href="#/">:: TED -> [SRT]</a>
+        </div>
+        <form id="search"
+              class="SearchForm Header-search"
+              method="GET"
+              action="#/search">
           <input type="text"
                  class="SearchForm-input"
                  name="q"
@@ -123,14 +128,21 @@
       </div>
     </script>
     <script type="text/template" id="search.html">
-      <header>
-        <div class="Container">
-          <div id="logo"><a href="#/">:: TED -> [SRT]</a></div>
-          <form id="search" method="GET" action="#/search">
-            <input type="text" name="q" placeholder="TED talk url or keywords" required>
-            <input type="submit">
-          </form>
+      <header class="Header Container">
+        <div id="logo" class="Logo Header-logo">
+          <a href="#/">:: TED -> [SRT]</a>
         </div>
+        <form id="search"
+              class="SearchForm Header-search"
+              method="GET"
+              action="#/search">
+          <input type="text"
+                 class="SearchForm-input"
+                 name="q"
+                 placeholder="TED talk url or keywords"
+                 required>
+          <input type="submit" class="SearchForm-submit">
+        </form>
       </header>
       <div id="search-page" class="Container">
         <ul id="result"></ul>
@@ -138,9 +150,11 @@
     </script>
     <script type="text/template" id="search-item.html">
       <h3><a href="#/talks/{{slug}}">{{title}}</a></h3>
-      <div class="talk-info-body">
-        <a href="#/talks/{{slug}}"><img src="{{src}}"></a>
-        <p>
+      <div class="Media Talk">
+        <a class="Media-image Talk-image" href="#/talks/{{slug}}">
+          <img src="{{src}}">
+        </a>
+        <p class="Media-body">
           {{description}}
           <span class="Time">Published: {{publishedAt}}</span>
         </p>
