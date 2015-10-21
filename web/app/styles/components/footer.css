@@ -1,0 +1,12 @@
+.Footer {
+  padding: 1em;
+  text-align: center;
+  border-top: var(--border);
+}
+
+.Footer--absolute {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}

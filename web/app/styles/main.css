@@ -5,111 +5,16 @@
 @import "components/aside";
 @import "components/container";
 @import "components/featured_talks";
+@import "components/footer";
 @import "components/header";
 @import "components/languages";
 @import "components/layout";
 @import "components/logo";
 @import "components/media";
+@import "components/panel";
+@import "components/player";
 @import "components/search_form";
+@import "components/site";
 @import "components/talk";
 
 @import "utils/spacing";
-
-*, *:before, *:after {
-    box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 8px;
-  background: #fafafa;
-  font-size: 16px;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: #333;
-}
-
-ul {
-  margin: 0;
-  padding: 0;
-}
-
-li {
-  list-style-type: none;
-}
-
-a {
-  text-decoration: none;
-  color: #333;
-  cursor: pointer;
-  &:hover {
-    text-decoration: underline;
-    color: var(--primary-red);
-  }
-  img {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-h3 {
-  margin-top: 0;
-}
-
-p {
-  margin-top: 0;
-  line-height: 1.6;
-}
-
-#player-container {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-color: rgba(0, 0, 0, 0.87);
-  display: none;
-  justify-content: center;
-  align-items: center;
-}
-
-.Site {
-  position: relative;
-  min-height: 100vh;
-  padding-bottom: 5em;
-}
-
-.Footer {
-  padding: 1em;
-  text-align: center;
-  border-top: var(--border);
-}
-
-.Footer--absolute {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
-.Time {
-  display: block;
-  font-style: italic;
-  color: var(--primary-gray);
-}
-
-.Panel {
-  border: var(--border);
-  border-radius: 4px;
-  margin-bottom: 1em;
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.Panel-title {
-  margin: 0;
-  padding: 5px 0 5px 10px;
-  font-size: 1rem;
-  background-color: var(--separator-color);
-  border-bottom: var(--separator);
-}

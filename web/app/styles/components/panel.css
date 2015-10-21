@@ -1,0 +1,13 @@
+.Panel {
+  border: var(--border);
+  border-radius: 4px;
+  margin-bottom: 1em;
+}
+
+.Panel-title {
+  background-color: var(--separator-color);
+  border-bottom: var(--separator);
+  font-size: 1rem;
+  margin: 0;
+  padding: 5px 0 5px 10px;
+}
