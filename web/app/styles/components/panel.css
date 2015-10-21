@@ -4,6 +4,10 @@
   margin-bottom: 1em;
 }
 
+.Panel.is-hidden {
+  display: none;
+}
+
 .Panel-title {
   background-color: var(--separator-color);
   border-bottom: var(--separator);

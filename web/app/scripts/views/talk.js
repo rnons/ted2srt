@@ -102,7 +102,7 @@ export class TalkView {
 
   renderAudioDownload(mediaSlug) {
     let src = Utils.mkAudioUrl(mediaSlug);
-    this.$audio.classList.remove('u-hidden');
+    this.$audio.classList.remove('is-hidden');
     this.$audio.innerHTML = this.templateAudio.replace('{{src}}', src);
   }
 
