@@ -1,0 +1,19 @@
+.Header {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.Header-logo {
+  margin-right: 1em;
+  font-size: 1.4em;
+  line-height: 2.4rem;
+}
+
+.Header-logo a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.Header-search {
+  flex: 1;
+}

@@ -1,0 +1,11 @@
+.Media {
+  display: flex;
+}
+
+.Media-image {
+  margin-right: 1em;
+}
+
+.Media-body {
+  flex: 1;
+}

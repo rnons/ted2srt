@@ -1,10 +1,17 @@
-@import "base/custom_media";
 @import "base/variables";
+@import "base/custom_media";
+@import "base/elements";
 
+@import "components/aside";
 @import "components/container";
 @import "components/featured_talks";
+@import "components/header";
+@import "components/languages";
+@import "components/layout";
 @import "components/logo";
+@import "components/media";
 @import "components/search_form";
+@import "components/talk";
 
 @import "utils/spacing";
 
@@ -215,7 +222,7 @@ header {
 .Site {
   position: relative;
   min-height: 100vh;
-  padding-bottom: 6em;
+  padding-bottom: 5em;
 }
 
 .Footer {
@@ -307,7 +314,6 @@ header {
     }
   }
   #talk-page {
-    width: 480px;
     #languages {
       li {
         width: 219px;
@@ -335,7 +341,6 @@ header {
     }
   }
   #talk-page {
-    width: 960px;
     #main {
       flex: 5 0 0;
       margin-right: 6em;

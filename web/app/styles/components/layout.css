@@ -1,0 +1,12 @@
+.Layout {
+  display: flex;
+}
+
+.Layout-main {
+  flex: 5 0 0;
+  margin-right: 6rem;
+}
+
+.Layout-aside {
+  flex: 1 0 0;
+}

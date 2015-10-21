@@ -1,12 +1,12 @@
 .u-margin-tm { margin-top: 1em};
-.u-margin-rm { margin-top: 1em};
-.u-margin-bm { margin-top: 1em};
-.u-margin-lm { margin-top: 1em};
+.u-margin-rm { margin-right: 1em};
+.u-margin-bm { margin-bottom: 1em};
+.u-margin-lm { margin-left: 1em};
 
 .u-margin-tl { margin-top: 2em};
-.u-margin-rl { margin-top: 2em};
-.u-margin-bl { margin-top: 2em};
-.u-margin-ll { margin-top: 2em};
+.u-margin-rl { margin-right: 2em};
+.u-margin-bl { margin-bottom: 2em};
+.u-margin-ll { margin-left: 2em};
 
 .u-margin-vm {
   margin-top: 1em;

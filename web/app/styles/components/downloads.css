@@ -1,0 +1,14 @@
+.Downloads li:not(:last-child) {
+  border-bottom: var(--separator);
+}
+
+.Downloads li a {
+  display: inline-block;
+  padding: 5px 0 5px 20px;
+  width: 100%;
+  text-decoration: none;
+  color: var(--primary-black);
+}
+.Downloads li a:hover {
+  color: var(--primary-red);
+}

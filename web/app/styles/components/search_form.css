@@ -1,6 +1,9 @@
 .SearchForm {
-  margin: auto;
   width: 100%;
+}
+
+.SearchForm--homepage {
+  margin: auto;
   max-width: 480px;
 }
 
