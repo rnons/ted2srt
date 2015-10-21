@@ -1,4 +1,10 @@
 .Header {
+  margin-bottom: 1em;
+  padding: 20px 0;
+  border-bottom: var(--border);
+}
+
+.Header-content {
   display: flex;
   flex-wrap: wrap;
 }
