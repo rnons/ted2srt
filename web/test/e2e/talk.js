@@ -14,7 +14,7 @@ test.describe('Talk page', () => {
   });
 
   test.beforeEach(() => {
-    driver.get('http://localhost:9001/#/talks/randall_munroe_comics_that_ask_what_if');
+    driver.get('http://localhost:9000/#/talks/randall_munroe_comics_that_ask_what_if');
     driver.navigate().refresh();
   });
 

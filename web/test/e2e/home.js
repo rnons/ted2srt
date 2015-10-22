@@ -14,7 +14,7 @@ test.describe('homepage', () => {
   });
 
   test.beforeEach(() => {
-    driver.get('http://localhost:9001');
+    driver.get('http://localhost:9000');
   });
 
   test.after(() => {
@@ -22,8 +22,8 @@ test.describe('homepage', () => {
   });
 
   test.it('should show five talks', () => {
-    driver.wait(until.elementsLocated(By.className('tile')), 1000);
-    driver.findElements(By.className('tile'))
+    driver.wait(until.elementsLocated(By.className('FeaturedTalks-tile')), 1000);
+    driver.findElements(By.className('FeaturedTalks-tile'))
       .then((eles) => {
         assert.equal(eles.length, 5);
       });
@@ -32,7 +32,7 @@ test.describe('homepage', () => {
   test.it('should redirect to search page', () => {
     var input, query, expected;
     query = 'google';
-    expected = 'http://localhost:9001/?q=google#/search';
+    expected = 'http://localhost:9000/?q=google#/search';
     driver.wait(until.elementsLocated(By.name('q')), 1000);
     input = driver.findElement(By.name('q'));
     input.sendKeys(query);
@@ -45,7 +45,7 @@ test.describe('homepage', () => {
   test.it('should redirect to talk page', () => {
     var input, query, expected;
     query = 'https://www.ted.com/talks/randall_munroe_comics_that_ask_what_if';
-    expected = 'http://localhost:9001/#/talks/randall_munroe_comics_that_ask_what_if';
+    expected = 'http://localhost:9000/#/talks/randall_munroe_comics_that_ask_what_if';
     driver.wait(until.elementsLocated(By.name('q')), 1000);
     input = driver.findElement(By.name('q'));
     input.sendKeys(query);
