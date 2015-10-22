@@ -14,6 +14,8 @@ import {SearchController} from './controllers/search';
 
 let Talks = new TalksProvider(Http);
 let $container = document.getElementById('container');
+const headerTpl = document.getElementById('header.html').innerHTML;
+const loadingTpl = document.getElementById('loading.html').innerHTML;
 
 document.getElementById('random-talk').addEventListener('click', () => {
   Talks.random().then((talk) => {
@@ -31,11 +33,15 @@ let routes = {
     });
   },
   '/talks/:slug': function(slug) {
+    $container.innerHTML = document.getElementById('talk.html')
+                                   .innerHTML
+                                   .replace('{{>header}}', headerTpl)
+                                   .replace('{{>loading}}', loadingTpl);
+    window.scrollTo(0, 0);
     Talks.fetchBySlug(slug).then((talk) => {
-      $container.innerHTML = document.getElementById('talk.html').innerHTML;
-      window.scrollTo(0, 0);
       let view = new TalkView();
       new TalkController(talk, view);
+      document.querySelector('.Loading').classList.add('is-hidden');
     });
   },
   '/search': function() {
@@ -48,14 +54,15 @@ let routes = {
       document.location = '#/talks/' + match[1];
     }
 
-    $container.innerHTML = document.getElementById('search.html').innerHTML;
+    $container.innerHTML = document.getElementById('search.html')
+                                   .innerHTML
+                                   .replace('{{>header}}', headerTpl)
+                                   .replace('{{>loading}}', loadingTpl);
+    window.scrollTo(0, 0);
     Talks.search(query).then((talks) => {
-      window.scrollTo(0, 0);
       let view = new SearchView();
-      setTimeout(() => {
-        new SearchController(talks, view, query);
-      }, 2000);
-      // new SearchController(talks, view, query);
+      new SearchController(talks, view, query);
+      document.querySelector('.Loading').classList.add('is-hidden');
     });
   },
 };

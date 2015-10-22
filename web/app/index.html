@@ -45,7 +45,7 @@
         </div>
       </div>
     </script>
-    <script type="text/template" id="talk.html">
+    <script type="text/template" id="header.html">
       <header class="Header">
         <div class="Header-content Container">
           <div id="logo" class="Logo Header-logo">
@@ -64,6 +64,27 @@
           </form>
         </div>
       </header>
+    </script>
+    <script type="text/template" id="loading.html">
+      <div class="Loading">
+        <svg class="Loading-figure">
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+          <rect class="Loading-step"></rect>
+        <svg>
+      </div>
+    </script>
+    <script type="text/template" id="talk.html">
+      {{>header}}
       <div class="Container">
         <div class="Layout">
           <main id="main" class="Layout-main">
@@ -75,7 +96,7 @@
           </main>
           <aside id="downloads" class="Layout-aside Aside">
             <div id="audio" class="Panel is-hidden"></div>
-            <div id="video" class="Panel"></div>
+            <div id="video" class="Panel is-hidden"></div>
             <div id="subtitles" class="Panel">
               <h4 class="Panel-title">Transcripts</h4>
               <ul class="Panel-body"><li>
@@ -94,6 +115,7 @@
         <div id="player-container" class="Player">
         </div>
       </div>
+      {{>loading}}
     </script>
     <script type="text/template" id="audio-download.html">
       <h4 class="Panel-title">Audio</h4>
@@ -130,27 +152,11 @@
       </div>
     </script>
     <script type="text/template" id="search.html">
-      <header class="Header">
-        <div class="Header-content Container">
-          <div id="logo" class="Logo Header-logo">
-            <a href="#/">:: TED -> [SRT]</a>
-          </div>
-          <form id="search"
-                class="SearchForm Header-search"
-                method="GET"
-                action="#/search">
-            <input type="text"
-                   class="SearchForm-input"
-                   name="q"
-                   placeholder="TED talk url or keywords"
-                   required>
-            <input type="submit" class="SearchForm-submit">
-          </form>
-        </div>
-      </header>
+      {{>header}}
       <div id="search-page" class="Container">
         <ul id="result"></ul>
       </div>
+      {{>loading}}
     </script>
     <script type="text/template" id="search-item.html">
       <h3><a href="#/talks/{{slug}}">{{title}}</a></h3>

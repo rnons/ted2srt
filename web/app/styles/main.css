@@ -9,6 +9,7 @@
 @import "components/header";
 @import "components/languages";
 @import "components/layout";
+@import "components/loading";
 @import "components/logo";
 @import "components/media";
 @import "components/panel";
