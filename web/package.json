@@ -25,6 +25,7 @@
     "karma-firefox-launcher": "^0.1.6",
     "karma-mocha": "^0.2.0",
     "postcss-cssnext": "^2.2.0",
+    "postcss-for": "^2.0.0",
     "postcss-import": "^7.1.0",
     "proxy-middleware": "^0.13.1",
     "selenium-webdriver": "^2.46.1",

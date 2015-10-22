@@ -27,6 +27,7 @@ gulp.task('scripts', function () {
 gulp.task('styles', function () {
   var processors = [
     require('postcss-import'),
+    require('postcss-for'),
     require('postcss-cssnext'),
     require('cssnano'),
   ];
