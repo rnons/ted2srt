@@ -1,6 +1,3 @@
+A website to download bilingual subtitles of TED talks.
+
 Inspired by [ted2mkv](https://github.com/oxplot/ted2mkv)
-
-Some other sites:
-
-http://www.srtmerger.org/en/
-http://greatdreamers.sinaapp.com/tedsubs/
