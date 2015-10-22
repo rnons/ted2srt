@@ -85,7 +85,7 @@ gulp.task('serve', ['styles', 'scripts', 'assets', 'html'], function () {
   gulp.watch('app/styles/**/*.css', ['styles']);
 });
 
-gulp.task('build', isProd ? ['jshint', 'html'] : null, function () {
+gulp.task('build', isProd ? ['jshint', 'styles', 'scripts', 'assets', 'html'] : null, function () {
   if (!isProd) {
     throw new Error('Requires NODE_ENV set to production, run `NODE_ENV=production gulp build`');
   }
