@@ -25,10 +25,13 @@ gulp.task('scripts', function () {
 });
 
 gulp.task('styles', function () {
+  var processors = [
+    require('postcss-import'),
+    require('postcss-cssnext'),
+    require('cssnano'),
+  ];
   return gulp.src('app/styles/main.css', {base: 'app'})
-    .pipe($.cssnext({
-      compress: true
-    }))
+    .pipe($.postcss(processors))
     .pipe(gulp.dest(DEST))
     .pipe(reload({stream: true}));
 });
