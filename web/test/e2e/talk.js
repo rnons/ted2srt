@@ -34,6 +34,22 @@ test.describe('Talk page', () => {
       });
   });
 
+  test.it('should show audio', () => {
+    driver.wait(until.elementLocated(By.id('audio')), 1000);
+    driver.findElement(By.id('audio')).isDisplayed()
+      .then((displayed) => {
+        assert(displayed);
+      });
+  });
+
+  test.it('should show video', () => {
+    driver.wait(until.elementLocated(By.id('video')), 1000);
+    driver.findElement(By.id('video')).isDisplayed()
+      .then((displayed) => {
+        assert(displayed);
+      });
+  });
+
   test.it('should be able to select a language', () => {
     driver.wait(until.elementsLocated(By.css('li[data-code="en"')), 1000);
     driver.findElement(By.css('li[data-code="en"')).click();
