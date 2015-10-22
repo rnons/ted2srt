@@ -2,15 +2,12 @@
   width: 100%;
   min-width: 304px;
   margin: auto;
-}
 
-@media (--medium) {
-  .Container {
+  @media (--medium) {
     max-width: 480px;
   }
-}
-@media (--large) {
-  .Container {
+
+  @media (--large) {
     max-width: 960px;
   }
 }

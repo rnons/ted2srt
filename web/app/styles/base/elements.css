@@ -33,8 +33,9 @@ a {
   text-decoration: none;
   color: #333;
   cursor: pointer;
-}
-a:hover {
-  text-decoration: underline;
-  color: var(--primary-red);
+
+  @nest &:hover {
+    text-decoration: underline;
+    color: var(--primary-red);
+  }
 }
