@@ -10,7 +10,7 @@ module ReTed.API
 import           Control.Applicative((<$>), (<*>))
 import           Control.Monad (forM, liftM)
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Trans.Either (EitherT, left)
+import           Control.Monad.Trans.Except (ExceptT, throwE)
 import           Data.Aeson (encode, decodeStrict)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as L
@@ -30,12 +30,13 @@ import Web.TED (FileType(..), Subtitle(..), getTalkId, queryTalk, toSub)
 import qualified Web.TED as API
 import ReTed.Types
 
-instance FromText FileType where
-    fromText "srt" = Just SRT
-    fromText "vtt" = Just VTT
-    fromText "txt" = Just TXT
-    fromText "lrc" = Just LRC
-    fromText _     = Nothing
+
+instance FromHttpApiData FileType where
+    parseUrlPiece "srt" = Right SRT
+    parseUrlPiece "vtt" = Right VTT
+    parseUrlPiece "txt" = Right TXT
+    parseUrlPiece "lrc" = Right LRC
+    parseUrlPiece _     = Left "Unsupported"
 
 type TedApi =
        "talks" :> QueryParam "tid" Integer :> QueryParam "limit" Integer :> Get '[JSON] [RedisTalk]
@@ -45,7 +46,7 @@ type TedApi =
   :<|> "talks" :> Capture "tid" Int :> "transcripts" :> "download" :> Capture "format" FileType :> QueryParams "lang" Text :> Raw
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [RedisTalk]
 
-type Handler t = EitherT ServantErr IO t
+type Handler = ExceptT ServantErr IO
 
 notFound :: (Response -> t) -> t
 notFound respond = respond $ responseLBS status404 [] "Not Found"
@@ -81,7 +82,7 @@ getTalkH conn slug = do
                     let retTalk = fromJust $ decodeStrict talk
                         retCache = fromJust $ decodeStrict cache
                     in return $ TalkResp retTalk retCache
-                TxError _ -> left err404
+                TxError _ -> throwE err404
                 _ -> do
                     talk' <- liftIO $ queryTalk $ read $ C.unpack tid
                     case talk' of
@@ -91,14 +92,14 @@ getTalkH conn slug = do
                                 setex ("cache:" <> tid) (3600*24)
                                       (L.toStrict $ encode cache)
                             getTalkH conn slug
-                        Nothing   -> left err404
+                        Nothing   -> throwE err404
         Right Nothing    -> do
             mtid <- liftIO $ getTalkId $ mkTalkUrl slug
             case mtid of
                 Just tid -> do
                     talk' <- liftIO $ queryTalk tid
                     case talk' of
-                        Nothing   -> left err404
+                        Nothing   -> throwE err404
                         Just talk -> do
                             dbtalk <- liftIO $ marshal talk
                             let cache = tedTalkToCache talk
@@ -111,8 +112,8 @@ getTalkH conn slug = do
                                       (3600*24)
                                       (L.toStrict $ encode cache)
                             return $ TalkResp dbtalk cache
-                _         -> left err404
-        Left _ -> left err404
+                _         -> throwE err404
+        Left _ -> throwE err404
 
 getSubtitlePath :: Connection -> Int -> FileType -> [Text] -> IO (Maybe FilePath)
 getSubtitlePath conn tid format lang = do
@@ -166,7 +167,7 @@ getSearchH conn (Just q) = liftIO $ do
                                 (L.toStrict $ encode dbtalk)
                             zadd "tids" [(realToFrac $ utcTimeToPOSIXSeconds $ publishedAt dbtalk, C.pack $ show $ API.s_id t)]
                         return $ Just dbtalk
-getSearchH _ Nothing = left err400
+getSearchH _ Nothing = throwE err400
 
 getRandomTalkH :: Connection -> Handler RedisTalk
 getRandomTalkH conn = do
@@ -178,7 +179,7 @@ getRandomTalkH conn = do
                 mTid <- runRedis conn $ zrange "tids" r r
                 getTalkFromRedis conn $ either (const 0) (read . C.unpack . head) mTid
             Left err -> error $ show err
-    maybe (left err404) return mTalk
+    maybe (throwE err404) return mTalk
 
 getTalkFromRedis :: Connection -> Int -> IO (Maybe RedisTalk)
 getTalkFromRedis conn tid = do

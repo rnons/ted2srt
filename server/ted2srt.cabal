@@ -13,54 +13,14 @@ extra-source-files:  README.md
 cabal-version:       >=1.10
 
 library
+    hs-source-dirs:   src
     exposed-modules:  Web.TED
+                    , ReTed.API
     other-modules:    Web.TED.API
+                    , Web.TED.Feed
                     , Web.TED.TalkPage
-    build-depends:    base == 4.*
-                    , aeson >= 0.7
-                    , bytestring >= 0.10
-                    , conduit >= 1.1
-                    , containers >= 0.5
-                    , directory >= 1.2
-                    , html-conduit >= 1.1
-                    , http-conduit >= 2.1
-                    , http-types >= 0.8
-                    , regex-posix >= 0.95
-                    , text >= 1.1
-                    , time
-                    , unordered-containers >= 0.2
-                    , vector
-                    , xml-conduit >= 1.2
-    ghc-options:         -Wall -fno-warn-unused-do-bind
-    default-language:    Haskell2010
-
-executable fetch
-    main-is:            fetch.hs
-    default-extensions: OverloadedStrings
-    build-depends:    base == 4.*
-                    , aeson >= 0.7
-                    , bytestring >= 0.10
-                    , conduit >= 1.1
-                    , containers >= 0.5
-                    , directory >= 1.2
-                    , hedis >= 0.6
-                    , html-conduit >= 1.1
-                    , http-conduit >= 2.1
-                    , http-types >= 0.8
-                    , regex-posix >= 0.95
-                    , text >= 1.1
-                    , time
-                    , transformers
-                    , unordered-containers >= 0.2
-                    , vector
-                    , xml-conduit >= 1.2
-                    , ted2srt
-    ghc-options:         -Wall -fno-warn-unused-do-bind -O2
-    default-language:    Haskell2010
-
-executable server
-    main-is:            server.hs
-    default-extensions: OverloadedStrings
+                    , Web.TED.Types
+                    , ReTed.Types
     build-depends:    base == 4.*
                     , aeson >= 0.7
                     , bytestring >= 0.10
@@ -74,8 +34,58 @@ executable server
                     , http-types >= 0.8
                     , random
                     , regex-posix >= 0.95
-                    , servant-server >= 0.4
+                    , text >= 1.1
+                    , servant-server == 0.5.*
                     , system-filepath
+                    , time
+                    , transformers
+                    , unordered-containers >= 0.2
+                    , vector
+                    , wai
+                    , xml-conduit >= 1.2
+    ghc-options:         -Wall -fno-warn-unused-do-bind
+    default-language:    Haskell2010
+
+executable fetch
+    main-is:          fetch.hs
+    build-depends:    base == 4.*
+                    , aeson >= 0.7
+                    , bytestring >= 0.10
+                    , conduit >= 1.1
+                    , containers >= 0.5
+                    , directory >= 1.2
+                    , hedis >= 0.6
+                    , html-conduit >= 1.1
+                    , http-conduit >= 2.1
+                    , http-types >= 0.8
+                    , regex-posix >= 0.95
+                    , text >= 1.1
+                    , time
+                    , transformers
+                    , unordered-containers >= 0.2
+                    , vector
+                    , xml-conduit >= 1.2
+                    , ted2srt
+    ghc-options:        -Wall -fno-warn-unused-do-bind -O2
+    default-extensions: OverloadedStrings
+    default-language:   Haskell2010
+
+executable server
+    main-is:          server.hs
+    build-depends:    base == 4.*
+                    , ted2srt
+                    , aeson >= 0.7
+                    , bytestring >= 0.10
+                    , conduit >= 1.1
+                    , containers >= 0.5
+                    , directory >= 1.2
+                    , hedis >= 0.6
+                    , html-conduit >= 1.1
+                    , http-conduit >= 2.1
+                    , http-types >= 0.8
+                    , random
+                    , regex-posix >= 0.95
+                    , servant-server == 0.5.*
                     , text >= 1.1
                     , time
                     , transformers
@@ -85,7 +95,6 @@ executable server
                     , wai-extra
                     , warp
                     , xml-conduit >= 1.2
-                    , ted2srt
-    ghc-options:         -Wall -fno-warn-unused-do-bind -O2
-    default-language:    Haskell2010
-
+    ghc-options:        -Wall -fno-warn-unused-do-bind -O2
+    default-extensions: OverloadedStrings
+    default-language:   Haskell2010
