@@ -75,6 +75,7 @@ executable server
     build-depends:    base == 4.*
                     , ted2srt
                     , hedis >= 0.6
+                    , load-env
                     , servant-server == 0.5.*
                     , wai
                     , wai-extra

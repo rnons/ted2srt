@@ -1,14 +1,7 @@
-*~
-*swp
-*.hi
-*.o
-*.aes
-main
 *.srt
 *.vtt
 *.txt
 *.lrc
-.hsenv
+.env
 dist/
 static/tmp/
-config/postgresql.yml
