@@ -74,27 +74,11 @@ executable server
     main-is:          server.hs
     build-depends:    base == 4.*
                     , ted2srt
-                    , aeson >= 0.7
-                    , bytestring >= 0.10
-                    , conduit >= 1.1
-                    , containers >= 0.5
-                    , directory >= 1.2
                     , hedis >= 0.6
-                    , html-conduit >= 1.1
-                    , http-conduit >= 2.1
-                    , http-types >= 0.8
-                    , random
-                    , regex-posix >= 0.95
                     , servant-server == 0.5.*
-                    , text >= 1.1
-                    , time
-                    , transformers
-                    , unordered-containers >= 0.2
-                    , vector
                     , wai
                     , wai-extra
                     , warp
-                    , xml-conduit >= 1.2
     ghc-options:        -Wall -fno-warn-unused-do-bind -O2
     default-extensions: OverloadedStrings
     default-language:   Haskell2010
