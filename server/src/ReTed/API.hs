@@ -40,11 +40,24 @@ instance FromHttpApiData FileType where
     parseUrlPiece _     = Left "Unsupported"
 
 type TedApi =
-       "talks" :> QueryParam "tid" Integer :> QueryParam "limit" Integer :> Get '[JSON] [RedisTalk]
-  :<|> "talks" :> "random" :> Get '[JSON] RedisTalk
-  :<|> "talks" :> Capture "slug" Text :> Get '[JSON] TalkResp
-  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> Capture "format" FileType :> QueryParams "lang" Text :> Raw
-  :<|> "talks" :> Capture "tid" Int :> "transcripts" :> "download" :> Capture "format" FileType :> QueryParams "lang" Text :> Raw
+       "talks" :> QueryParam "tid" Integer
+               :> QueryParam "limit" Integer
+               :> Get '[JSON] [RedisTalk]
+  :<|> "talks" :> "random"
+               :> Get '[JSON] RedisTalk
+  :<|> "talks" :> Capture "slug" Text
+               :> Get '[JSON] TalkResp
+  :<|> "talks" :> Capture "tid" Int
+               :> "transcripts"
+               :> Capture "format" FileType
+               :> QueryParams "lang" Text
+               :> Raw
+  :<|> "talks" :> Capture "tid" Int
+               :> "transcripts"
+               :> "download"
+               :> Capture "format" FileType
+               :> QueryParams "lang" Text
+               :> Raw
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [RedisTalk]
 
 type Handler = ExceptT ServantErr IO
