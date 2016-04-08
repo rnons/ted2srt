@@ -16,6 +16,7 @@ library
     hs-source-dirs:   src
     exposed-modules:  Web.TED
                     , ReTed.API
+                    , ReTed.Config
     other-modules:    Web.TED.API
                     , Web.TED.Feed
                     , Web.TED.TalkPage
@@ -34,9 +35,10 @@ library
                     , http-types >= 0.8
                     , random
                     , regex-posix >= 0.95
-                    , text >= 1.1
+                    , postgresql-simple
                     , servant-server == 0.5.*
                     , system-filepath
+                    , text >= 1.1
                     , time
                     , transformers
                     , unordered-containers >= 0.2
