@@ -7,16 +7,15 @@ import           Servant (serve)
 import           System.Environment (getEnv)
 
 import ReTed.API (tedApi, tedServer)
+import ReTed.Config (Config, getConfig)
 
 
-app :: Connection -> Application
+app :: Config -> Application
 app = logStdout . serve tedApi . tedServer
 
 main :: IO ()
 main = do
     loadEnv
     port <- read <$> getEnv "PORT"
-    redisPort <- read <$> getEnv "REDIS_PORT"
-    conn <- connect defaultConnectInfo
-        { connectPort = PortNumber $ fromIntegral redisPort }
-    run port $ app conn
+    config <- getConfig
+    run port $ app config

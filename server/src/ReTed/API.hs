@@ -28,6 +28,7 @@ import           System.Random (randomRIO)
 
 import Web.TED (FileType(..), Subtitle(..), getTalkId, queryTalk, toSub)
 import qualified Web.TED as API
+import ReTed.Config (Config(..))
 import ReTed.Types
 
 
@@ -192,11 +193,13 @@ getTalkFromRedis conn tid = do
 tedApi :: Proxy TedApi
 tedApi = Proxy
 
-tedServer :: Connection -> Server TedApi
-tedServer conn =
-        getTalksH conn
-   :<|> getRandomTalkH conn
-   :<|> getTalkH conn
-   :<|> getTalkSubtitleH conn
-   :<|> downloadTalkSubtitleH conn
-   :<|> getSearchH conn
+tedServer :: Config -> Server TedApi
+tedServer config =
+         getTalksH conn
+    :<|> getRandomTalkH conn
+    :<|> getTalkH conn
+    :<|> getTalkSubtitleH conn
+    :<|> downloadTalkSubtitleH conn
+    :<|> getSearchH conn
+  where
+    conn = kvConn config
