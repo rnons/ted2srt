@@ -17,6 +17,7 @@ library
     exposed-modules:  Web.TED
                     , ReTed.API
                     , ReTed.Config
+                    , ReTed.Models.Talk
     other-modules:    Web.TED.API
                     , Web.TED.Feed
                     , Web.TED.TalkPage
@@ -46,6 +47,7 @@ library
                     , wai
                     , xml-conduit >= 1.2
     ghc-options:         -Wall -fno-warn-unused-do-bind
+    default-extensions:  OverloadedStrings
     default-language:    Haskell2010
 
 executable fetch
