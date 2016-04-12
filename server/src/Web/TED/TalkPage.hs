@@ -5,6 +5,7 @@
 module Web.TED.TalkPage
   ( getTalkId
   , getSlugAndPad
+  , parseTalkObject
   ) where
 
 import           Control.Exception as E
@@ -29,6 +30,12 @@ parseId :: L8.ByteString -> Int
 parseId body = read $ last $ last r
   where
     pat = "id\":([^,]+),\"duration" :: String
+    r = L8.unpack body =~ pat :: [[String]]
+
+parseTalkObject :: L8.ByteString -> L8.ByteString
+parseTalkObject body = L8.pack $ last $ last r
+  where
+    pat = "talkPage.init\",(.+))</script>" :: String
     r = L8.unpack body =~ pat :: [[String]]
 
 -- | Given talk url, return mediaSlug and mediaPad of talk.
