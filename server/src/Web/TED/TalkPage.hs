@@ -6,6 +6,7 @@ module Web.TED.TalkPage
   ( getTalkId
   , getSlugAndPad
   , parseDescription
+  , parseImage
   , parseTalkObject
   ) where
 
@@ -16,7 +17,6 @@ import           Data.Text (Text)
 import           qualified Data.Text as T
 import           Network.HTTP.Conduit
 import           Prelude hiding (id)
-import           Text.HTML.DOM (parseLBS)
 import           Text.Regex.Posix ((=~))
 import           Text.XML.Cursor
 
@@ -35,12 +35,15 @@ parseId body = read $ last $ last r
     pat = "id\":([^,]+),\"duration" :: String
     r = L8.unpack body =~ pat :: [[String]]
 
-parseDescription :: L8.ByteString -> Text
-parseDescription body = head $ head $
+parseDescription :: Cursor -> Text
+parseDescription cursor = head $ head $
     cursor $// element "meta" &.// attributeIs "name" "description"
                               &| attribute "content"
-  where
-    cursor = fromDocument $ parseLBS body
+
+parseImage :: Cursor -> Text
+parseImage cursor = head $ head $
+    cursor $// element "meta" &.// attributeIs "property" "og:image:secure_url"
+                              &| attribute "content"
 
 parseTalkObject :: L8.ByteString -> L8.ByteString
 parseTalkObject body = L8.pack $ last $ last r
