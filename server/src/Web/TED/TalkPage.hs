@@ -5,6 +5,7 @@
 module Web.TED.TalkPage
   ( getTalkId
   , getSlugAndPad
+  , parseDescription
   , parseTalkObject
   ) where
 
@@ -15,7 +16,9 @@ import           Data.Text (Text)
 import           qualified Data.Text as T
 import           Network.HTTP.Conduit
 import           Prelude hiding (id)
+import           Text.HTML.DOM (parseLBS)
 import           Text.Regex.Posix ((=~))
+import           Text.XML.Cursor
 
 
 -- | Given talk url, return talk id.
@@ -31,6 +34,13 @@ parseId body = read $ last $ last r
   where
     pat = "id\":([^,]+),\"duration" :: String
     r = L8.unpack body =~ pat :: [[String]]
+
+parseDescription :: L8.ByteString -> Text
+parseDescription body = head $ head $
+    cursor $// element "meta" &.// attributeIs "name" "description"
+                              &| attribute "content"
+  where
+    cursor = fromDocument $ parseLBS body
 
 parseTalkObject :: L8.ByteString -> L8.ByteString
 parseTalkObject body = L8.pack $ last $ last r
