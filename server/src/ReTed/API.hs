@@ -7,14 +7,13 @@ module ReTed.API
   , tedServer
   ) where
 
-import           Control.Applicative((<$>), (<*>))
 import           Control.Monad (forM, liftM)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans.Except (ExceptT, throwE)
 import           Data.Aeson (encode, decodeStrict)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as L
-import           Data.Maybe (catMaybes, mapMaybe, fromJust, fromMaybe)
+import           Data.Maybe (catMaybes, fromJust, fromMaybe)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
@@ -29,6 +28,7 @@ import           System.Random (randomRIO)
 import Web.TED (FileType(..), Subtitle(..), getTalkId, queryTalk, toSub)
 import qualified Web.TED as API
 import ReTed.Config (Config(..))
+import           ReTed.Models.Talk (Talk, getTalks)
 import ReTed.Types
 
 
@@ -40,9 +40,9 @@ instance FromHttpApiData FileType where
     parseUrlPiece _     = Left "Unsupported"
 
 type TedApi =
-       "talks" :> QueryParam "tid" Integer
-               :> QueryParam "limit" Integer
-               :> Get '[JSON] [RedisTalk]
+       "talks" :> QueryParam "tid" Int
+               :> QueryParam "limit" Int
+               :> Get '[JSON] [Talk]
   :<|> "talks" :> "random"
                :> Get '[JSON] RedisTalk
   :<|> "talks" :> Capture "slug" Text
@@ -65,17 +65,12 @@ type Handler = ExceptT ServantErr IO
 notFound :: (Response -> t) -> t
 notFound respond = respond $ responseLBS status404 [] "Not Found"
 
-getTalksH :: Connection -> Maybe Integer -> Maybe Integer -> Handler [RedisTalk]
-getTalksH conn mStartTid mLimit = do
-    emtalks <- liftIO $ runRedis conn $ do
-        emrank <- zrevrank "tids" (C.pack $ show startTid)
-        let start = maybe 0 (+ 1) (either (const Nothing) Prelude.id emrank)
-        elatest <- zrevrange "tids" start (start + limit - 1)
-        mget $ either (const []) Prelude.id elatest
-    let talks = mapMaybe decodeStrict $ catMaybes $
-                    either (const [Nothing]) Prelude.id emtalks
+getTalksH :: Config -> Maybe Int -> Maybe Int -> Handler [Talk]
+getTalksH config mStartTid mLimit = do
+    talks <- liftIO $ getTalks conn limit
     return talks
   where
+    conn = dbConn config
     defaultLimit = 10
     startTid = fromMaybe 0 mStartTid
     limit' = fromMaybe defaultLimit mLimit
@@ -208,7 +203,7 @@ tedApi = Proxy
 
 tedServer :: Config -> Server TedApi
 tedServer config =
-         getTalksH conn
+         getTalksH config
     :<|> getRandomTalkH conn
     :<|> getTalkH conn
     :<|> getTalkSubtitleH conn
