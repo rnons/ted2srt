@@ -66,7 +66,8 @@ CREATE TABLE talks (
     filmed timestamp without time zone,
     published timestamp without time zone,
     description text,
-    image text
+    image text,
+    languages jsonb
 );
 
 

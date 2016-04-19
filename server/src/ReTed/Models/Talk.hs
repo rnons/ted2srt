@@ -8,6 +8,7 @@ import           qualified Data.Text as T
 import           Data.Time (UTCTime)
 import           Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import qualified Database.PostgreSQL.Simple as DB
+import qualified Database.PostgreSQL.Simple.ToField as DB
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit (simpleHttp)
@@ -23,6 +24,7 @@ data Language = Language
     , languageCode :: Text
     } deriving (Generic, Show)
 instance FromJSON Language
+instance ToJSON Language
 
 
 data Talk = Talk
@@ -65,12 +67,12 @@ instance FromJSON TalkObjs
 
 saveToDB :: DB.Connection -> Int -> Text -> IO ()
 saveToDB conn tid url = do
-    Talk {id, name, slug, description, image, filmedAt, publishedAt}  <-
+    Talk {id, name, slug, description, image, filmedAt, publishedAt, languages}  <-
         fetchTalk tid url
     void $ DB.execute conn [sql|
-        INSERT INTO talks (id, name, slug, description, image, filmed, published)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        |] (id, name, slug, description, image, filmedAt, publishedAt)
+        INSERT INTO talks (id, name, slug, description, image, filmed, published, languages)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        |] (id, name, slug, description, image, filmedAt, publishedAt, DB.toJSONField languages)
 
 fetchTalk :: Int -> Text -> IO Talk
 fetchTalk tid url = do
