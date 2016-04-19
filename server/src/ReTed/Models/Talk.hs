@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
 module ReTed.Models.Talk where
 
 import           Control.Monad (mzero, liftM, void)
@@ -8,6 +9,7 @@ import           qualified Data.Text as T
 import           Data.Time (UTCTime)
 import           Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import qualified Database.PostgreSQL.Simple as DB
+import qualified Database.PostgreSQL.Simple.FromField as DB
 import qualified Database.PostgreSQL.Simple.ToField as DB
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import           GHC.Generics (Generic)
@@ -26,17 +28,24 @@ data Language = Language
 instance FromJSON Language
 instance ToJSON Language
 
+instance DB.FromField [Language] where
+    fromField = DB.fromJSONField
+
 
 data Talk = Talk
     { id           :: Int
     , name         :: Text
     , slug         :: Text
-    , description  :: Text
-    , image        :: Text
     , filmedAt     :: UTCTime
     , publishedAt  :: UTCTime
+    , description  :: Text
+    , image        :: Text
     , languages    :: [Language]
     } deriving (Generic, Show)
+
+instance DB.FromRow Talk
+instance ToJSON Talk
+
 
 data TalkObj = TalkObj
     { oId           :: Int
@@ -64,6 +73,13 @@ data TalkObjs = TalkObjs
 
 instance FromJSON TalkObjs
 
+
+getTalks :: DB.Connection -> Int -> IO [Talk]
+getTalks conn limit = do
+    DB.query conn [sql|
+        SELECT * FROM talks
+        LIMIT ?
+        |] [limit]
 
 saveToDB :: DB.Connection -> Int -> Text -> IO ()
 saveToDB conn tid url = do

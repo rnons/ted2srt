@@ -63,8 +63,8 @@ CREATE TABLE talks (
     id smallint NOT NULL,
     name text,
     slug text,
-    filmed timestamp without time zone,
-    published timestamp without time zone,
+    filmed timestamp with time zone,
+    published timestamp with time zone,
     description text,
     image text,
     languages jsonb
