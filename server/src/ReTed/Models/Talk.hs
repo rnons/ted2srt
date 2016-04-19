@@ -12,8 +12,10 @@ import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit (simpleHttp)
 import           Prelude hiding (id)
+import           Text.HTML.DOM (parseLBS)
+import           Text.XML.Cursor (fromDocument)
 
-import Web.TED.TalkPage (parseTalkObject)
+import Web.TED.TalkPage (parseDescription, parseImage, parseTalkObject)
 
 
 data Language = Language
@@ -27,14 +29,25 @@ data Talk = Talk
     { id           :: Int
     , name         :: Text
     , slug         :: Text
+    , description  :: Text
+    , image        :: Text
     , filmedAt     :: UTCTime
     , publishedAt  :: UTCTime
     , languages    :: [Language]
     } deriving (Generic, Show)
 
-instance FromJSON Talk where
+data TalkObj = TalkObj
+    { oId           :: Int
+    , oName         :: Text
+    , oSlug         :: Text
+    , oFilmedAt     :: UTCTime
+    , oPublishedAt  :: UTCTime
+    , oLanguages    :: [Language]
+    } deriving (Generic, Show)
+
+instance FromJSON TalkObj where
     parseJSON (Object v) =
-        Talk <$> v .: "id"
+        TalkObj <$> v .: "id"
              <*> v .: "name"
              <*> v .: "slug"
              <*> liftM posixSecondsToUTCTime (v .: "filmed")
@@ -43,28 +56,39 @@ instance FromJSON Talk where
     parseJSON _          = mzero
 
 
-data Talks = Talks
-    { talks :: [Talk]
+data TalkObjs = TalkObjs
+    { talks :: [TalkObj]
     } deriving (Generic, Show)
 
-instance FromJSON Talks
+instance FromJSON TalkObjs
 
 
 saveToDB :: DB.Connection -> Int -> Text -> IO ()
 saveToDB conn tid url = do
-    print (tid, url)
-    Talk {id, name, slug, filmedAt, publishedAt}  <- fetchTalk tid url
+    Talk {id, name, slug, description, image, filmedAt, publishedAt}  <-
+        fetchTalk tid url
     void $ DB.execute conn [sql|
-        INSERT INTO talks (id, name, slug, filmed, published)
-        VALUES (?, ?, ?, ?, ?)
-        |] (id, name, slug, filmedAt, publishedAt)
+        INSERT INTO talks (id, name, slug, description, image, filmed, published)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        |] (id, name, slug, description, image, filmedAt, publishedAt)
 
 fetchTalk :: Int -> Text -> IO Talk
 fetchTalk tid url = do
     body <- simpleHttp $ T.unpack url
+    let cursor = fromDocument $ parseLBS body
+        desc = parseDescription cursor
+        img = parseImage cursor
     let core = parseTalkObject body
     case decode core of
         Just tks -> do
-            print $ name $ head $ talks tks
-            return $ head $ talks tks
+            let talk = head $ talks tks
+            return Talk { id = oId talk
+                        , name = oName talk
+                        , slug = oSlug talk
+                        , filmedAt = oFilmedAt talk
+                        , publishedAt = oPublishedAt talk
+                        , description = desc
+                        , image = img
+                        , languages = oLanguages talk
+                        }
         _      -> error "parse error"
