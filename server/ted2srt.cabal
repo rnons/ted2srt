@@ -16,13 +16,13 @@ library
     hs-source-dirs:   src
     exposed-modules:  Web.TED
                     , ReTed.API
+                    , ReTed.Types
                     , ReTed.Config
                     , ReTed.Models.Talk
     other-modules:    Web.TED.API
                     , Web.TED.Feed
                     , Web.TED.TalkPage
                     , Web.TED.Types
-                    , ReTed.Types
     build-depends:    base == 4.*
                     , aeson >= 0.7
                     , bytestring >= 0.10
@@ -47,12 +47,16 @@ library
                     , wai
                     , xml-conduit >= 1.2
     ghc-options:         -Wall -fno-warn-unused-do-bind
-    default-extensions:  OverloadedStrings
+    default-extensions:  NamedFieldPuns
+                       , OverloadedStrings
+                       , QuasiQuotes
+                       , TemplateHaskell
     default-language:    Haskell2010
 
 executable fetch
     main-is:          fetch.hs
     build-depends:    base == 4.*
+                    , ted2srt
                     , aeson >= 0.7
                     , bytestring >= 0.10
                     , conduit >= 1.1
@@ -62,6 +66,8 @@ executable fetch
                     , html-conduit >= 1.1
                     , http-conduit >= 2.1
                     , http-types >= 0.8
+                    , load-env
+                    , postgresql-simple
                     , regex-posix >= 0.95
                     , text >= 1.1
                     , time
@@ -69,7 +75,6 @@ executable fetch
                     , unordered-containers >= 0.2
                     , vector
                     , xml-conduit >= 1.2
-                    , ted2srt
     ghc-options:        -Wall -fno-warn-unused-do-bind -O2
     default-extensions: OverloadedStrings
     default-language:   Haskell2010
