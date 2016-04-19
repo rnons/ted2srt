@@ -64,7 +64,9 @@ CREATE TABLE talks (
     name text,
     slug text,
     filmed timestamp without time zone,
-    published timestamp without time zone
+    published timestamp without time zone,
+    description text,
+    image text
 );
 
 
