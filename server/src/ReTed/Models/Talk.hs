@@ -107,14 +107,20 @@ getTalk config tid url = do
     conn = dbConn config
     kv = kvConn config
 
-saveToDB :: DB.Connection -> Int -> Text -> IO ()
-saveToDB conn tid url = do
+saveToDB :: Config -> Int -> Text -> IO ()
+saveToDB config tid url = do
     Talk {id, name, slug, description, image, filmedAt, publishedAt, languages}  <-
         fetchTalk tid url
+    KV.runRedis kv $ do
+        KV.setex ("cache:" <> C.pack (show tid)) (3600*24) ""
     void $ DB.execute conn [sql|
         INSERT INTO talks (id, name, slug, description, image, filmed, published, languages)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        |] (id, name, slug, description, image, filmedAt, publishedAt, DB.toJSONField languages)
+        ON CONFLICT (id) DO UPDATE SET languages = ?
+        |] (id, name, slug, description, image, filmedAt, publishedAt, DB.toJSONField languages, DB.toJSONField languages)
+  where
+    conn = dbConn config
+    kv = kvConn config
 
 fetchTalk :: Int -> Text -> IO Talk
 fetchTalk tid url = do
