@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module ReTed.Models.Talk where
 
+import           Control.Exception (handle)
 import           Control.Monad (mzero, liftM, void)
 import           Data.Aeson
 import qualified Data.ByteString.Char8 as C
@@ -16,7 +18,7 @@ import qualified Database.PostgreSQL.Simple.ToField as DB
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import qualified Database.Redis as KV
 import           GHC.Generics (Generic)
-import           Network.HTTP.Conduit (simpleHttp)
+import           Network.HTTP.Conduit (HttpException, simpleHttp)
 import           Prelude hiding (id)
 import           Text.HTML.DOM (parseLBS)
 import           Text.XML.Cursor (fromDocument)
@@ -85,7 +87,7 @@ getTalks conn limit = do
         LIMIT ?
         |] [limit]
 
-getTalk :: Config -> Int -> Text -> IO Talk
+getTalk :: Config -> Int -> Text -> IO (Maybe Talk)
 getTalk config tid url = do
     cached <- KV.runRedis kv $ do
         KV.get ("cache:" <> C.pack (show tid))
@@ -96,49 +98,53 @@ getTalk config tid url = do
                 WHERE id = ?
                 |] [tid]
             case xs of
-                [talk] -> return talk
+                [talk] -> return $ Just talk
                 _ -> do
-                    talk <- fetchTalk tid url
-                    return talk
+                    mTalk <- saveToDB config tid url
+                    return mTalk
         Left _ -> do
-            talk <- fetchTalk tid url
-            return talk
+            mTalk <- saveToDB config tid url
+            return mTalk
   where
     conn = dbConn config
     kv = kvConn config
 
-saveToDB :: Config -> Int -> Text -> IO ()
+saveToDB :: Config -> Int -> Text -> IO (Maybe Talk)
 saveToDB config tid url = do
-    Talk {id, name, slug, description, image, filmedAt, publishedAt, languages}  <-
-        fetchTalk tid url
-    KV.runRedis kv $ do
-        KV.setex ("cache:" <> C.pack (show tid)) (3600*24) ""
-    void $ DB.execute conn [sql|
-        INSERT INTO talks (id, name, slug, description, image, filmed, published, languages)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT (id) DO UPDATE SET languages = ?
-        |] (id, name, slug, description, image, filmedAt, publishedAt, DB.toJSONField languages, DB.toJSONField languages)
+    mTalk <- fetchTalk tid url
+    case mTalk of
+        Just talk@Talk {id, name, slug, description, image, filmedAt, publishedAt, languages} -> do
+            KV.runRedis kv $ do
+                KV.setex ("cache:" <> C.pack (show tid)) (3600*24) ""
+            void $ DB.execute conn [sql|
+                INSERT INTO talks (id, name, slug, description, image, filmed, published, languages)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET languages = ?
+                |] (id, name, slug, description, image, filmedAt, publishedAt, DB.toJSONField languages, DB.toJSONField languages)
+            return $ Just talk
+        Nothing -> return Nothing
   where
     conn = dbConn config
     kv = kvConn config
 
-fetchTalk :: Int -> Text -> IO Talk
+fetchTalk :: Int -> Text -> IO (Maybe Talk)
 fetchTalk tid url = do
-    body <- simpleHttp $ T.unpack url
-    let cursor = fromDocument $ parseLBS body
-        desc = parseDescription cursor
-        img = parseImage cursor
-    let core = parseTalkObject body
-    case decode core of
-        Just tks -> do
-            let talk = head $ talks tks
-            return Talk { id = oId talk
-                        , name = oName talk
-                        , slug = oSlug talk
-                        , filmedAt = oFilmedAt talk
-                        , publishedAt = oPublishedAt talk
-                        , description = desc
-                        , image = img
-                        , languages = oLanguages talk
-                        }
-        _      -> error "parse error"
+    handle (\(_::HttpException) -> return Nothing) $ do
+        body <- simpleHttp $ T.unpack url
+        let cursor = fromDocument $ parseLBS body
+            desc = parseDescription cursor
+            img = parseImage cursor
+        let core = parseTalkObject body
+        case decode core of
+            Just tks -> do
+                let talk = head $ talks tks
+                return $ Just Talk { id = oId talk
+                                   , name = oName talk
+                                   , slug = oSlug talk
+                                   , filmedAt = oFilmedAt talk
+                                   , publishedAt = oPublishedAt talk
+                                   , description = desc
+                                   , image = img
+                                   , languages = oLanguages talk
+                                   }
+            _      -> error "parse error"
