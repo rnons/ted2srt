@@ -25,6 +25,7 @@ import           Text.XML.Cursor (fromDocument)
 
 import Web.TED.TalkPage (parseDescription, parseImage, parseTalkObject)
 import ReTed.Config (Config(..))
+import ReTed.Types (mkTalkUrl)
 
 
 data Language = Language
@@ -100,22 +101,35 @@ getTalk config tid url = do
             case xs of
                 [talk] -> return $ Just talk
                 _ -> do
-                    mTalk <- saveToDB config tid url
+                    mTalk <- saveToDB config url
                     return mTalk
         Left _ -> do
-            mTalk <- saveToDB config tid url
+            mTalk <- saveToDB config url
             return mTalk
   where
     conn = dbConn config
     kv = kvConn config
 
-saveToDB :: Config -> Int -> Text -> IO (Maybe Talk)
-saveToDB config tid url = do
-    mTalk <- fetchTalk tid url
+getTalkBySlug :: Config -> Text -> IO (Maybe Talk)
+getTalkBySlug config slug = do
+    emtid <- KV.runRedis kv $ KV.get $ C.pack $ T.unpack slug
+    case emtid of
+        Right (Just tid) -> do
+            getTalk config (read $ C.unpack tid) url
+        Right Nothing -> do
+            saveToDB config url
+        Left _ -> return Nothing
+  where
+    url = mkTalkUrl slug
+    kv = kvConn config
+
+saveToDB :: Config -> Text -> IO (Maybe Talk)
+saveToDB config url = do
+    mTalk <- fetchTalk url
     case mTalk of
         Just talk@Talk {id, name, slug, description, image, filmedAt, publishedAt, languages} -> do
             KV.runRedis kv $ do
-                KV.setex ("cache:" <> C.pack (show tid)) (3600*24) ""
+                KV.setex ("cache:" <> C.pack (show id)) (3600*24) ""
             void $ DB.execute conn [sql|
                 INSERT INTO talks (id, name, slug, description, image, filmed, published, languages)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -127,8 +141,8 @@ saveToDB config tid url = do
     conn = dbConn config
     kv = kvConn config
 
-fetchTalk :: Int -> Text -> IO (Maybe Talk)
-fetchTalk tid url = do
+fetchTalk :: Text -> IO (Maybe Talk)
+fetchTalk url = do
     handle (\(_::HttpException) -> return Nothing) $ do
         body <- simpleHttp $ T.unpack url
         let cursor = fromDocument $ parseLBS body
