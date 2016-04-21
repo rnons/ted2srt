@@ -4,6 +4,8 @@ module ReTed.Models.Talk where
 
 import           Control.Monad (mzero, liftM, void)
 import           Data.Aeson
+import qualified Data.ByteString.Char8 as C
+import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import           qualified Data.Text as T
 import           Data.Time (UTCTime)
@@ -12,6 +14,7 @@ import qualified Database.PostgreSQL.Simple as DB
 import qualified Database.PostgreSQL.Simple.FromField as DB
 import qualified Database.PostgreSQL.Simple.ToField as DB
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
+import qualified Database.Redis as KV
 import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit (simpleHttp)
 import           Prelude hiding (id)
@@ -19,6 +22,7 @@ import           Text.HTML.DOM (parseLBS)
 import           Text.XML.Cursor (fromDocument)
 
 import Web.TED.TalkPage (parseDescription, parseImage, parseTalkObject)
+import ReTed.Config (Config(..))
 
 
 data Language = Language
@@ -80,6 +84,28 @@ getTalks conn limit = do
         SELECT * FROM talks
         LIMIT ?
         |] [limit]
+
+getTalk :: Config -> Int -> Text -> IO Talk
+getTalk config tid url = do
+    cached <- KV.runRedis kv $ do
+        KV.get ("cache:" <> C.pack (show tid))
+    case cached of
+        Right _ -> do
+            xs <- DB.query conn [sql|
+                SELECT * FROM talks
+                WHERE id = ?
+                |] [tid]
+            case xs of
+                [talk] -> return talk
+                _ -> do
+                    talk <- fetchTalk tid url
+                    return talk
+        Left _ -> do
+            talk <- fetchTalk tid url
+            return talk
+  where
+    conn = dbConn config
+    kv = kvConn config
 
 saveToDB :: DB.Connection -> Int -> Text -> IO ()
 saveToDB conn tid url = do
