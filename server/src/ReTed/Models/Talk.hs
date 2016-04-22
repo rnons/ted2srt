@@ -6,7 +6,9 @@ module ReTed.Models.Talk where
 import           Control.Exception (handle)
 import           Control.Monad (mzero, liftM, void)
 import           Data.Aeson
+import           Data.Aeson.Types (Options(..))
 import qualified Data.ByteString.Char8 as C
+import           Data.Char (toLower)
 import           Data.Text (Text)
 import           qualified Data.Text as T
 import           Data.Time (UTCTime)
@@ -33,7 +35,9 @@ data Language = Language
     , languageCode :: Text
     } deriving (Generic, Show)
 instance FromJSON Language
-instance ToJSON Language
+instance ToJSON Language where
+    toJSON = genericToJSON defaultOptions {
+        fieldLabelModifier = (\(x:xs) -> toLower x:xs) . drop 8 }
 
 instance DB.FromField [Language] where
     fromField = DB.fromJSONField
