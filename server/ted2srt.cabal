@@ -19,6 +19,7 @@ library
                     , ReTed.Types
                     , ReTed.Config
                     , ReTed.Models.Talk
+                    , ReTed.Models.RedisKeys
     other-modules:    Web.TED.API
                     , Web.TED.Feed
                     , Web.TED.TalkPage
@@ -41,6 +42,7 @@ library
                     , system-filepath
                     , text >= 1.1
                     , time
+                    , th-printf
                     , transformers
                     , unordered-containers >= 0.2
                     , vector

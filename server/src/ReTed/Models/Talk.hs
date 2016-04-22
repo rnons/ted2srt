@@ -7,7 +7,6 @@ import           Control.Exception (handle)
 import           Control.Monad (mzero, liftM, void)
 import           Data.Aeson
 import qualified Data.ByteString.Char8 as C
-import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import           qualified Data.Text as T
 import           Data.Time (UTCTime)
@@ -26,6 +25,7 @@ import           Text.XML.Cursor (fromDocument)
 import Web.TED.TalkPage (parseDescription, parseImage, parseTalkObject)
 import ReTed.Config (Config(..))
 import ReTed.Types (mkTalkUrl)
+import qualified ReTed.Models.RedisKeys as Keys
 
 
 data Language = Language
@@ -90,8 +90,8 @@ getTalks conn limit = do
 
 getTalk :: Config -> Int -> Text -> IO (Maybe Talk)
 getTalk config tid url = do
-    cached <- KV.runRedis kv $ do
-        KV.get ("cache:" <> C.pack (show tid))
+    cached <- KV.runRedis kv $
+        KV.get $ Keys.cache tid
     case cached of
         Right _ -> do
             xs <- DB.query conn [sql|
@@ -127,14 +127,18 @@ saveToDB :: Config -> Text -> IO (Maybe Talk)
 saveToDB config url = do
     mTalk <- fetchTalk url
     case mTalk of
-        Just talk@Talk {id, name, slug, description, image, filmedAt, publishedAt, languages} -> do
+        Just talk@Talk {id, name, slug, description, image, filmedAt,
+                        publishedAt, languages} -> do
             KV.runRedis kv $ do
-                KV.setex ("cache:" <> C.pack (show id)) (3600*24) ""
+                KV.setex (Keys.cache id) (3600*24) ""
+            let jsonLang = DB.toJSONField languages
             void $ DB.execute conn [sql|
-                INSERT INTO talks (id, name, slug, description, image, filmed, published, languages)
+                INSERT INTO talks (id, name, slug, description, image, filmed,
+                                   published, languages)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT (id) DO UPDATE SET languages = ?
-                |] (id, name, slug, description, image, filmedAt, publishedAt, DB.toJSONField languages, DB.toJSONField languages)
+                |] (id, name, slug, description, image, filmedAt,
+                    publishedAt, jsonLang, jsonLang)
             return $ Just talk
         Nothing -> return Nothing
   where
