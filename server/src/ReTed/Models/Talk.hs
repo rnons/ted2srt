@@ -36,9 +36,7 @@ data Language = Language
     , languageCode :: Text
     } deriving (Generic, Show)
 instance FromJSON Language
-instance ToJSON Language where
-    toJSON = genericToJSON defaultOptions {
-        fieldLabelModifier = (\(x:xs) -> toLower x:xs) . drop 8 }
+instance ToJSON Language
 
 instance DB.FromField [Language] where
     fromField = DB.fromJSONField
@@ -92,6 +90,7 @@ getTalks :: DB.Connection -> Int -> IO [Talk]
 getTalks conn limit = do
     DB.query conn [sql|
         SELECT * FROM talks
+        ORDER BY id DESC
         LIMIT ?
         |] [limit]
 
