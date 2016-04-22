@@ -15,7 +15,7 @@ export class HomeView {
   renderTalk(talk) {
     let div = document.createElement('div');
     div.innerHTML = this.template.replace('{{slug}}', talk.slug)
-                                 .replace('{{src}}', talk.images.medium)
+                                 .replace('{{src}}', talk.image)
                                  .replace('{{speaker}}', talk.speaker)
                                  .replace('{{title}}', talk.title);
     div.className = 'FeaturedTalks-tile';

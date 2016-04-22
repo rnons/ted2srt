@@ -85,7 +85,7 @@ export class TalkView {
     this.$talkInfo.innerHTML =
       this.templateInfo.replace(/{{talkUrl}}/g, talkUrl)
                        .replace('{{name}}', talk.name)
-                       .replace('{{src}}', talk.images.medium)
+                       .replace('{{src}}', talk.image)
                        .replace('{{description}}', talk.description)
                        .replace('{{publishedAt}}', publishedAt);
   }

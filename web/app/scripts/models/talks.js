@@ -7,7 +7,7 @@ class Talk {
     this.slug = params.slug;
     this.mediaSlug = params.mSlug;
     this.publishedAt = params.publishedAt;
-    this.images = params.images;
+    this.image = params.image;
     this.languages = params.languages;
     this.hasAudio = params.hasAudio;
   }
