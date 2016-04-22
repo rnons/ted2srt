@@ -24,7 +24,8 @@ import           Prelude hiding (id)
 import           Text.HTML.DOM (parseLBS)
 import           Text.XML.Cursor (fromDocument)
 
-import Web.TED.TalkPage (parseDescription, parseImage, parseTalkObject)
+import Web.TED.TalkPage (parseDescription, parseImage, parseTalkObject,
+                         parseMediaPad, parseMediaSlug)
 import ReTed.Config (Config(..))
 import ReTed.Types (mkTalkUrl)
 import qualified ReTed.Models.RedisKeys as Keys
@@ -44,14 +45,16 @@ instance DB.FromField [Language] where
 
 
 data Talk = Talk
-    { id           :: Int
-    , name         :: Text
-    , slug         :: Text
-    , filmedAt     :: UTCTime
-    , publishedAt  :: UTCTime
-    , description  :: Text
-    , image        :: Text
-    , languages    :: [Language]
+    { id            :: Int
+    , name          :: Text
+    , slug          :: Text
+    , filmedAt      :: UTCTime
+    , publishedAt   :: UTCTime
+    , description   :: Text
+    , image         :: Text
+    , languages     :: [Language]
+    , mediaSlug     :: Text
+    , mediaPad      :: Double
     } deriving (Generic, Show)
 
 instance DB.FromRow Talk
@@ -97,22 +100,22 @@ getTalk config tid url = do
     cached <- KV.runRedis kv $
         KV.get $ Keys.cache tid
     case cached of
-        Right _ -> do
-            xs <- DB.query conn [sql|
-                SELECT * FROM talks
-                WHERE id = ?
-                |] [tid]
-            case xs of
-                [talk] -> return $ Just talk
-                _ -> do
-                    mTalk <- saveToDB config url
-                    return mTalk
-        Left _ -> do
-            mTalk <- saveToDB config url
-            return mTalk
+        Right _ -> getTalkById config tid (Just url)
+        Left _ -> saveToDB config url
+  where
+    kv = kvConn config
+
+getTalkById :: Config -> Int -> Maybe Text -> IO (Maybe Talk)
+getTalkById config tid mUrl = do
+    xs <- DB.query conn [sql|
+        SELECT * FROM talks
+        WHERE id = ?
+        |] [tid]
+    case xs of
+        [talk] -> return $ Just talk
+        _ -> maybe (return Nothing) (saveToDB config) mUrl
   where
     conn = dbConn config
-    kv = kvConn config
 
 getTalkBySlug :: Config -> Text -> IO (Maybe Talk)
 getTalkBySlug config slug = do
@@ -132,18 +135,21 @@ saveToDB config url = do
     mTalk <- fetchTalk url
     case mTalk of
         Just talk@Talk {id, name, slug, description, image, filmedAt,
-                        publishedAt, languages} -> do
+                        publishedAt, languages, mediaSlug, mediaPad} -> do
             KV.runRedis kv $ KV.multiExec $ do
                 KV.setex (Keys.cache id) (3600*24) ""
                 KV.set (Keys.slug slug) (C.pack $ show id)
             let jsonLang = DB.toJSONField languages
             void $ DB.execute conn [sql|
                 INSERT INTO talks (id, name, slug, description, image, filmed,
-                                   published, languages)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (id) DO UPDATE SET languages = ?
+                                   published, languages, media_slug, media_pad)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE
+                SET languages = EXCLUDED.languages,
+                    media_slug = EXCLUDED.media_slug,
+                    media_pad = EXCLUDED.media_pad
                 |] (id, name, slug, description, image, filmedAt,
-                    publishedAt, jsonLang, jsonLang)
+                    publishedAt, jsonLang, mediaSlug, mediaPad)
             return $ Just talk
         Nothing -> return Nothing
   where
@@ -157,6 +163,8 @@ fetchTalk url = do
         let cursor = fromDocument $ parseLBS body
             desc = parseDescription cursor
             img = parseImage cursor
+            mdSlug = parseMediaSlug body
+            mdPad = parseMediaPad body
         let core = parseTalkObject body
         case decode core of
             Just tks -> do
@@ -169,5 +177,7 @@ fetchTalk url = do
                                    , description = desc
                                    , image = img
                                    , languages = oLanguages talk
+                                   , mediaSlug = mdSlug
+                                   , mediaPad = mdPad
                                    }
             _      -> error "parse error"

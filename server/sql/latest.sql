@@ -67,7 +67,9 @@ CREATE TABLE talks (
     published timestamp with time zone,
     description text,
     image text,
-    languages jsonb
+    languages jsonb,
+    media_slug text,
+    media_pad real
 );
 
 
