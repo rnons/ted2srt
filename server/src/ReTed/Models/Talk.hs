@@ -180,3 +180,16 @@ fetchTalk url = do
                                    , mediaPad = mdPad
                                    }
             _      -> error "parse error"
+
+getRandomTalk :: Config -> IO (Maybe Talk)
+getRandomTalk config = do
+    xs <- DB.query_ conn [sql|
+        SELECT * FROM talks
+        TABLESAMPLE SYSTEM (1)
+        LIMIT 1
+        |]
+    case xs of
+        [talk] -> return $ Just talk
+        _ -> return Nothing
+  where
+    conn = dbConn config
