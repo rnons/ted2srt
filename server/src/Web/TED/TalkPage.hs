@@ -7,6 +7,8 @@ module Web.TED.TalkPage
   , getSlugAndPad
   , parseDescription
   , parseImage
+  , parseMediaPad
+  , parseMediaSlug
   , parseTalkObject
   ) where
 
@@ -55,21 +57,21 @@ parseTalkObject body = L8.pack $ last $ last r
 getSlugAndPad :: Text -> IO (Text, Double)
 getSlugAndPad rurl = E.catch
     (do body <- simpleHttp $ T.unpack rurl
-        return (mediaSlug body, mediaPad body)
+        return (parseMediaSlug body, parseMediaPad body)
     )
     (\e -> error $ show (e :: E.SomeException))
 
 -- File name slug when saved to local.
-mediaSlug :: L8.ByteString -> Text
-mediaSlug body = T.pack $ last $ last r
+parseMediaSlug :: L8.ByteString -> Text
+parseMediaSlug body = T.pack $ last $ last r
   where
     pat = "\"file\":\"http://download.ted.com/talks/(.+)-320k.mp4\\?dnt" :: String
     r = L8.unpack body =~ pat :: [[String]]
 
 -- TED talk videos begin with different versions of TED promos.
 -- To keep sync, add time delay (in milliseconds) to subtitles.
-mediaPad :: L8.ByteString -> Double
-mediaPad body = read t * 1000.0
+parseMediaPad :: L8.ByteString -> Double
+parseMediaPad body = read t * 1000.0
   where
     pat = "introDuration\":([^,]+)" :: String
     r = L8.unpack body =~ pat :: [[String]]
