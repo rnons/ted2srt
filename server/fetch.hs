@@ -35,7 +35,7 @@ main = do
         tids = take limit (parseTids cursor)
         urls = take limit (parseUrl cursor)
 
-    void $ zipWithM (Talk.saveToDB config) tids urls
+    void $ mapM (Talk.saveToDB config) urls
     -- X.writeFile X.def "atom.xml" . template =<< mkFeed =<< saveAsFeed tids
   where
     limit = 5
