@@ -112,7 +112,7 @@ getTalk config tid url = do
 
 getTalkBySlug :: Config -> Text -> IO (Maybe Talk)
 getTalkBySlug config slug = do
-    emtid <- KV.runRedis kv $ KV.get $ C.pack $ T.unpack slug
+    emtid <- KV.runRedis kv $ KV.get $ Keys.slug slug
     case emtid of
         Right (Just tid) -> do
             getTalk config (read $ C.unpack tid) url
@@ -129,8 +129,9 @@ saveToDB config url = do
     case mTalk of
         Just talk@Talk {id, name, slug, description, image, filmedAt,
                         publishedAt, languages} -> do
-            KV.runRedis kv $ do
+            KV.runRedis kv $ KV.multiExec $ do
                 KV.setex (Keys.cache id) (3600*24) ""
+                KV.set (Keys.slug slug) (C.pack $ show id)
             let jsonLang = DB.toJSONField languages
             void $ DB.execute conn [sql|
                 INSERT INTO talks (id, name, slug, description, image, filmed,
