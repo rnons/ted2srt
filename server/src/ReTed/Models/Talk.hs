@@ -6,7 +6,6 @@ module ReTed.Models.Talk where
 import           Control.Exception (handle)
 import           Control.Monad (mzero, liftM, void)
 import           Data.Aeson
-import           Data.Aeson.Types (Options(..))
 import qualified Data.ByteString.Char8 as C
 import           Data.Char (toLower)
 import           Data.Text (Text)
