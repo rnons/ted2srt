@@ -13,10 +13,9 @@ import           Control.Monad.Trans.Except (ExceptT, throwE)
 import           Data.Aeson (encode, decodeStrict)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as L
-import           Data.Maybe (catMaybes, fromJust, fromMaybe)
+import           Data.Maybe (catMaybes, fromMaybe)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
-import qualified Data.Text as T
 import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import           Database.Redis hiding (decode)
 import qualified Filesystem.Path.CurrentOS as FS
@@ -25,10 +24,10 @@ import           Network.Wai (Application, Response, responseFile, responseLBS)
 import           Servant
 import           System.Random (randomRIO)
 
-import Web.TED (FileType(..), Subtitle(..), getTalkId, queryTalk, toSub)
+import Web.TED (FileType(..), Subtitle(..), queryTalk, toSub)
 import qualified Web.TED as API
 import ReTed.Config (Config(..))
-import           ReTed.Models.Talk (Talk, getTalks)
+import           ReTed.Models.Talk (Talk, getTalks, getTalkBySlug)
 import ReTed.Types
 
 
@@ -46,7 +45,7 @@ type TedApi =
   :<|> "talks" :> "random"
                :> Get '[JSON] RedisTalk
   :<|> "talks" :> Capture "slug" Text
-               :> Get '[JSON] TalkResp
+               :> Get '[JSON] Talk
   :<|> "talks" :> Capture "tid" Int
                :> "transcripts"
                :> Capture "format" FileType
@@ -76,53 +75,12 @@ getTalksH config mStartTid mLimit = do
     limit' = fromMaybe defaultLimit mLimit
     limit = if limit' > defaultLimit then defaultLimit else limit'
 
-getTalkH :: Connection -> Text -> Handler TalkResp
-getTalkH conn slug = do
-    emtid <- liftIO $ runRedis conn $ get $ C.pack $ T.unpack slug
-
-    case emtid of
-        Right (Just tid) -> do
-            result <- liftIO $ runRedis conn $ multiExec $ do
-                t <- get tid
-                c <- get ("cache:" <> tid)
-                return $ (,) <$> t <*> c
-            case result of
-                TxSuccess (Just talk, Just cache) ->
-                    let retTalk = fromJust $ decodeStrict talk
-                        retCache = fromJust $ decodeStrict cache
-                    in return $ TalkResp retTalk retCache
-                TxError _ -> throwE err404
-                _ -> do
-                    talk' <- liftIO $ queryTalk $ read $ C.unpack tid
-                    case talk' of
-                        Just talk -> do
-                            let cache = tedTalkToCache talk
-                            liftIO $ runRedis conn $
-                                setex ("cache:" <> tid) (3600*24)
-                                      (L.toStrict $ encode cache)
-                            getTalkH conn slug
-                        Nothing   -> throwE err404
-        Right Nothing    -> do
-            mtid <- liftIO $ getTalkId $ mkTalkUrl slug
-            case mtid of
-                Just tid -> do
-                    talk' <- liftIO $ queryTalk tid
-                    case talk' of
-                        Nothing   -> throwE err404
-                        Just talk -> do
-                            dbtalk <- liftIO $ marshal talk
-                            let cache = tedTalkToCache talk
-                            liftIO $ runRedis conn $ multiExec $ do
-                                set (C.pack $ T.unpack $ API.slug talk)
-                                    (C.pack $ show tid)
-                                set (C.pack $ show tid)
-                                    (L.toStrict $ encode dbtalk)
-                                setex ("cache:" <> C.pack (show tid))
-                                      (3600*24)
-                                      (L.toStrict $ encode cache)
-                            return $ TalkResp dbtalk cache
-                _         -> throwE err404
-        Left _ -> throwE err404
+getTalkH :: Config -> Text -> Handler Talk
+getTalkH config slug = do
+    mTalk <- liftIO $ getTalkBySlug config slug
+    case mTalk of
+        Just talk -> return talk
+        Nothing -> throwE err404
 
 getSubtitlePath :: Connection -> Int -> FileType -> [Text] -> IO (Maybe FilePath)
 getSubtitlePath conn tid format lang = do
@@ -205,7 +163,7 @@ tedServer :: Config -> Server TedApi
 tedServer config =
          getTalksH config
     :<|> getRandomTalkH conn
-    :<|> getTalkH conn
+    :<|> getTalkH config
     :<|> getTalkSubtitleH conn
     :<|> downloadTalkSubtitleH conn
     :<|> getSearchH conn
