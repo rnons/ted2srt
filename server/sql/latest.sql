@@ -15,7 +15,12 @@ SET row_security = off;
 
 SET search_path = public, pg_catalog;
 
+ALTER TABLE ONLY public.transcripts DROP CONSTRAINT transcripts_id_fkey1;
+ALTER TABLE ONLY public.transcripts DROP CONSTRAINT transcripts_id_fkey;
+ALTER TABLE ONLY public.transcripts DROP CONSTRAINT transcripts_pkey;
 ALTER TABLE ONLY public.talks DROP CONSTRAINT talks_pkey;
+ALTER TABLE ONLY public.talks DROP CONSTRAINT talks_id_name_key;
+DROP TABLE public.transcripts;
 DROP TABLE public.talks;
 DROP EXTENSION plpgsql;
 DROP SCHEMA public;
@@ -76,11 +81,56 @@ CREATE TABLE talks (
 ALTER TABLE talks OWNER TO postgres;
 
 --
+-- Name: transcripts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE transcripts (
+    id smallint NOT NULL,
+    name text,
+    en text
+);
+
+
+ALTER TABLE transcripts OWNER TO postgres;
+
+--
+-- Name: talks_id_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY talks
+    ADD CONSTRAINT talks_id_name_key UNIQUE (id, name);
+
+
+--
 -- Name: talks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY talks
     ADD CONSTRAINT talks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: transcripts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transcripts
+    ADD CONSTRAINT transcripts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: transcripts_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transcripts
+    ADD CONSTRAINT transcripts_id_fkey FOREIGN KEY (id) REFERENCES talks(id) ON DELETE CASCADE;
+
+
+--
+-- Name: transcripts_id_fkey1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transcripts
+    ADD CONSTRAINT transcripts_id_fkey1 FOREIGN KEY (id, name) REFERENCES talks(id, name);
 
 
 --
