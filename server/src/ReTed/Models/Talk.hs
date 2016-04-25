@@ -7,9 +7,9 @@ import           Control.Exception (handle)
 import           Control.Monad (mzero, liftM, void)
 import           Data.Aeson
 import qualified Data.ByteString.Char8 as C
-import           Data.Char (toLower)
 import           Data.Text (Text)
-import           qualified Data.Text as T
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           Data.Time (UTCTime)
 import           Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import qualified Database.PostgreSQL.Simple as DB
@@ -28,6 +28,7 @@ import Web.TED.TalkPage (parseDescription, parseImage, parseTalkObject,
 import ReTed.Config (Config(..))
 import ReTed.Types (mkTalkUrl)
 import qualified ReTed.Models.RedisKeys as Keys
+import Web.TED (FileType(..), Subtitle(..), toSub)
 
 
 data Language = Language
@@ -138,7 +139,7 @@ saveToDB config url = do
                 KV.setex (Keys.cache id) (3600*24) ""
                 KV.set (Keys.slug slug) (C.pack $ show id)
             let jsonLang = DB.toJSONField languages
-            void $ DB.execute conn [sql|
+            DB.execute conn [sql|
                 INSERT INTO talks (id, name, slug, description, image, filmed,
                                    published, languages, media_slug, media_pad)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -148,11 +149,35 @@ saveToDB config url = do
                     media_pad = EXCLUDED.media_pad
                 |] (id, name, slug, description, image, filmedAt,
                     publishedAt, jsonLang, mediaSlug, mediaPad)
+            saveTranscriptIfNotAlready config talk
             return $ Just talk
         Nothing -> return Nothing
   where
     conn = dbConn config
     kv = kvConn config
+
+saveTranscriptIfNotAlready :: Config -> Talk -> IO ()
+saveTranscriptIfNotAlready config Talk {id, name, slug, mediaSlug, mediaPad} = do
+    xs <- DB.query conn [sql|
+        SELECT id FROM transcripts
+        WHERE id = ?
+        |] [id]
+    print xs
+    case xs of
+        [DB.Only (_::Int)] -> return ()
+        _   -> do
+            path <- toSub $
+                Subtitle 0 slug ["en"] mediaSlug mediaPad TXT
+            case path of
+                Just path' -> do
+                    transcript <- T.readFile path'
+                    void $ DB.execute conn [sql|
+                        INSERT INTO transcripts (id, name, en)
+                        VALUES (?, ?, ?)
+                    |] (id, name, transcript)
+                Nothing -> return ()
+  where
+    conn = dbConn config
 
 fetchTalk :: Text -> IO (Maybe Talk)
 fetchTalk url = do
