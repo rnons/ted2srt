@@ -13,7 +13,6 @@ import qualified Data.ByteString.Char8 as C
 import           Data.Maybe (fromMaybe)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
-import           Database.Redis hiding (decode)
 import qualified Filesystem.Path.CurrentOS as FS
 import           Network.HTTP.Types (status200, status404)
 import           Network.Wai (Application, Response, responseFile, responseLBS)
@@ -22,7 +21,7 @@ import           Servant
 import Web.TED (FileType(..), Subtitle(..), toSub)
 import ReTed.Config (Config(..))
 import           ReTed.Models.Talk (Talk(..), getTalks, getTalkById, getTalkBySlug,
-                                    getRandomTalk)
+                                    getRandomTalk, searchTalk)
 
 
 instance FromHttpApiData FileType where
@@ -110,25 +109,8 @@ downloadTalkSubtitleH config tid format lang _ respond = do
                 Nothing
         Nothing -> notFound respond
 
-getSearchH :: Connection -> Maybe Text -> Handler [Talk]
-getSearchH conn (Just q) = liftIO $ do
-    undefined
-    -- searchtalks <- API.searchTalk q
-    -- liftM catMaybes $ forM searchtalks $ \t -> do
-    --     mtalk <- runRedis conn $ get (C.pack $ show $ API.s_id t)
-    --     case mtalk of
-    --         Right (Just talk') -> return $ decodeStrict talk'
-    --         _                    -> do
-    --             talk' <- queryTalk $ API.s_id t
-    --             case talk' of
-    --                 Nothing -> return Nothing
-    --                 Just talk -> do
-                        -- dbtalk <- marshal talk
-                        -- runRedis conn $ multiExec $ do
-                        --     set (C.pack $ show $ API.s_id t)
-                        --         (L.toStrict $ encode dbtalk)
-                        --     zadd "tids" [(realToFrac $ utcTimeToPOSIXSeconds $ publishedAt dbtalk, C.pack $ show $ API.s_id t)]
-                        -- return $ Just dbtalk
+getSearchH :: Config -> Maybe Text -> Handler [Talk]
+getSearchH config (Just q) = liftIO $ searchTalk config q
 getSearchH _ Nothing = throwE err400
 
 getRandomTalkH :: Config -> Handler Talk
@@ -146,6 +128,4 @@ tedServer config =
     :<|> getTalkH config
     :<|> getTalkSubtitleH config
     :<|> downloadTalkSubtitleH config
-    :<|> getSearchH conn
-  where
-    conn = kvConn config
+    :<|> getSearchH config
