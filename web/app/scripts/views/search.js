@@ -12,7 +12,7 @@ export class SearchView {
     li.classList.add('u-margin-vm');
     li.innerHTML =
       this.template.replace(/{{slug}}/g, talk.slug)
-                   .replace('{{src}}', talk.images.medium)
+                   .replace('{{src}}', talk.image)
                    .replace('{{title}}', talk.name)
                    .replace('{{description}}', talk.description)
                    .replace('{{publishedAt}}', Utils.pprDate(talk.publishedAt));
