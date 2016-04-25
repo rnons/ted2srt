@@ -217,3 +217,15 @@ getRandomTalk config = do
         _ -> return Nothing
   where
     conn = dbConn config
+
+searchTalk :: Config -> Text -> IO [Talk]
+searchTalk config q = do
+    DB.query conn [sql|
+        SELECT talks.* FROM talks JOIN transcripts
+        ON talks.id = transcripts.id
+        WHERE to_tsvector(transcripts.name || transcripts.en) @@
+              to_tsquery(?)
+        |] [query]
+  where
+    conn = dbConn config
+    query = T.intercalate "&" $ T.words q
