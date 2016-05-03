@@ -3,5 +3,6 @@
 *.txt
 *.lrc
 .env
+.env.test
 dist/
 static/tmp/
