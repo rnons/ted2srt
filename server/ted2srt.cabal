@@ -94,3 +94,29 @@ executable server
     ghc-options:        -Wall -fno-warn-unused-do-bind -O2
     default-extensions: OverloadedStrings
     default-language:   Haskell2010
+
+test-suite spec
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Main.hs
+  build-depends:       base == 4.*
+                     , ted2srt
+                     , aeson >= 0.10
+                     , bytestring
+                     , hspec
+                     , hspec-wai
+                     , http-types
+                     , load-env
+                     , mtl
+                     , postgresql-simple
+                     , servant-server == 0.5.*
+                     , string-conversions
+                     , text
+                     , th-printf
+                     , unordered-containers
+                     , wai
+                     , wai-extra
+                     , warp
+  default-extensions:  OverloadedStrings
+  ghc-options:         -Wall -threaded
+  default-language:    Haskell2010
