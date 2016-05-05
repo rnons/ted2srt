@@ -172,9 +172,9 @@ saveTranscriptIfNotAlready config Talk {id, name, slug, mediaSlug, mediaPad} = d
                 Just path' -> do
                     transcript <- T.readFile path'
                     void $ DB.execute conn [sql|
-                        INSERT INTO transcripts (id, name, en)
-                        VALUES (?, ?, ?)
-                    |] (id, name, transcript)
+                        INSERT INTO transcripts (id, name, en, en_tsvector)
+                        VALUES (?, ?, ?, to_tsvector('english', ? || ?))
+                    |] (id, name, transcript, name, transcript)
                 Nothing -> return ()
   where
     conn = dbConn config
@@ -223,8 +223,8 @@ searchTalk config q = do
     DB.query conn [sql|
         SELECT talks.* FROM talks JOIN transcripts
         ON talks.id = transcripts.id
-        WHERE to_tsvector(transcripts.name || transcripts.en) @@
-              to_tsquery(?)
+        WHERE en_tsvector @@
+              to_tsquery('english', ?)
         |] [query]
   where
     conn = dbConn config

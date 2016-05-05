@@ -17,6 +17,7 @@ SET search_path = public, pg_catalog;
 
 ALTER TABLE ONLY public.transcripts DROP CONSTRAINT transcripts_id_fkey1;
 ALTER TABLE ONLY public.transcripts DROP CONSTRAINT transcripts_id_fkey;
+DROP INDEX public.en_idx;
 ALTER TABLE ONLY public.transcripts DROP CONSTRAINT transcripts_pkey;
 ALTER TABLE ONLY public.talks DROP CONSTRAINT talks_pkey;
 ALTER TABLE ONLY public.talks DROP CONSTRAINT talks_id_name_key;
@@ -87,7 +88,8 @@ ALTER TABLE talks OWNER TO postgres;
 CREATE TABLE transcripts (
     id smallint NOT NULL,
     name text,
-    en text
+    en text,
+    en_tsvector tsvector
 );
 
 
@@ -115,6 +117,13 @@ ALTER TABLE ONLY talks
 
 ALTER TABLE ONLY transcripts
     ADD CONSTRAINT transcripts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: en_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX en_idx ON transcripts USING gin (en_tsvector);
 
 
 --
