@@ -5,11 +5,8 @@ cache:
   directories:
   - $HOME/.stack
 
-services:
-  - postgresql
-
 addons:
-  postgresql: "9.5"
+  postgresql: "9.4"
   apt:
     packages:
       - libgmp-dev
