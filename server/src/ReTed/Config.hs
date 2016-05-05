@@ -1,8 +1,9 @@
 module ReTed.Config where
 
+import           Data.Maybe (fromMaybe)
 import qualified Database.PostgreSQL.Simple as DB
 import qualified Database.Redis as KV
-import           System.Environment (getEnv)
+import           System.Environment (getEnv, lookupEnv)
 
 
 data Config = Config
@@ -14,7 +15,7 @@ getConfig :: IO Config
 getConfig = do
     dbName <- getEnv "DB_NAME"
     dbUser <- getEnv "DB_USER"
-    dbPassword <- getEnv "DB_PASSWORD"
+    dbPassword <- (fromMaybe "" ) <$> lookupEnv "DB_PASSWORD"
     kvPort <- read <$> getEnv "REDIS_PORT"
     db <- DB.connect DB.defaultConnectInfo
         { DB.connectDatabase = dbName

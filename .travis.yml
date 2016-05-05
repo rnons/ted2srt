@@ -8,11 +8,10 @@ cache:
 addons:
   apt:
     packages:
-      - libfcgi-dev
       - libgmp-dev
 
 services:
-  - postgresql
+  - postgresql: "9.5"
 
 before_install:
   # Download and unpack the stack executable
