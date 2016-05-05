@@ -5,13 +5,14 @@ cache:
   directories:
   - $HOME/.stack
 
+services:
+  - postgresql
+
 addons:
+  postgresql: "9.5"
   apt:
     packages:
       - libgmp-dev
-
-services:
-  - postgresql: "9.5"
 
 before_install:
   # Download and unpack the stack executable
@@ -24,4 +25,5 @@ install:
 
 script:
   - cd server
+  - psql --version
   - stack --no-terminal --skip-ghc-check test
