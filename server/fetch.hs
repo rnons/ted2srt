@@ -1,27 +1,23 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-import           Control.Monad (void, zipWithM)
-import           Data.Aeson (decodeStrict)
-import qualified Data.ByteString.Char8 as C
-import           Data.Maybe (catMaybes, mapMaybe)
+import           Control.Monad (void)
+import           Data.Maybe (catMaybes)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Time (getCurrentTime)
-import           Database.Redis ( connect, defaultConnectInfo, runRedis
-                                , mget, connectDatabase)
+import qualified Database.PostgreSQL.Simple as DB
 import           LoadEnv (loadEnv)
 import           Network.HTTP.Conduit (simpleHttp)
-import           Prelude hiding (id)
-import qualified Prelude
 import           Text.HTML.DOM (parseLBS)
+import qualified Text.XML as X
 import           Text.XML.Cursor
 
-import           ReTed.Config (getConfig)
-import qualified ReTed.Models.Talk as Talk
-import           ReTed.Types (RedisTalk(..))
-import           Web.TED hiding (content, publishedAt)
+import           ReTed.Config (Config(..), getConfig)
+import           ReTed.Models.Talk (Talk(..), getTalks, saveToDB)
+import           Web.TED (Feed(..), FeedEntry(..), FileType(..), Subtitle(..),
+                          template, toSub)
 
 
 type TalkId = Int
@@ -35,8 +31,9 @@ main = do
         tids = take limit (parseTids cursor)
         urls = take limit (parseUrl cursor)
 
-    void $ mapM (Talk.saveToDB config) urls
-    -- X.writeFile X.def "atom.xml" . template =<< mkFeed =<< saveAsFeed tids
+    void $ mapM (saveToDB config) urls
+    X.writeFile X.def "atom.xml" . template =<< mkFeed
+                                            =<< saveAsFeed (dbConn config)
   where
     limit = 5
     rurl = "http://feeds.feedburner.com/tedtalks_video"
@@ -49,13 +46,13 @@ main = do
                        &// content
 
 
-talkToFeedEntry :: RedisTalk -> IO (Maybe FeedEntry)
-talkToFeedEntry RedisTalk {..} = do
+talkToFeedEntry :: Talk -> IO (Maybe FeedEntry)
+talkToFeedEntry Talk {..} = do
     path <- toSub $
-        Subtitle 0 slug ["en"] mSlug mPad TXT
+        Subtitle 0 slug ["en"] mediaSlug mediaPad TXT
     case path of
         Just path' -> do
-          transcript <- T.readFile path'
+          transcript <- T.drop 2 <$> T.readFile path'
           return $ Just FeedEntry
               { feedEntryTitle = name
               , feedEntryLink  = "http://ted2srt.org/talks/" <> slug
@@ -66,12 +63,9 @@ talkToFeedEntry RedisTalk {..} = do
   where
     ppr txt = T.concat $ map (\p -> "<p>" <> p <> "</p>") (T.lines txt)
 
-saveAsFeed :: [TalkId] -> IO [FeedEntry]
-saveAsFeed tids = do
-    conn <- connect defaultConnectInfo { connectDatabase = 1 }
-    emtalks <- runRedis conn $ mget $ map (C.pack . show) tids
-    let talks = mapMaybe decodeStrict $ catMaybes $
-                either (const [Nothing]) Prelude.id emtalks
+saveAsFeed :: DB.Connection -> IO [FeedEntry]
+saveAsFeed conn = do
+    talks <- getTalks conn 5
     return . catMaybes =<< mapM talkToFeedEntry talks
 
 mkFeed :: [FeedEntry] -> IO Feed

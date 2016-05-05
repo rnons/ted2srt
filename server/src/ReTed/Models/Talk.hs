@@ -162,7 +162,6 @@ saveTranscriptIfNotAlready config Talk {id, name, slug, mediaSlug, mediaPad} = d
         SELECT id FROM transcripts
         WHERE id = ?
         |] [id]
-    print xs
     case xs of
         [DB.Only (_::Int)] -> return ()
         _   -> do
@@ -170,7 +169,7 @@ saveTranscriptIfNotAlready config Talk {id, name, slug, mediaSlug, mediaPad} = d
                 Subtitle 0 slug ["en"] mediaSlug mediaPad TXT
             case path of
                 Just path' -> do
-                    transcript <- T.readFile path'
+                    transcript <- T.drop 2 <$> T.readFile path'
                     void $ DB.execute conn [sql|
                         INSERT INTO transcripts (id, name, en, en_tsvector)
                         VALUES (?, ?, ?, to_tsvector('english', ? || ?))
