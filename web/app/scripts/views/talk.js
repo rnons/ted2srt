@@ -93,7 +93,7 @@ export class TalkView {
   renderLanguages(language, selected) {
     let li = document.createElement('li');
     li.dataset.code = language.languageCode;
-    li.innerHTML = language.languageName;
+    li.innerHTML = language.endonym;
     this.$languages.appendChild(li);
     if (selected.indexOf(language.code) !== -1) {
       li.click();

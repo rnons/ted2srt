@@ -32,8 +32,9 @@ import Web.TED (FileType(..), Subtitle(..), toSub)
 
 
 data Language = Language
-    { languageName :: Text
-    , languageCode :: Text
+    { languageName  :: Text
+    , languageCode  :: Text
+    , endonym       :: Text
     } deriving (Generic, Show)
 instance FromJSON Language
 instance ToJSON Language
