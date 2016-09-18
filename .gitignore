@@ -4,5 +4,6 @@
 *.lrc
 .env
 .stack-work/
+
 dist/
 static/tmp/

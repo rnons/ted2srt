@@ -52,8 +52,6 @@ type TedApi =
                :> Raw
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [Talk]
 
-type Handler = ExceptT ServantErr IO
-
 notFound :: (Response -> t) -> t
 notFound respond = respond $ responseLBS status404 [] "Not Found"
 
