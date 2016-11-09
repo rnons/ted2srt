@@ -1,0 +1,46 @@
+@value primaryRed from './color.css';
+
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 8px;
+  background: #fafafa;
+  font-size: 16px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #333;
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style-type: none;
+}
+
+h3 {
+  margin-top: 0;
+}
+
+p {
+  margin-top: 0;
+  line-height: 1.6;
+}
+
+a {
+  text-decoration: none;
+  color: #333;
+  cursor: pointer;
+
+  @nest &:hover {
+    text-decoration: underline;
+    color: primaryRed;
+  }
+}
