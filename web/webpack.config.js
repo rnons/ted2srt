@@ -3,11 +3,14 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 
 module.exports = {
+  context: __dirname,
   devtool: 'source-map',
+  target: 'web',
   entry: './src/main.ts',
   output: {
     path: __dirname + '/dist',
-    filename: 'main.js'
+    filename: 'main.js',
+    publicPath: '/'
   },
   resolve: {
     extensions: ['.ts', '.js']
@@ -18,7 +21,14 @@ module.exports = {
         test: /\.css$/,
         use: [
           'style-loader',
-          'css-loader?importLoaders=1&modules&localIdentName=[folder]_[local]_[hash:base64:5]',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+              modules: true,
+              localIdentName: '[name]_[local]_[hash:base64:5]',
+            }
+          },
           'postcss-loader',
         ]
       }, {
@@ -35,17 +45,6 @@ module.exports = {
       filename: 'index.html',
       favicon: 'assets/favicon.ico'
     }),
-    new webpack.LoaderOptionsPlugin({
-      test: /\.css$/,
-      options: {
-        postcss() {
-          return [
-            require('postcss-for'),
-            require('postcss-cssnext')
-          ];
-        }
-      }
-    })
   ],
   devServer: {
     proxy: {

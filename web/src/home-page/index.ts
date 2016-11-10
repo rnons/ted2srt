@@ -4,15 +4,10 @@ import SearchForm from '../components/search-form';
 import * as styles from './index.css';
 
 class Home {
-  talks: [Talk];
-  searchForm: SearchForm;
-  footer: Footer;
+  searchForm = new SearchForm();
+  footer = new Footer();
 
-  constructor(data) {
-    this.talks = data.map(d => new Talk(d));
-    this.searchForm = new SearchForm();
-    this.footer = new Footer();
-  }
+  constructor(private talks: Talk[]) {}
 
   renderTalk(talk) {
     const {

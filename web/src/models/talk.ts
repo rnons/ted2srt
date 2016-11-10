@@ -11,7 +11,7 @@ class Talk {
   description: string;
   slug: string;
   mediaSlug: string;
-  publishedAt: string;
+  publishedAt: Date;
   image: string;
   languages: any[];
   hasAudio: boolean;
@@ -35,7 +35,7 @@ class Talk {
     this.description = description;
     this.slug = slug;
     this.mediaSlug = mediaSlug;
-    this.publishedAt = publishedAt;
+    this.publishedAt = new Date(publishedAt);
     this.image = image;
     this.languages = languages;
     this.hasAudio = hasAudio;
