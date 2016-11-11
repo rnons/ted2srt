@@ -1,4 +1,5 @@
 import Talk from '../models/talk';
+import Store from '../services/store';
 import Header from '../components/header';
 import Footer from '../components/footer';
 import Sidebar from './sidebar';
@@ -11,9 +12,8 @@ class TalkPage {
   header = new Header();
   footer = new Footer();
 
-  constructor(private talk: Talk, private rerender: () => void) {
-
-    this.sidebar = new Sidebar(talk);
+  constructor(private store: Store) {
+    this.sidebar = new Sidebar(store);
   }
 
   delegate(target, selector, type, handler) {
@@ -37,13 +37,7 @@ class TalkPage {
 
   handleSelectLanguage = (element) => {
     const code = element.dataset.code;
-    const index = this.selectedLanguages.indexOf(code);
-    if (index === -1) {
-      this.selectedLanguages.push(code);
-    } else {
-      this.selectedLanguages.splice(index, 1);
-    }
-    this.rerender();
+    this.store.selectLanguage(code);
   }
 
   renderInfo() {
@@ -53,7 +47,7 @@ class TalkPage {
       image,
       description,
       publishedAt
-    } = this.talk;
+    } = this.store.currentTalk;
     const tedUrl = `https://www.ted.com/talks/${slug}`;
     return `
       <h3>
@@ -73,16 +67,29 @@ class TalkPage {
     `
   }
 
+  renderTranscript() {
+    const content = this.store.transcript.split('\n')
+      .map(p => `<p>${p}</p>`)
+      .join('');
+    return `
+      <article>
+        ${content}
+      </article>
+    `;
+  }
+
   render() {
-    const info = this.renderInfo();
-    const sidebar = this.sidebar.render(this.selectedLanguages);
     const header = this.header.render();
+    const info = this.renderInfo();
+    const transcript = this.renderTranscript();
+    const sidebar = this.sidebar.render();
     const footer = this.footer.render();
     return `
       ${header}
       <div class="${styles.root}">
         <main class="${styles.main}">
           <div class="u-margin-bm">${info}</div>
+          <div>${transcript}</div>
         </main>
         ${sidebar}
       </div>

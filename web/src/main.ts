@@ -22,13 +22,15 @@ const routeHandler = () => {
     });
   } else if (matches = TALK_PAGE_REGEXP.exec(hash)) {
     const slug = matches[1];
-    store.getBySlug(slug).then(talk => {
+    store.getBySlug(slug).then(() => {
       const rerender = () => {
         root.innerHTML = talkPage.render();
         talkPage.mounted();
       };
-      const talkPage = new TalkPage(talk, rerender);
+      const talkPage = new TalkPage(store);
       rerender();
+      store.getTranscript('txt');
+      store.subscribe(rerender);
     });
   } else {
     document.location.hash = '';

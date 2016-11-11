@@ -1,9 +1,14 @@
 import Talk from '../models/talk';
+import Store from '../services/store';
 import * as styles from './sidebar.css';
 
 
 class Sidebar {
-  constructor(private talk: Talk) {}
+  talk: Talk;
+
+  constructor(private store: Store) {
+    this.talk = store.currentTalk;
+  }
 
   getVideoUrl(codeRate) {
     const slug = this.talk.mediaSlug;
@@ -94,7 +99,8 @@ class Sidebar {
     `;
   }
 
-  render(selectedLanguages) {
+  render() {
+    const selectedLanguages = this.store.selectedLanguages;
     const video = this.renderVideo();
     const transcript = this.renderTranscript(selectedLanguages);
     const languages = this.renderLanguages(selectedLanguages);
