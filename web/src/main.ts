@@ -29,7 +29,6 @@ const routeHandler = () => {
       };
       const talkPage = new TalkPage(store);
       rerender();
-      store.getTranscript('txt');
       store.subscribe(rerender);
     });
   } else {

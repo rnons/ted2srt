@@ -6,7 +6,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  padding-top: 1.25rem;
+  padding: 1.25rem 0;
 }
 
 @media large {
@@ -49,4 +49,28 @@
   display: block;
   font-style: italic;
   color: primaryGray;
+}
+
+.article {
+  font-size: 1.125rem;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.row p:first-child {
+  font-family: serif;
+}
+
+@media large {
+  .row {
+    flex-direction: row;
+  }
+
+  .row p {
+    width: 48%;
+  }
 }

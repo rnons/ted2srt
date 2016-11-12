@@ -7,7 +7,7 @@ class Store {
   subscribers: (() => any)[] = [];
   selectedLanguages: string[] = [];
   currentTalk: Talk;
-  transcript: string = '';
+  transcripts = {};
 
   constructor(private http: Http) {}
 
@@ -24,7 +24,8 @@ class Store {
         talk = this.add(data);
         this.slugToTalk[talk.slug] = talk;
         this.currentTalk = talk;
-        this.inform();
+        // this.inform();
+        this.selectLanguage('en');
         return Promise.resolve();
       }).catch(err => {
         console.log(err);
@@ -45,21 +46,17 @@ class Store {
     }
   }
 
-  getTranscript(format) {
+  getTranscript(format, lang) {
     const { id } = this.currentTalk;
-    let query = '';
-    if (this.selectedLanguages.length === 0) {
-      query = 'lang=en';
+    if (this.transcripts[lang]) {
+      return Promise.resolve();
     } else {
-      query = this.selectedLanguages.map(function(code) {
-        return 'lang=' + code;
-      }).join('&');
+      return this.http.get(`/api/talks/${id}/transcripts/${format}?lang=${lang}`)
+        .then((transcript: string) => {
+          this.transcripts[lang] = transcript;
+          this.inform();
+        });
     }
-    return this.http.get(`/api/talks/${id}/transcripts/${format}?${query}`)
-      .then((transcript: string) => {
-        this.transcript = transcript;
-        this.inform();
-      });
   }
 
   selectLanguage(code) {
@@ -69,7 +66,8 @@ class Store {
     } else {
       this.selectedLanguages.splice(index, 1);
     }
-    this.inform();
+    // this.inform();
+    this.getTranscript('txt', code);
   }
 
   subscribe(callback: () => any) {

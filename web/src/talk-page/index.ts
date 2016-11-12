@@ -68,12 +68,35 @@ class TalkPage {
   }
 
   renderTranscript() {
-    const content = this.store.transcript.split('\n')
-      .map(p => `<p>${p}</p>`)
-      .join('');
+    const [ lang1, lang2 ] = this.store.selectedLanguages;
+    if (!this.store.transcripts[lang1]) {
+      return;
+    }
+    const transcript1 = this.store.transcripts[lang1].split('\n');
+    let transcript2, rows;
+    if (lang2) {
+      transcript2 = this.store.transcripts[lang2].split('\n');
+      rows = transcript1.map((p1, index) => {
+        const p2 = transcript2[index];
+        return `
+          <div class="${styles.row}">
+            <p>${p1}</p>
+            <p>${p2}</p>
+          </div>
+        `;
+      }).join('');
+    } else {
+      rows = transcript1.map(p => {
+        return `
+          <p>${p}</p>
+        `;
+      }).join('');
+    }
+    console.log(rows)
+
     return `
-      <article>
-        ${content}
+      <article class="${styles.article}">
+        ${rows}
       </article>
     `;
   }

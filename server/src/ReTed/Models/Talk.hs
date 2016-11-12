@@ -100,7 +100,8 @@ getTalk config tid url = do
     cached <- KV.runRedis kv $
         KV.get $ Keys.cache tid
     case cached of
-        Right _ -> getTalkById config tid (Just url)
+        Right (Just _) -> getTalkById config tid (Just url)
+        Right Nothing -> saveToDB config url
         Left _ -> saveToDB config url
   where
     kv = kvConn config
