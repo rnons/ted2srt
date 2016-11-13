@@ -10,17 +10,13 @@ class TalkService {
 
   constructor(private http: Http) {}
 
-  add(data) {
-    return new Talk(data);
-  }
-
   getBySlug(slug) {
     let talk = this.slugToTalk[slug];
     if (talk) {
       return Promise.resolve(talk);
     } else {
       return this.http.getJson(`/api/talks/${slug}`).then(data => {
-        talk = this.add(data);
+        talk = new Talk(data);
         this.slugToTalk[talk.slug] = talk;
         this.talk = talk;
         this.selectLanguage('en');
@@ -48,11 +44,14 @@ class TalkService {
   selectLanguage(code) {
     const index = this.selectedLanguages.indexOf(code);
     if (index === -1) {
-      this.selectedLanguages.push(code);
+      if (this.selectedLanguages.length !== 2) {
+        this.selectedLanguages.push(code);
+        this.getTranscript('txt', code);
+      }
     } else {
       this.selectedLanguages.splice(index, 1);
+      this.inform();
     }
-    this.getTranscript('txt', code);
   }
 
   subscribe(callback: () => any) {

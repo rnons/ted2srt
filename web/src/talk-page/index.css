@@ -2,7 +2,7 @@
 @value large from '../css/media-query.css';
 
 .root {
-  max-width: 60rem;
+  max-width: 64rem;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -51,10 +51,6 @@
   color: primaryGray;
 }
 
-.article {
-  font-size: 1.125rem;
-}
-
 .row {
   display: flex;
   flex-direction: column;
@@ -71,6 +67,13 @@
   }
 
   .row p {
-    width: 48%;
+    width: 49%;
   }
+}
+
+.help {
+  padding: 2rem 0;
+  text-align: center;
+  font-style: italic;
+  font-size: 1.125rem;
 }

@@ -77,12 +77,16 @@ class Sidebar {
   }
 
   renderLanguages(selectedLanguages) {
-    const list = this.service.talk.languages.map(({languageCode, endonym}) => {
+    const list = this.service.talk.languages.map(({
+      languageCode, languageName, endonym
+    }) => {
       const className = selectedLanguages.indexOf(languageCode) === -1
         ? styles.link : styles.linkActive;
       return `
         <li>
-          <a class="${className}" data-code="${languageCode}">${endonym}</a>
+          <a class="${className}"
+            title="${languageName}"
+            data-code="${languageCode}">${endonym}</a>
         </li>
       `;
     });

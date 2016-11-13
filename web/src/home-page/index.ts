@@ -7,6 +7,7 @@ class Home {
   component: HomeComponent;
 
   constructor(http: Http, private root: HTMLElement) {
+    document.title = 'TED2srt: Download bilingual subtitles of TED talks';
     const service = new HomeService(http);
     service.fetch().then(() => {
       this.component = new HomeComponent(service);

@@ -16,13 +16,13 @@ const routeHandler = () => {
   const hash = document.location.hash;
   let matches;
 
-  if (hash === '') {
+  if (hash === '#/') {
     new HomePage(http, root);
   } else if (matches = TALK_PAGE_REGEXP.exec(hash)) {
     const slug = matches[1];
     new TalkPage(http, root, slug);
   } else {
-    document.location.hash = '';
+    document.location.hash = '#/';
   }
 };
 

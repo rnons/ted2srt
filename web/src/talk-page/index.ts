@@ -10,6 +10,7 @@ class TalkPage {
   constructor(http: Http, private root: HTMLElement, slug: string) {
     this.service = new TalkService(http);
     this.service.getBySlug(slug).then(() => {
+      document.title = this.service.talk.name + '- TED2srt';
       this.talkPage = new TalkComponent(this.service);
       this.render();
       this.service.subscribe(this.render);
