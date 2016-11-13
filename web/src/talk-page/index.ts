@@ -68,9 +68,23 @@ class TalkPage {
   }
 
   renderTranscript() {
+    if (this.store.currentTalk.languages.length === 0) {
+      return `
+        <div class="${styles.help}">
+          Sorry, no transcript yet.
+        </div>
+      `;
+    }
+    if (this.store.selectedLanguages.length === 0) {
+      return `
+        <div class="${styles.help}">
+          Transcripts will be shown here. You may select up to two languages.
+        </div>
+      `;
+    }
     const [ lang1, lang2 ] = this.store.selectedLanguages;
     if (!this.store.transcripts[lang1]) {
-      return;
+      return '';
     }
     const transcript1 = this.store.transcripts[lang1].split('\n');
     let transcript2, rows;
@@ -92,7 +106,6 @@ class TalkPage {
         `;
       }).join('');
     }
-    console.log(rows)
 
     return `
       <article class="${styles.article}">

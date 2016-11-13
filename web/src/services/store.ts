@@ -24,7 +24,6 @@ class Store {
         talk = this.add(data);
         this.slugToTalk[talk.slug] = talk;
         this.currentTalk = talk;
-        // this.inform();
         this.selectLanguage('en');
         return Promise.resolve();
       }).catch(err => {
@@ -49,6 +48,7 @@ class Store {
   getTranscript(format, lang) {
     const { id } = this.currentTalk;
     if (this.transcripts[lang]) {
+      this.inform();
       return Promise.resolve();
     } else {
       return this.http.get(`/api/talks/${id}/transcripts/${format}?lang=${lang}`)
@@ -66,7 +66,6 @@ class Store {
     } else {
       this.selectedLanguages.splice(index, 1);
     }
-    // this.inform();
     this.getTranscript('txt', code);
   }
 
