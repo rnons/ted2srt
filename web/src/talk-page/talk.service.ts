@@ -1,12 +1,11 @@
 import Talk from '../models/talk';
-import Http from './http';
+import Http from '../services/http';
 
-class Store {
+class TalkService {
   slugToTalk = {};
-  newest: Talk[] = [];
   subscribers: (() => any)[] = [];
   selectedLanguages: string[] = [];
-  currentTalk: Talk;
+  talk: Talk;
   transcripts = {};
 
   constructor(private http: Http) {}
@@ -23,7 +22,7 @@ class Store {
       return this.http.getJson(`/api/talks/${slug}`).then(data => {
         talk = this.add(data);
         this.slugToTalk[talk.slug] = talk;
-        this.currentTalk = talk;
+        this.talk = talk;
         this.selectLanguage('en');
         return Promise.resolve();
       }).catch(err => {
@@ -32,21 +31,8 @@ class Store {
     }
   }
 
-  getNewest() {
-    if (this.newest.length) {
-      return Promise.resolve(this.newest);
-    } else {
-      return this.http.getJson('/api/talks?limit=5').then((data: any[]) => {
-        this.newest = data.map(d => new Talk(d));
-        return Promise.resolve(this.newest);
-      }).catch(err => {
-        console.log(err);
-      });
-    }
-  }
-
   getTranscript(format, lang) {
-    const { id } = this.currentTalk;
+    const { id } = this.talk;
     if (this.transcripts[lang]) {
       this.inform();
       return Promise.resolve();
@@ -80,4 +66,4 @@ class Store {
   }
 }
 
-export default Store;
+export default TalkService;

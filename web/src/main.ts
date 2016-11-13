@@ -1,36 +1,26 @@
 /// <reference path="./main.d.ts" />
 
-import Store from './services/store';
 import Http from './services/http';
 import HomePage from './home-page';
 import TalkPage from './talk-page';
 import './css/global.css';
 
+const http = new Http();
 const root = document.getElementById('root');
-const store = new Store(new Http());
 
 
 const TALK_PAGE_REGEXP = /#\/talks\/(\w+)/;
 
+
 const routeHandler = () => {
   const hash = document.location.hash;
   let matches;
+
   if (hash === '') {
-    store.getNewest().then(talks => {
-      const home = new HomePage(talks);
-      root.innerHTML = home.render();
-    });
+    new HomePage(http, root);
   } else if (matches = TALK_PAGE_REGEXP.exec(hash)) {
     const slug = matches[1];
-    store.getBySlug(slug).then(() => {
-      const rerender = () => {
-        root.innerHTML = talkPage.render();
-        talkPage.mounted();
-      };
-      const talkPage = new TalkPage(store);
-      rerender();
-      store.subscribe(rerender);
-    });
+    new TalkPage(http, root, slug);
   } else {
     document.location.hash = '';
   }

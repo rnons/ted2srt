@@ -1,22 +1,17 @@
-import Talk from '../models/talk';
-import Store from '../services/store';
+import TalkService from './talk.service';
 import * as styles from './sidebar.css';
 
 
 class Sidebar {
-  talk: Talk;
-
-  constructor(private store: Store) {
-    this.talk = store.currentTalk;
-  }
+  constructor(private service: TalkService) {}
 
   getVideoUrl(codeRate) {
-    const slug = this.talk.mediaSlug;
+    const slug = this.service.talk.mediaSlug;
     return `https://download.ted.com/talks/${slug}-${codeRate}.mp4`;
   }
 
   getTranscriptUrl(selectedLanguages, format) {
-    const { id } = this.talk;
+    const { id } = this.service.talk;
     let query = '';
     if (selectedLanguages.length === 0) {
       query = 'lang=en';
@@ -82,7 +77,7 @@ class Sidebar {
   }
 
   renderLanguages(selectedLanguages) {
-    const list = this.talk.languages.map(({languageCode, endonym}) => {
+    const list = this.service.talk.languages.map(({languageCode, endonym}) => {
       const className = selectedLanguages.indexOf(languageCode) === -1
         ? styles.link : styles.linkActive;
       return `
@@ -100,7 +95,7 @@ class Sidebar {
   }
 
   render() {
-    const selectedLanguages = this.store.selectedLanguages;
+    const selectedLanguages = this.service.selectedLanguages;
     const video = this.renderVideo();
     const transcript = this.renderTranscript(selectedLanguages);
     const languages = this.renderLanguages(selectedLanguages);

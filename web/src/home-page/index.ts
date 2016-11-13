@@ -1,46 +1,21 @@
-import Talk from '../models/talk';
-import Footer from '../components/footer';
-import SearchForm from '../components/search-form';
-import * as styles from './index.css';
+import Http from '../services/http';
+import HomeService from './home.service';
+import HomeComponent from './home.component';
+
 
 class Home {
-  searchForm = new SearchForm();
-  footer = new Footer();
+  component: HomeComponent;
 
-  constructor(private talks: Talk[]) {}
-
-  renderTalk(talk) {
-    const {
-      slug,
-      image,
-      title,
-      speaker
-    } = talk;
-    return `
-      <a class="${styles.tile}" href="#/talks/${slug}">
-        <div class="${styles.image}" style="background-image: url(${image})"></div>
-        <div class="${styles.info}">
-          <div class="${styles.title}">${title}</div>
-          <div class="${styles.speaker}">${speaker}</div>
-        </div>
-      </a>
-    `;
+  constructor(http: Http, private root: HTMLElement) {
+    const service = new HomeService(http);
+    service.fetch().then(() => {
+      this.component = new HomeComponent(service);
+      this.render();
+    });
   }
 
   render() {
-    const form = this.searchForm.render();
-    const list = this.talks.map(this.renderTalk).join('');
-    const footer = this.footer.render();
-    return `
-      <div class="${styles.root}">
-        <div class="${styles.logo}">:: TED -> [SRT]</div>
-        ${form}
-        <div class="${styles.list}">
-          ${list}
-        </div>
-      </div>
-      ${footer}
-    `;
+    this.root.innerHTML = this.component.render();
   }
 }
 
