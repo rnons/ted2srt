@@ -119,7 +119,7 @@ class TalkComponent {
     }
     const transcript1 = this.service.transcripts[lang1].split('\n');
     let transcript2, rows;
-    if (lang2) {
+    if (lang2 && this.service.transcripts[lang2]) {
       transcript2 = this.service.transcripts[lang2].split('\n');
       rows = transcript1.map((p1, index) => {
         const p2 = transcript2[index];

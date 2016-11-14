@@ -10,6 +10,15 @@ class TalkService {
 
   constructor(private http: Http) {}
 
+  readLanguages() {
+    const languages = localStorage.getItem('languages');
+    return languages ? JSON.parse(languages) : [];
+  }
+
+  saveLanguages() {
+    localStorage.setItem('languages', JSON.stringify(this.selectedLanguages));
+  }
+
   getBySlug(slug) {
     let talk = this.slugToTalk[slug];
     if (talk) {
@@ -19,7 +28,7 @@ class TalkService {
         talk = new Talk(data);
         this.slugToTalk[talk.slug] = talk;
         this.talk = talk;
-        this.selectLanguage('en');
+        this.restoreLanguages();
         return Promise.resolve();
       }).catch(err => {
         console.log(err);
@@ -41,6 +50,18 @@ class TalkService {
     }
   }
 
+  restoreLanguages() {
+    const stored = this.readLanguages();
+    const languageCodes = this.talk.languages.map(lang => lang.languageCode);
+    stored.map(code => {
+      if (languageCodes.indexOf(code) !== -1) {
+        this.selectedLanguages.push(code);
+        this.getTranscript('txt', code);
+      }
+    });
+    this.inform();
+  }
+
   selectLanguage(code) {
     const index = this.selectedLanguages.indexOf(code);
     if (index === -1) {
@@ -52,6 +73,7 @@ class TalkService {
       this.selectedLanguages.splice(index, 1);
       this.inform();
     }
+    this.saveLanguages();
   }
 
   subscribe(callback: () => any) {
