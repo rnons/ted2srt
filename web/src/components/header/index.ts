@@ -11,7 +11,7 @@ class Header {
       <div class="${styles.header}">
         <div class="${styles.container}">
           <a class="${styles.logo}"
-             href="#/">:: TED -> [SRT]</a>
+             href="/#/">:: TED -> [SRT]</a>
           ${form}
         </div>
       </div>
