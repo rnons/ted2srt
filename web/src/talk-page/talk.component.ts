@@ -32,6 +32,14 @@ class TalkComponent {
     const $languages = document.querySelector('.js-languages');
     this.delegate($languages, 'a', 'click', this.handleSelectLanguage);
     this.footer.mounted();
+    const $player = <HTMLVideoElement>document.querySelector('.js-player');
+    const $cover = <HTMLElement>document.querySelector('.js-cover');
+    const $info = <HTMLElement>document.querySelector('.js-info')
+    $cover.addEventListener('click', () => {
+      $info.style.display = 'none';
+      $player.style.display = 'block';
+      $player.play();
+    })
   }
 
   handleSelectLanguage = (element) => {
@@ -39,25 +47,49 @@ class TalkComponent {
     this.service.selectLanguage(code);
   }
 
+  makeQuery() {
+    const { selectedLanguages } = this.service;
+    let query = '';
+    if (selectedLanguages.length === 0) {
+      query = 'lang=en';
+    } else {
+      query = selectedLanguages.map(function(code) {
+        return 'lang=' + code;
+      }).join('&');
+    }
+    return query;
+  }
+
   renderInfo() {
     const {
+      id,
       name,
       slug,
+      mediaSlug,
       image,
       description,
       publishedAt
     } = this.service.talk;
     const tedUrl = `https://www.ted.com/talks/${slug}`;
+    const videoUrl = `https://download.ted.com/talks/${mediaSlug}-950k.mp4`;
+    const vttUrl = `/api/talks/${id}/transcripts/vtt?${this.makeQuery()}`;
     return `
-      <h3>
+      <h3 class="${styles.title}">
         <a href="${tedUrl}" target="_blank">${name}</a>
       </h3>
-      <div class="${styles.info}">
-        <a class="${styles.cover}"
+      <video class="js-player"
+        onclick="this.paused ? this.play() : this.pause()"
+        controls hidden>
+          <source src="${videoUrl}" type="video/mp4">
+        <track kind="captions" src="${vttUrl}" default>
+      </video>
+      <div class="${styles.info} js-info">
+        <div class="${styles.cover} js-cover"
            href="${tedUrl}"
-           style="background-image: url(${image}")
+           style="background-image: url(${image})"
            target="_blank">
-        </a>
+          <span class="${styles.playButton}"></span>
+        </div>
         <p class="${styles.description}">
           ${description}
           <span class="${styles.date}">Published: ${publishedAt.toDateString()}</span>
