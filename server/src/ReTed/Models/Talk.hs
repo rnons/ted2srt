@@ -4,9 +4,10 @@
 module ReTed.Models.Talk where
 
 import           Control.Exception (handle)
-import           Control.Monad (mzero, liftM, void)
+import           Control.Monad (forM, mzero, liftM, void)
 import           Data.Aeson
 import qualified Data.ByteString.Char8 as C
+import           Data.Maybe (catMaybes)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -29,6 +30,8 @@ import ReTed.Config (Config(..))
 import ReTed.Types (mkTalkUrl)
 import qualified ReTed.Models.RedisKeys as Keys
 import Web.TED (FileType(..), Subtitle(..), toSub)
+import Web.TED.Types (SearchTalk(s_slug))
+import qualified Web.TED.API as API
 
 
 data Language = Language
@@ -219,8 +222,8 @@ getRandomTalk config = do
   where
     conn = dbConn config
 
-searchTalk :: Config -> Text -> IO [Talk]
-searchTalk config q = do
+searchTalkFromDb :: Config -> Text -> IO [Talk]
+searchTalkFromDb config q = do
     DB.query conn [sql|
         SELECT talks.* FROM talks JOIN transcripts
         ON talks.id = transcripts.id
@@ -230,3 +233,10 @@ searchTalk config q = do
   where
     conn = dbConn config
     query = T.intercalate "&" $ T.words q
+
+searchTalk :: Config -> Text -> IO [Talk]
+searchTalk config q =
+    handle (\(_::HttpException) -> searchTalkFromDb config q) $ do
+        searchResults <- API.searchTalk q
+        liftM catMaybes $ forM searchResults $ \t -> do
+            getTalkBySlug config (s_slug t)

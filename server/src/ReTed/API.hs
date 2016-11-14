@@ -8,7 +8,7 @@ module ReTed.API
   ) where
 
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Trans.Except (ExceptT, throwE)
+import           Control.Monad.Trans.Except (throwE)
 import qualified Data.ByteString.Char8 as C
 import           Data.Maybe (fromMaybe)
 import           Data.Monoid ((<>))
