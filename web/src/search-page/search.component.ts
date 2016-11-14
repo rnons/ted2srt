@@ -6,9 +6,12 @@ import * as styles from './search.css';
 
 class SearchComponent {
   header = new Header();
-  footer = new Footer();
 
-  constructor(private service: SearchService) {}
+  constructor(private service: SearchService, private footer: Footer) {}
+
+  mounted() {
+    this.footer.mounted();
+  }
 
   renderTalk(talk) {
     const {
@@ -34,6 +37,7 @@ class SearchComponent {
       </div>
     `
   }
+
   render() {
     const header = this.header.render();
     const footer = this.footer.render();

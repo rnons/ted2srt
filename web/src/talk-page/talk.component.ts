@@ -9,9 +9,8 @@ class TalkComponent {
   sidebar: Sidebar;
   selectedLanguages: string[] = [];
   header = new Header();
-  footer = new Footer();
 
-  constructor(private service: TalkService) {
+  constructor(private service: TalkService, private footer: Footer) {
     this.sidebar = new Sidebar(service);
   }
 
@@ -32,6 +31,7 @@ class TalkComponent {
   mounted() {
     const $languages = document.querySelector('.js-languages');
     this.delegate($languages, 'a', 'click', this.handleSelectLanguage);
+    this.footer.mounted();
   }
 
   handleSelectLanguage = (element) => {

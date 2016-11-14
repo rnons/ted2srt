@@ -6,9 +6,12 @@ import * as styles from './index.css';
 
 class HomeComponent {
   searchForm = new SearchForm();
-  footer = new Footer();
 
-  constructor(private service: HomeService) {}
+  constructor(private service: HomeService, private footer: Footer) {}
+
+  mounted() {
+    this.footer.mounted();
+  }
 
   renderTalk(talk) {
     const {
