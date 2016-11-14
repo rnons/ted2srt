@@ -3,7 +3,9 @@ import * as styles from './index.css';
 
 
 class Header {
-  searchForm = new SearchForm();
+  constructor(private q: string = '') {}
+
+  searchForm = new SearchForm(this.q);
 
   render() {
     const form = this.searchForm.render();

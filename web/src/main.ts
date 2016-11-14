@@ -11,6 +11,7 @@ const http = new Http();
 const root = document.getElementById('root');
 
 
+const TED_URL_REGEXP = /^https?:\/\/www.ted.com\/talks\/(\w+)/;
 const TALK_PAGE_REGEXP = /#\/talks\/(\w+)/;
 
 
@@ -24,7 +25,11 @@ const routeHandler = () => {
     const slug = matches[1];
     new TalkPage(http, root, slug);
   } else if (hash === '#/search') {
-    const query = parseQueryString();
+    const query: { q?: string } = parseQueryString();
+    matches = TED_URL_REGEXP.exec(decodeURIComponent(query.q));
+    if (matches) {
+      document.location.href = '/#/talks/' + matches[1];
+    }
     new SearchPage(http, root, query);
   } else {
     document.location.hash = '#/';

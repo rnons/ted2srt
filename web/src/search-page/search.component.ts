@@ -5,9 +5,11 @@ import * as styles from './search.css';
 
 
 class SearchComponent {
-  header = new Header();
+  header: Header;
 
-  constructor(private service: SearchService, private footer: Footer) {}
+  constructor(private service: SearchService, private footer: Footer) {
+    this.header = new Header(service.q);
+  }
 
   mounted() {
     this.footer.mounted();

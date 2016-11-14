@@ -5,7 +5,7 @@ export const parseQueryString = () => {
   querys.forEach(q => {
     const qs = q.split('=');
     const key = qs[0];
-    const value = qs[1];
+    const value = qs[1].replace(/\+/g, ' ');
     if (params[key]) {
       if (!(params[key] instanceof Array)) {
         params[key] = [params[key]];
