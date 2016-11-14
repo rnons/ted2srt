@@ -79,6 +79,7 @@ class TalkComponent {
       </h3>
       <video class="js-player"
         onclick="this.paused ? this.play() : this.pause()"
+        preload="none"
         controls hidden>
           <source src="${videoUrl}" type="video/mp4">
         <track kind="captions" src="${vttUrl}" default>
