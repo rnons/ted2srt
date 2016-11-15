@@ -77,7 +77,7 @@ class TalkComponent {
       <h3 class="${styles.title}">
         <a href="${tedUrl}" target="_blank">${name}</a>
       </h3>
-      <video class="js-player"
+      <video class="${styles.player} js-player"
         onclick="this.paused ? this.play() : this.pause()"
         preload="none"
         controls hidden>

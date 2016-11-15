@@ -22,6 +22,7 @@ const routeHandler = () => {
   if (hash === '#/') {
     new HomePage(http, root);
   } else if (matches = TALK_PAGE_REGEXP.exec(hash)) {
+    window.scrollTo(0, 0);
     const slug = matches[1];
     new TalkPage(http, root, slug);
   } else if (hash === '#/search') {
