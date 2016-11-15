@@ -21,7 +21,7 @@ class Footer {
         TED2srt by <a href="https://twitter.com/rnons" target="_blank">rnons</a> |
         <a class="js-random">random talk</a> |
         <a href="https://github.com/rnons/ted2srt" target="_blank">source code</a> |
-        <a href="https://ted2srt.org/atom.xml" target="_blank">feed</a>
+        <a href="/atom.xml" target="_blank">feed</a>
       </footer>
     `;
   }

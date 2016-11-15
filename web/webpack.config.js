@@ -9,7 +9,7 @@ module.exports = {
   entry: './src/main.ts',
   output: {
     path: __dirname + '/dist',
-    filename: 'main.js',
+    filename: 'main.[hash:5].js',
     publicPath: '/'
   },
   resolve: {
@@ -43,7 +43,10 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: 'src/index.html',
       filename: 'index.html',
-      favicon: 'assets/favicon.ico'
+      favicon: 'assets/favicon.ico',
+      minify: {
+        collapseWhitespace: true
+      }
     }),
   ],
   devServer: {

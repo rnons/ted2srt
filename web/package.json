@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server"
+    "build": "webpack -p --progress",
+    "start": "webpack-dev-server --progress"
   },
   "devDependencies": {
     "awesome-typescript-loader": "2.2.4",
