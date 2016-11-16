@@ -10,19 +10,6 @@ class Sidebar {
     return `https://download.ted.com/talks/${slug}-${codeRate}.mp4`;
   }
 
-  getTranscriptUrl(selectedLanguages, format) {
-    const { id } = this.service.talk;
-    let query = '';
-    if (selectedLanguages.length === 0) {
-      query = 'lang=en';
-    } else {
-      query = selectedLanguages.map(function(code) {
-        return 'lang=' + code;
-      }).join('&');
-    }
-    return `/api/talks/${id}/transcripts/download/${format}?${query}`;
-  }
-
   renderAudio() {
     return '';
   }
@@ -57,27 +44,23 @@ class Sidebar {
     `;
   }
 
-  renderTranscript(selectedLanguages) {
+  renderTranscripts() {
     return `
-      <div class="${styles.panel}">
-        <h4 class="${styles.panelTitle}">Download transcript</h4>
-        <ul class="${styles.list}">
-          <li>
-            <a href="${this.getTranscriptUrl(selectedLanguages, 'srt')}">SRT</a>
-          </li>
-          <li>
-            <a href="${this.getTranscriptUrl(selectedLanguages, 'txt')}">TXT</a>
-          </li>
-          <li>
-            <a href="${this.getTranscriptUrl(selectedLanguages, 'lrc')}">LRC</a>
-          </li>
-        </ul>
-      </div>
+      <li>
+        <a href="${this.service.makeTranscriptDownloadUrl('srt')}">SRT</a>
+      </li>
+      <li>
+        <a href="${this.service.makeTranscriptDownloadUrl('txt')}">TXT</a>
+      </li>
+      <li>
+        <a href="${this.service.makeTranscriptDownloadUrl('lrc')}">LRC</a>
+      </li>
     `;
   }
 
-  renderLanguages(selectedLanguages) {
-    const list = this.service.talk.languages.map(({
+  renderLanguages() {
+    const { talk, selectedLanguages } = this.service;
+    return talk.languages.map(({
       languageCode, languageName, endonym
     }) => {
       const className = selectedLanguages.indexOf(languageCode) === -1
@@ -89,26 +72,33 @@ class Sidebar {
             data-code="${languageCode}">${endonym}</a>
         </li>
       `;
-    });
-    return `
-      <div class="${styles.panel}">
-        <h4 class="${styles.panelTitle}">Select languages</h4>
-        <ul class="${styles.list} js-languages">${list.join('')}</ul>
-      </div>
-    `;
+    }).join('');
+  }
+
+  rerender() {
+    const $transcripts = <HTMLElement>document.querySelector('.js-transcripts-download');
+    $transcripts.innerHTML = this.renderTranscripts();
+
+    const $languages = <HTMLElement>document.querySelector('.js-languages');
+    $languages.innerHTML = this.renderLanguages();
   }
 
   render() {
-    const selectedLanguages = this.service.selectedLanguages;
     const video = this.renderVideo();
-    const transcript = this.renderTranscript(selectedLanguages);
-    const languages = this.renderLanguages(selectedLanguages);
+    const transcript = this.renderTranscripts();
+    const languages = this.renderLanguages();
     return `
-      <aside class="${styles.aside}">
+      <div>
         ${video}
-        ${transcript}
-        ${languages}
-      </aside>
+        <div class="${styles.panel}">
+          <h4 class="${styles.panelTitle}">Download transcript</h4>
+          <ul class="${styles.list} js-transcripts-download">${transcript}</ul>
+        </div>
+        <div class="${styles.panel}">
+          <h4 class="${styles.panelTitle}">Select languages</h4>
+          <ul class="${styles.list} js-languages">${languages}</ul>
+        </div>
+      </div>
     `;
   }
 }

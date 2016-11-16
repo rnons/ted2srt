@@ -19,6 +19,24 @@ class TalkService {
     localStorage.setItem('languages', JSON.stringify(this.selectedLanguages));
   }
 
+  makeTranscriptUrl(format, download=false) {
+    const { id } = this.talk;
+    let query = '';
+    if (this.selectedLanguages.length === 0) {
+      query = 'lang=en';
+    } else {
+      query = this.selectedLanguages.map(function(code) {
+        return 'lang=' + code;
+      }).join('&');
+    }
+    const downloadSlug = download ? 'download/' : '';
+    return `/api/talks/${id}/transcripts/${downloadSlug}${format}?${query}`;
+  }
+
+  makeTranscriptDownloadUrl(format) {
+    return this.makeTranscriptUrl(format, true);
+  }
+
   getBySlug(slug) {
     let talk = this.slugToTalk[slug];
     if (talk) {

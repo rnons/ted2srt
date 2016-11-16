@@ -47,19 +47,6 @@ class TalkComponent {
     this.service.selectLanguage(code);
   }
 
-  makeQuery() {
-    const { selectedLanguages } = this.service;
-    let query = '';
-    if (selectedLanguages.length === 0) {
-      query = 'lang=en';
-    } else {
-      query = selectedLanguages.map(function(code) {
-        return 'lang=' + code;
-      }).join('&');
-    }
-    return query;
-  }
-
   renderInfo() {
     const {
       id,
@@ -72,7 +59,7 @@ class TalkComponent {
     } = this.service.talk;
     const tedUrl = `https://www.ted.com/talks/${slug}`;
     const videoUrl = `https://download.ted.com/talks/${mediaSlug}-950k.mp4`;
-    const vttUrl = `/api/talks/${id}/transcripts/vtt?${this.makeQuery()}`;
+    const vttUrl = this.service.makeTranscriptUrl('vtt');
     return `
       <h3 class="${styles.title}">
         <a href="${tedUrl}" target="_blank">${name}</a>
@@ -82,7 +69,7 @@ class TalkComponent {
         preload="none"
         controls hidden>
           <source src="${videoUrl}" type="video/mp4">
-        <track kind="captions" src="${vttUrl}" default>
+        <track class="js-track" kind="captions" src="${vttUrl}" default>
       </video>
       <div class="${styles.info} js-info">
         <div class="${styles.cover} js-cover"
@@ -146,6 +133,19 @@ class TalkComponent {
     `;
   }
 
+  rerender() {
+    const $transcript = <HTMLElement>document.querySelector('.js-transcript');
+    $transcript.innerHTML = this.renderTranscript();
+    this.sidebar.rerender();
+
+    const { id } = this.service.talk;
+    const $player = <HTMLVideoElement>document.querySelector('.js-player');
+    const $track = <HTMLVideoElement>document.querySelector('.js-track');
+    const $newTrack = <HTMLTrackElement>$track.cloneNode();
+    $newTrack.src = this.service.makeTranscriptUrl('vtt');
+    $player.replaceChild($newTrack, $track);
+  }
+
   render() {
     const header = this.header.render();
     const info = this.renderInfo();
@@ -157,12 +157,15 @@ class TalkComponent {
       <div class="${styles.root}">
         <main class="${styles.main}">
           <div class="u-margin-bm">${info}</div>
-          <div>${transcript}</div>
+          <div class="js-transcript">${transcript}</div>
         </main>
-        ${sidebar}
+        <aside class="js-sidebar">
+          ${sidebar}
+        </aside>
       </div>
       ${footer}
     `;
+
   }
 }
 

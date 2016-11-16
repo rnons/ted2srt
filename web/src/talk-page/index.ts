@@ -15,12 +15,12 @@ class TalkPage {
       document.title = this.service.talk.name + '- TED2srt';
       this.talkPage = new TalkComponent(this.service, this.footer);
       this.render();
-      this.service.subscribe(this.render);
+      this.service.subscribe(() => this.talkPage.rerender());
     })
     this.footer = new Footer(http);
   }
 
-  render = () => {
+  render() {
     this.root.innerHTML = this.talkPage.render();
     this.talkPage.mounted();
   }
