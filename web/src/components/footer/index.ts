@@ -7,7 +7,7 @@ class Footer {
 
   mounted() {
     document.querySelector('.js-random').addEventListener('click', () => {
-      return this.http.get('/api/talks/random').then((data: { slug: string }) => {
+      return this.http.getJson('/api/talks/random').then((data: { slug: string }) => {
         document.location.href = '/#/talks/' + data.slug;
       }).catch(err => {
         console.log(err);
