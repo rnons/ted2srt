@@ -154,7 +154,8 @@ oneSub sub = do
             em = et `div` 1000 `mod` 3600 `div` 60
             es = et `div` 1000 `mod` 60
             ems = et `mod` 1000
-        hPrintf h fmt (i::Int) sh sm ss sms eh em es ems (T.unpack $ content c)
+        hPrintf h fmt (i::Int) sh sm ss sms eh em es ems
+                (T.unpack . T.intercalate " " . T.lines $ content c)
 
 oneTxt :: Subtitle -> IO (Maybe FilePath)
 oneTxt sub = do
