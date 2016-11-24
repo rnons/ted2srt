@@ -1,8 +1,0 @@
-{
-  "name": "HelloIonic",
-  "private": "true",
-  "dependencies": {
-    "angular-resource": "~1.4.3",
-    "ionic": "~1.1.0"
-  }
-}
