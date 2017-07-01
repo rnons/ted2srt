@@ -3,13 +3,13 @@ const get = (url, isJson) => {
     let request = new XMLHttpRequest();
     request.open('GET', url);
 
-    request.onload = function() {
+    request.addEventListener('load', function() {
       if (this.status >= 200 && this.status < 400) {
         resolve(isJson ? JSON.parse(this.responseText) : this.responseText);
       } else {
         reject(this.responseText);
       }
-    };
+    });
     request.send();
   });
 }
