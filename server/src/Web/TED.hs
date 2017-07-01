@@ -112,7 +112,7 @@ oneSub sub = do
     if cached
        then return $ Just path
        else do
-           let rurl = T.unpack $ "http://www.ted.com/talks/subtitles/id/"
+           let rurl = T.unpack $ "https://www.ted.com/talks/subtitles/id/"
                      <> T.pack (show $ talkId sub) <> "/lang/" <> head (language sub)
            E.catch (do
                res <- simpleHttp rurl
@@ -168,24 +168,18 @@ oneTxt sub = do
                                <> "/transcript?language=" <> head (language sub)
            res <- simpleHttp rurl
            let cursor = fromDocument $ parseLBS res
-               con = cursor $// element "span"
-                            >=> attributeIs "class" "talk-transcript__para__text"
+               con = cursor $// element "p"
+                            >=> attributeIs "class" "m-b:0"
                             &// XC.content
-               txt = scanl1 scanFunc con
+               txt = T.unlines $ map ppr con
            -- Prepend the UTF-8 byte order mark to do Windows user a favor.
            withBinaryFile path WriteMode $ \h ->
                hPutStr h "\xef\xbb\xbf"
-           T.appendFile path $ T.concat txt
+           T.appendFile path txt
            return $ Just path
   where
-    -- Insert a blank line between paragraphs
-    scanFunc :: Text -> Text -> Text
-    scanFunc " " "\n" = "\n\n"
-    scanFunc _   "\n" = " "
-    scanFunc _   x2   = stripLB x2
-    -- Strip inline \n
-    stripLB :: Text -> Text
-    stripLB = T.map (\c -> if c == '\n' then ' ' else c)
+    ppr :: Text -> Text
+    ppr = T.strip . T.intercalate " " . map T.strip . T.lines
 
 oneLrc :: Subtitle -> IO (Maybe FilePath)
 oneLrc sub = do
