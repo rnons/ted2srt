@@ -14,6 +14,7 @@ module Web.TED.TalkPage
 
 import           Control.Exception as E
 import           Control.Monad
+import           Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as L8
 import           Data.Text (Text)
 import           qualified Data.Text as T
@@ -31,11 +32,11 @@ getTalkId uri = E.catch
     (\e -> do print (e :: E.SomeException)
               return Nothing)
 
-parseId :: L8.ByteString -> Int
-parseId body = read $ last $ last r
+parseId :: ByteString -> Int
+parseId body = read $ L8.unpack $ last $ last r
   where
-    pat = "id\":([^,]+),\"duration" :: String
-    r = L8.unpack body =~ pat :: [[String]]
+    pat = "id\":([^,]+),\"duration" :: ByteString
+    r = body =~ pat :: [[ByteString]]
 
 parseDescription :: Cursor -> Text
 parseDescription cursor = head $ head $
@@ -47,11 +48,11 @@ parseImage cursor = head $ head $
     cursor $// element "meta" &.// attributeIs "property" "og:image:secure_url"
                               &| attribute "content"
 
-parseTalkObject :: L8.ByteString -> L8.ByteString
-parseTalkObject body = L8.pack $ last $ last r
+parseTalkObject :: ByteString -> ByteString
+parseTalkObject body = last $ last r
   where
-    pat = "talkPage.init\",(.+))</script>" :: String
-    r = L8.unpack body =~ pat :: [[String]]
+    pat = "player_talks\":\\[(.+)\\],\"recommendations" :: ByteString
+    r = body =~ pat :: [[ByteString]]
 
 -- | Given talk url, return mediaSlug and mediaPad of talk.
 getSlugAndPad :: Text -> IO (Text, Double)
@@ -62,17 +63,17 @@ getSlugAndPad rurl = E.catch
     (\e -> error $ show (e :: E.SomeException))
 
 -- File name slug when saved to local.
-parseMediaSlug :: L8.ByteString -> Text
-parseMediaSlug body = T.pack $ last $ last r
+parseMediaSlug :: ByteString -> Text
+parseMediaSlug body = T.pack $ L8.unpack $ last $ last r
   where
-    pat = "\"file\":\"https://download.ted.com/talks/(.+)-320k.mp4\\?dnt" :: String
-    r = L8.unpack body =~ pat :: [[String]]
+    pat = "\"file\":\"https://download.ted.com/talks/(.+)-320k.mp4\\?dnt" :: ByteString
+    r = body =~ pat :: [[ByteString]]
 
 -- TED talk videos begin with different versions of TED promos.
 -- To keep sync, add time delay (in milliseconds) to subtitles.
-parseMediaPad :: L8.ByteString -> Double
+parseMediaPad :: ByteString -> Double
 parseMediaPad body = read t * 1000.0
   where
-    pat = "introDuration\":([^,]+)" :: String
-    r = L8.unpack body =~ pat :: [[String]]
-    t = last $ last r
+    pat = "introDuration\":([^,]+)" :: ByteString
+    r = body =~ pat :: [[ByteString]]
+    t = L8.unpack $ last $ last r

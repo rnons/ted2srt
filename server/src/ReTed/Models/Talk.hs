@@ -83,13 +83,6 @@ instance FromJSON TalkObj where
     parseJSON _          = mzero
 
 
-data TalkObjs = TalkObjs
-    { talks :: [TalkObj]
-    } deriving (Generic, Show)
-
-instance FromJSON TalkObjs
-
-
 getTalks :: DB.Connection -> Int -> IO [Talk]
 getTalks conn limit = do
     DB.query conn [sql|
@@ -194,8 +187,7 @@ fetchTalk url = do
             mdPad = parseMediaPad body
         let core = parseTalkObject body
         case decode core of
-            Just tks -> do
-                let talk = head $ talks tks
+            Just talk -> do
                 return $ Just Talk { id = oId talk
                                    , name = oName talk
                                    , slug = oSlug talk
