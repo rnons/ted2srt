@@ -91,6 +91,10 @@
   color: primaryGray;
 }
 
+.article p {
+  margin: 1rem 0;
+}
+
 .row {
   display: flex;
   flex-direction: column;
