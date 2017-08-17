@@ -6,7 +6,7 @@ module.exports = {
   context: __dirname,
   devtool: 'source-map',
   target: 'web',
-  entry: './src/main.ts',
+  entry: './src/main.js',
   output: {
     path: __dirname + '/dist',
     filename: 'main.[hash:5].js',
@@ -36,6 +36,12 @@ module.exports = {
         use: [
           'awesome-typescript-loader',
         ]
+      }, {
+        test: /\.elm$/,
+        exclude: [/elm-stuff/, /node_modules/],
+        use: {
+          loader: 'elm-webpack-loader',
+        }
       }
     ]
   },
