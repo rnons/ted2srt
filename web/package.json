@@ -6,9 +6,10 @@
   },
   "devDependencies": {
     "awesome-typescript-loader": "^3.2.1",
+    "babel-core": "^6.26.0",
     "css-loader": "0.25.0",
     "elm": "^0.18.0",
-    "elm-css-webpack-loader": "^3.2.0",
+    "elm-css-modules-loader": "^2.0.0",
     "elm-webpack-loader": "^4.3.1",
     "html-webpack-plugin": "^2.29.0",
     "postcss-cssnext": "2.8.0",

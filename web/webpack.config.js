@@ -38,17 +38,10 @@ module.exports = {
         ]
       }, {
         test: /\.elm$/,
-        exclude: [/elm-stuff/, /node_modules/, /Stylesheets\.elm/],
-        use: {
-          loader: 'elm-webpack-loader',
-        }
-      }, {
-        test: /Stylesheets\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
         use: [
-          'style-loader',
-          'css-loader',
-          'elm-css-webpack-loader',
+          'elm-css-modules-loader',
+          'elm-webpack-loader',
         ]
       }
     ]
