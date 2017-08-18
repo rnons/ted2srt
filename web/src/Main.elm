@@ -1,7 +1,13 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onSubmit)
+import Html.CssHelpers
 
+import MainCss
+
+
+{ class } =
+  Html.CssHelpers.withNamespace "main"
 
 main =
   beginnerProgram { model = model, view = view, update = update }
@@ -31,6 +37,7 @@ view model =
   div []
     [ Html.form [ onSubmit Submit ]
         [ input [ type_ "text"
+                , class [ MainCss.Input ]
                 , value model.url
                 , placeholder "TED talk url or keywords"
                 , onInput Input
