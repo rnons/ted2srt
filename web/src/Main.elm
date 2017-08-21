@@ -28,6 +28,14 @@ main =
     program { init = init, view = view, update = update, subscriptions = subscriptions }
 
 
+type alias Talk =
+    { slug : String
+    , image : String
+    , title : String
+    , speaker : String
+    }
+
+
 type alias Model =
     { url : String
     , talks : List Talk
@@ -108,14 +116,6 @@ talksView talks =
             )
 
 
-type alias Talk =
-    { slug : String
-    , image : String
-    , title : String
-    , speaker : String
-    }
-
-
 getTalks : Cmd Msg
 getTalks =
     let
@@ -144,7 +144,7 @@ talkNameDecoder name =
     in
         Decode.map4 Talk
             (Decode.field "slug" Decode.string)
-            (Decode.field "image" Decode.string)
+            (Decode.map (String.join "&" << String.split "&amp;") <| Decode.field "image" Decode.string)
             (Decode.succeed <| Maybe.withDefault name title)
             (Decode.succeed <| Maybe.withDefault name speaker)
 
