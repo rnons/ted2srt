@@ -1,5 +1,7 @@
 module Main exposing (..)
 
+import Array exposing (fromList, get)
+import String exposing (split)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onSubmit)
@@ -12,6 +14,13 @@ import CssModules exposing (css)
     css "./main.css"
         { input = ""
         , util = ""
+        , root = ""
+        , list = ""
+        , tile = ""
+        , image = ""
+        , info = ""
+        , title = ""
+        , speaker = ""
         }
 
 
@@ -59,7 +68,7 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [ class .root ]
         [ Html.form [ onSubmit Submit ]
             [ input
                 [ type_ "text"
@@ -75,18 +84,35 @@ view model =
                 ]
                 []
             ]
-        , div [] (talksView model.talks)
+        , div [ class .list ] (talksView model.talks)
         ]
 
 
 talksView : List Talk -> List (Html Msg)
 talksView talks =
     talks
-        |> List.map (\talk -> div [] [ text talk.name ])
+        |> List.map
+            (\talk ->
+                a [ class .tile ]
+                    [ div
+                        [ class .image
+                        , style [ ( "backgroundImage", "url(" ++ talk.image ++ ")" ) ]
+                        ]
+                        []
+                    , div
+                        [ class .info ]
+                        [ div [ class .title ] [ text talk.title ]
+                        , div [ class .speaker ] [ text talk.speaker ]
+                        ]
+                    ]
+            )
 
 
 type alias Talk =
-    { name : String
+    { slug : String
+    , image : String
+    , title : String
+    , speaker : String
     }
 
 
@@ -99,8 +125,28 @@ getTalks =
         Http.send TalksResult (Http.get url decodeTalks)
 
 
+talkDecoder : Decode.Decoder Talk
 talkDecoder =
-    Decode.map Talk (Decode.field "name" Decode.string)
+    Decode.field "name" Decode.string |> Decode.andThen talkNameDecoder
+
+
+talkNameDecoder : String -> Decode.Decoder Talk
+talkNameDecoder name =
+    let
+        array =
+            fromList <| split ":" name
+
+        speaker =
+            get 0 array
+
+        title =
+            get 1 array
+    in
+        Decode.map4 Talk
+            (Decode.field "slug" Decode.string)
+            (Decode.field "image" Decode.string)
+            (Decode.succeed <| Maybe.withDefault name title)
+            (Decode.succeed <| Maybe.withDefault name speaker)
 
 
 decodeTalks : Decode.Decoder (List Talk)
