@@ -1,72 +1,80 @@
 module Main exposing (..)
 
-import Array exposing (fromList, get)
-import String exposing (split)
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onSubmit)
-import Http
-import Json.Decode as Decode
-import CssModules exposing (css)
-
-
-{ class, classList } =
-    css "./main.css"
-        { input = ""
-        , util = ""
-        , root = ""
-        , list = ""
-        , tile = ""
-        , image = ""
-        , info = ""
-        , title = ""
-        , speaker = ""
-        }
+import Navigation
+import HomePage
+import TalkPage
 
 
 main =
-    program { init = init, view = view, update = update, subscriptions = subscriptions }
+    Navigation.program UrlChange { init = init, view = view, update = update, subscriptions = subscriptions }
 
 
-type alias Talk =
-    { slug : String
-    , image : String
-    , title : String
-    , speaker : String
-    }
+type Page
+    = Blank
+    | Home HomePage.Model
+    | Talk TalkPage.Model
 
 
 type alias Model =
-    { url : String
-    , talks : List Talk
+    { page : Page
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( Model "" [], getTalks )
+init : Navigation.Location -> ( Model, Cmd Msg )
+init loc =
+    setRoute loc <| Model Blank
+
+
+setRoute : Navigation.Location -> Model -> ( Model, Cmd Msg )
+setRoute loc model =
+    case loc.hash of
+        "" ->
+            let
+                ( submodel, cmd ) =
+                    HomePage.init
+            in
+                ( { model | page = Home submodel }, Cmd.map HomeMsg cmd )
+
+        "#/talks" ->
+            let
+                ( submodel, cmd ) =
+                    TalkPage.init
+            in
+                ( { model | page = Talk submodel }, Cmd.map TalkMsg cmd )
+
+        _ ->
+            ( { model | page = Blank }, Cmd.none )
 
 
 type Msg
-    = Input String
-    | Submit
-    | TalksResult (Result Http.Error (List Talk))
+    = UrlChange Navigation.Location
+    | HomeMsg HomePage.Msg
+    | TalkMsg TalkPage.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        Input text ->
-            ( { model | url = text }, Cmd.none )
+    let
+        toPage toModel toMsg subUpdate subMsg subModel =
+            let
+                ( newModel, newCmd ) =
+                    subUpdate subMsg subModel
+            in
+                ( { model | page = toModel newModel }, Cmd.map toMsg newCmd )
+    in
+        case ( msg, model.page ) of
+            ( UrlChange loc, _ ) ->
+                setRoute loc model
 
-        Submit ->
-            ( { model | url = model.url ++ " SUBMITTED" }, Cmd.none )
+            ( HomeMsg msg, Home submodel ) ->
+                toPage Home HomeMsg HomePage.update msg submodel
 
-        TalksResult (Ok talks) ->
-            ( { model | talks = talks }, Cmd.none )
+            ( TalkMsg _, _ ) ->
+                ( model, Cmd.none )
 
-        TalksResult (Err _) ->
-            ( model, Cmd.none )
+            _ ->
+                ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -76,79 +84,18 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div [ class .root ]
-        [ Html.form [ onSubmit Submit ]
-            [ input
-                [ type_ "text"
-                , classList [ ( .input, True ), ( .util, True ) ]
-                , value model.url
-                , placeholder "TED talk url or keywords"
-                , onInput Input
-                ]
-                []
-            , input
-                [ type_ "submit"
-                , hidden True
-                ]
-                []
-            ]
-        , div [ class .list ] (talksView model.talks)
-        ]
+    case model.page of
+        Home submodel ->
+            HomePage.view submodel |> Html.map HomeMsg
+
+        Talk submodel ->
+            TalkPage.view submodel |> Html.map TalkMsg
+
+        _ ->
+            div [] [ text "loading" ]
 
 
-talksView : List Talk -> List (Html Msg)
-talksView talks =
-    talks
-        |> List.map
-            (\talk ->
-                a [ class .tile ]
-                    [ div
-                        [ class .image
-                        , style [ ( "backgroundImage", "url(" ++ talk.image ++ ")" ) ]
-                        ]
-                        []
-                    , div
-                        [ class .info ]
-                        [ div [ class .title ] [ text talk.title ]
-                        , div [ class .speaker ] [ text talk.speaker ]
-                        ]
-                    ]
-            )
 
-
-getTalks : Cmd Msg
-getTalks =
-    let
-        url =
-            "/api/talks?limit=5"
-    in
-        Http.send TalksResult (Http.get url decodeTalks)
-
-
-talkDecoder : Decode.Decoder Talk
-talkDecoder =
-    Decode.field "name" Decode.string |> Decode.andThen talkNameDecoder
-
-
-talkNameDecoder : String -> Decode.Decoder Talk
-talkNameDecoder name =
-    let
-        array =
-            fromList <| split ":" name
-
-        speaker =
-            get 0 array
-
-        title =
-            get 1 array
-    in
-        Decode.map4 Talk
-            (Decode.field "slug" Decode.string)
-            (Decode.map (String.join "&" << String.split "&amp;") <| Decode.field "image" Decode.string)
-            (Decode.succeed <| Maybe.withDefault name title)
-            (Decode.succeed <| Maybe.withDefault name speaker)
-
-
-decodeTalks : Decode.Decoder (List Talk)
-decodeTalks =
-    Decode.list talkDecoder
+-- div []
+--     [ text "loading"
+--     ]
