@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Navigation
+import Route
 import HomePage
 import TalkPage
 
@@ -28,18 +29,18 @@ init loc =
 
 setRoute : Navigation.Location -> Model -> ( Model, Cmd Msg )
 setRoute loc model =
-    case loc.hash of
-        "" ->
+    case Route.fromLocation loc of
+        Just Route.Home ->
             let
                 ( submodel, cmd ) =
                     HomePage.init
             in
                 ( { model | page = Home submodel }, Cmd.map HomeMsg cmd )
 
-        "#/talks" ->
+        Just (Route.Talk slug) ->
             let
                 ( submodel, cmd ) =
-                    TalkPage.init
+                    TalkPage.init slug
             in
                 ( { model | page = Talk submodel }, Cmd.map TalkMsg cmd )
 

@@ -4,18 +4,18 @@ import Html exposing (..)
 
 
 type alias Model =
-    { id : Int }
+    { slug : String }
 
 
 type Msg
     = Loaded
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( Model 0, Cmd.none )
+init : String -> ( Model, Cmd Msg )
+init slug =
+    ( Model slug, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
-    div [] [ text "talk page" ]
+    div [] [ text <| "talk page, slug is " ++ model.slug ]

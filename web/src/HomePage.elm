@@ -97,7 +97,10 @@ talksView talks =
     talks
         |> List.map
             (\talk ->
-                a [ class .tile ]
+                a
+                    [ class .tile
+                    , href ("/#/talks/" ++ talk.slug)
+                    ]
                     [ div
                         [ class .image
                         , style [ ( "backgroundImage", "url(" ++ talk.image ++ ")" ) ]
