@@ -71,8 +71,8 @@ update msg model =
             ( HomeMsg msg, Home submodel ) ->
                 toPage Home HomeMsg HomePage.update msg submodel
 
-            ( TalkMsg _, _ ) ->
-                ( model, Cmd.none )
+            ( TalkMsg msg, Talk submodel ) ->
+                toPage Talk TalkMsg TalkPage.update msg submodel
 
             _ ->
                 ( model, Cmd.none )

@@ -8,6 +8,7 @@ import Html.Events exposing (onInput, onSubmit)
 import Http
 import Json.Decode as Decode
 import CssModules exposing (css)
+import Models.Talk exposing (..)
 
 
 { class, classList } =
@@ -22,14 +23,6 @@ import CssModules exposing (css)
         , title = ""
         , speaker = ""
         }
-
-
-type alias Talk =
-    { slug : String
-    , image : String
-    , title : String
-    , speaker : String
-    }
 
 
 type alias Model =
@@ -121,31 +114,7 @@ getTalks =
         url =
             "/api/talks?limit=5"
     in
-        Http.send TalksResult (Http.get url decodeTalks)
-
-
-talkDecoder : Decode.Decoder Talk
-talkDecoder =
-    Decode.field "name" Decode.string |> Decode.andThen talkNameDecoder
-
-
-talkNameDecoder : String -> Decode.Decoder Talk
-talkNameDecoder name =
-    let
-        array =
-            fromList <| split ":" name
-
-        speaker =
-            get 0 array
-
-        title =
-            get 1 array
-    in
-        Decode.map4 Talk
-            (Decode.field "slug" Decode.string)
-            (Decode.map (String.join "&" << String.split "&amp;") <| Decode.field "image" Decode.string)
-            (Decode.succeed <| Maybe.withDefault name title)
-            (Decode.succeed <| Maybe.withDefault name speaker)
+        Http.send TalksResult (Http.get url <| Decode.list talkDecoder)
 
 
 decodeTalks : Decode.Decoder (List Talk)
