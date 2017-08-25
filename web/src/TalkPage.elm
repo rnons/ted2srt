@@ -3,7 +3,18 @@ module TalkPage exposing (..)
 import Html exposing (..)
 import Http
 import Json.Decode as Decode
+import CssModules exposing (css)
 import Models.Talk exposing (Talk, talkDecoder)
+import TalkPage.Header as TalkHeader
+import TalkPage.Sidebar as Sidebar
+
+
+{ class, classList } =
+    css "./TalkPage/index.css"
+        { root = ""
+        , main = ""
+        , sidebar = ""
+        }
 
 
 type alias Model =
@@ -33,7 +44,20 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [] [ text <| "talk page, slug is " ++ model.slug ]
+    case model.talk of
+        Just talk ->
+            div [ class .root ]
+                [ main_ [ class .main ]
+                    [ text <| "talk page, slug is " ++ model.slug
+                    , TalkHeader.view talk
+                    ]
+                , aside []
+                    [ Sidebar.view talk
+                    ]
+                ]
+
+        _ ->
+            div [] [ text "loading" ]
 
 
 getTalk : String -> Cmd Msg

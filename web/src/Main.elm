@@ -8,7 +8,8 @@ import TalkPage
 
 
 main =
-    Navigation.program UrlChange { init = init, view = view, update = update, subscriptions = subscriptions }
+    Navigation.program UrlChange
+        { init = init, view = view, update = update, subscriptions = subscriptions }
 
 
 type Page
@@ -94,9 +95,3 @@ view model =
 
         _ ->
             div [] [ text "loading" ]
-
-
-
--- div []
---     [ text "loading"
---     ]

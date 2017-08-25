@@ -1,0 +1,49 @@
+@value primaryRed, primaryGray, lightGray, lighterGray from '../css/color.css';
+
+.panel {
+  border: 1px solid lightGray;
+  border-radius: 0.125rem;
+  margin-bottom: 1rem;
+}
+
+.panelTitle {
+  background-color: lighterGray;
+  border-bottom: 1px solid lighterGray;
+  font-size: 1rem;
+  font-weight: normal;
+  padding: 0.375rem 1rem;
+  white-space: nowrap;
+}
+
+.list li:not(:last-child) {
+  border-bottom: 1px solid lighterGray;
+}
+
+.list a,
+.link {
+  display: block;
+  padding: 0.25rem 1rem;
+  padding-right: 1.5rem;
+  white-space: nowrap;
+  line-height: 1.25rem;
+}
+
+.linkActive {
+  composes: link;
+  position: relative;
+}
+
+.linkActive,
+.linkActive:hover {
+  background-color: primaryRed;
+  color: white;
+  text-decoration: none;
+}
+
+.linkActive::after {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.25rem;
+  content: '×';
+  line-height: 1.25rem;
+}

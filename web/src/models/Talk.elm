@@ -1,8 +1,15 @@
-module Models.Talk exposing (Talk, talkDecoder)
+module Models.Talk exposing (Talk, Language, talkDecoder)
 
 import Array exposing (fromList, get)
 import String exposing (split)
 import Json.Decode exposing (..)
+
+
+type alias Language =
+    { languageCode : String
+    , endonym : String
+    , languageName : String
+    }
 
 
 type alias Talk =
@@ -10,7 +17,17 @@ type alias Talk =
     , image : String
     , title : String
     , speaker : String
+    , languages : List Language
+    , description : String
     }
+
+
+languageDecoder : Decoder Language
+languageDecoder =
+    map3 Language
+        (field "languageCode" string)
+        (field "endonym" string)
+        (field "languageName" string)
 
 
 talkDecoder : Decoder Talk
@@ -30,8 +47,10 @@ talkNameDecoder name =
         title =
             get 1 array
     in
-        map4 Talk
+        map6 Talk
             (field "slug" string)
             (map (String.join "&" << String.split "&amp;") <| field "image" string)
             (succeed <| Maybe.withDefault name title)
             (succeed <| Maybe.withDefault name speaker)
+            (field "languages" (list languageDecoder))
+            (field "description" string)
