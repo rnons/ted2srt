@@ -16,6 +16,7 @@ import TalkPage.Sidebar as Sidebar
         { root = ""
         , main = ""
         , sidebar = ""
+        , row = ""
         }
 
 
@@ -101,6 +102,45 @@ update msg model =
                 )
 
 
+rowView : String -> String -> Html Msg
+rowView p1 p2 =
+    div [ class .row ]
+        [ p [] [ text p1 ]
+        , p [] [ text p2 ]
+        ]
+
+
+transcriptView : Model -> List (Html Msg)
+transcriptView model =
+    let
+        transcripts =
+            (Set.toList model.selectedLangs)
+                |> List.filterMap
+                    (\code -> Dict.get code model.transcriptDict)
+                |> List.map
+                    (\transcript -> String.split "\n" transcript)
+    in
+        case List.length transcripts of
+            1 ->
+                case List.head transcripts of
+                    Just paragraphs ->
+                        paragraphs |> List.map (\paragraph -> p [] [ text paragraph ])
+
+                    Nothing ->
+                        []
+
+            2 ->
+                case ( List.head transcripts, List.head <| List.drop 1 transcripts ) of
+                    ( Just paragraphs1, Just paragraphs2 ) ->
+                        List.map2 rowView paragraphs1 paragraphs2
+
+                    _ ->
+                        []
+
+            _ ->
+                []
+
+
 view : Model -> Html Msg
 view model =
     case model.talk of
@@ -109,7 +149,7 @@ view model =
                 [ main_ [ class .main ]
                     [ text <| "talk page, slug is " ++ model.slug
                     , TalkHeader.view talk
-                    , text model.transcript
+                    , article [] (transcriptView model)
                     ]
                 , aside []
                     [ Sidebar.view talk model.selectedLangs |> Html.map Sidebar
