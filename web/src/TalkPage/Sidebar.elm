@@ -1,8 +1,9 @@
-module TalkPage.Sidebar exposing (view)
+module TalkPage.Sidebar exposing (Msg(..), view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Models.Talk exposing (Talk, talkDecoder)
+import Html.Events exposing (onClick)
+import Models.Talk exposing (Talk, Language, talkDecoder)
 import CssModules exposing (css)
 
 
@@ -12,6 +13,8 @@ import CssModules exposing (css)
         , panelTitle = ""
         , list = ""
         , cover = ""
+        , link = ""
+        , linkActive = ""
         , description = ""
         }
 
@@ -24,7 +27,11 @@ videoFormats =
     ]
 
 
-videoListView : Talk -> Html msg
+type Msg
+    = SelectLang Language
+
+
+videoListView : Talk -> Html Msg
 videoListView talk =
     div [ class .panel ]
         [ h4 [ class .panelTitle ] [ text "Download Video" ]
@@ -47,7 +54,7 @@ transcriptFormats =
     ]
 
 
-transcriptListView : Html msg
+transcriptListView : Html Msg
 transcriptListView =
     div [ class .panel ]
         [ h4 [ class .panelTitle ] [ text "Download Transcript" ]
@@ -63,8 +70,8 @@ transcriptListView =
         ]
 
 
-languageListView : Talk -> Html msg
-languageListView talk =
+languageListView : Talk -> List Language -> Html Msg
+languageListView talk selectedLangs =
     div [ class .panel ]
         [ h4 [ class .panelTitle ] [ text "Select Languages" ]
         , ul [ class .list ]
@@ -72,17 +79,27 @@ languageListView talk =
                 |> List.map
                     (\language ->
                         li []
-                            [ a [] [ text language.endonym ]
+                            [ a
+                                [ class
+                                    (if List.member language selectedLangs then
+                                        .linkActive
+                                     else
+                                        .link
+                                    )
+                                , onClick
+                                    (SelectLang language)
+                                ]
+                                [ text language.endonym ]
                             ]
                     )
             )
         ]
 
 
-view : Talk -> Html msg
-view talk =
+view : Talk -> List Language -> Html Msg
+view talk selectedLangs =
     div []
         [ videoListView talk
         , transcriptListView
-        , languageListView talk
+        , languageListView talk selectedLangs
         ]

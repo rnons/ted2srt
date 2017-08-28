@@ -4,7 +4,7 @@ import Html exposing (..)
 import Http
 import Json.Decode as Decode
 import CssModules exposing (css)
-import Models.Talk exposing (Talk, talkDecoder)
+import Models.Talk exposing (Talk, Language, talkDecoder)
 import TalkPage.Header as TalkHeader
 import TalkPage.Sidebar as Sidebar
 
@@ -20,16 +20,23 @@ import TalkPage.Sidebar as Sidebar
 type alias Model =
     { slug : String
     , talk : Maybe Talk
+    , selectedLangs : List Language
     }
 
 
 type Msg
     = TalkResult (Result Http.Error Talk)
+    | Sidebar Sidebar.Msg
 
 
 init : String -> ( Model, Cmd Msg )
 init slug =
-    ( Model slug Nothing, getTalk slug )
+    ( { slug = slug
+      , talk = Nothing
+      , selectedLangs = []
+      }
+    , getTalk slug
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -41,6 +48,9 @@ update msg model =
         TalkResult (Err _) ->
             ( model, Cmd.none )
 
+        Sidebar (Sidebar.SelectLang lang) ->
+            ( { model | selectedLangs = lang :: model.selectedLangs }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -50,9 +60,10 @@ view model =
                 [ main_ [ class .main ]
                     [ text <| "talk page, slug is " ++ model.slug
                     , TalkHeader.view talk
+                    , text (String.join "," <| List.map (\l -> l.languageCode) model.selectedLangs)
                     ]
                 , aside []
-                    [ Sidebar.view talk
+                    [ Sidebar.view talk model.selectedLangs |> Html.map Sidebar
                     ]
                 ]
 
