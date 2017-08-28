@@ -1,9 +1,10 @@
 module TalkPage.Sidebar exposing (Msg(..), view)
 
+import Set
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Models.Talk exposing (Talk, Language, talkDecoder)
+import Models.Talk exposing (Talk, Language, LanguageCode, talkDecoder)
 import CssModules exposing (css)
 
 
@@ -70,7 +71,7 @@ transcriptListView =
         ]
 
 
-languageListView : Talk -> List Language -> Html Msg
+languageListView : Talk -> Set.Set LanguageCode -> Html Msg
 languageListView talk selectedLangs =
     div [ class .panel ]
         [ h4 [ class .panelTitle ] [ text "Select Languages" ]
@@ -81,7 +82,7 @@ languageListView talk selectedLangs =
                         li []
                             [ a
                                 [ class
-                                    (if List.member language selectedLangs then
+                                    (if Set.member language.code selectedLangs then
                                         .linkActive
                                      else
                                         .link
@@ -96,7 +97,7 @@ languageListView talk selectedLangs =
         ]
 
 
-view : Talk -> List Language -> Html Msg
+view : Talk -> Set.Set LanguageCode -> Html Msg
 view talk selectedLangs =
     div []
         [ videoListView talk

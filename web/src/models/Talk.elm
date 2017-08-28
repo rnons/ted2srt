@@ -1,14 +1,18 @@
-module Models.Talk exposing (Talk, Language, talkDecoder)
+module Models.Talk exposing (Talk, Language, LanguageCode, talkDecoder)
 
 import Array exposing (fromList, get)
 import String exposing (split)
 import Json.Decode exposing (..)
 
 
+type alias LanguageCode =
+    String
+
+
 type alias Language =
-    { languageCode : String
+    { code : LanguageCode
     , endonym : String
-    , languageName : String
+    , name : String
     }
 
 

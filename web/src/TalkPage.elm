@@ -3,8 +3,9 @@ module TalkPage exposing (..)
 import Html exposing (..)
 import Http
 import Json.Decode as Decode
+import Set
 import CssModules exposing (css)
-import Models.Talk exposing (Talk, Language, talkDecoder)
+import Models.Talk exposing (Talk, LanguageCode, talkDecoder)
 import TalkPage.Header as TalkHeader
 import TalkPage.Sidebar as Sidebar
 
@@ -20,7 +21,7 @@ import TalkPage.Sidebar as Sidebar
 type alias Model =
     { slug : String
     , talk : Maybe Talk
-    , selectedLangs : List Language
+    , selectedLangs : Set.Set LanguageCode
     }
 
 
@@ -33,7 +34,7 @@ init : String -> ( Model, Cmd Msg )
 init slug =
     ( { slug = slug
       , talk = Nothing
-      , selectedLangs = []
+      , selectedLangs = Set.empty
       }
     , getTalk slug
     )
@@ -49,7 +50,16 @@ update msg model =
             ( model, Cmd.none )
 
         Sidebar (Sidebar.SelectLang lang) ->
-            ( { model | selectedLangs = lang :: model.selectedLangs }, Cmd.none )
+            let
+                newSet =
+                    if Set.member lang.code model.selectedLangs then
+                        Set.remove lang.code model.selectedLangs
+                    else if Set.size model.selectedLangs < 2 then
+                        Set.insert lang.code model.selectedLangs
+                    else
+                        model.selectedLangs
+            in
+                ( { model | selectedLangs = newSet }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -60,7 +70,8 @@ view model =
                 [ main_ [ class .main ]
                     [ text <| "talk page, slug is " ++ model.slug
                     , TalkHeader.view talk
-                    , text (String.join "," <| List.map (\l -> l.languageCode) model.selectedLangs)
+
+                    -- , text (String.join "," <| List.map (\l -> l.languageCode) model.selectedLangs)
                     ]
                 , aside []
                     [ Sidebar.view talk model.selectedLangs |> Html.map Sidebar
