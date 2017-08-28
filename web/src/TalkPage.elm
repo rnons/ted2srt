@@ -3,6 +3,7 @@ module TalkPage exposing (..)
 import Html exposing (..)
 import Http
 import Json.Decode as Decode
+import Dict
 import Set
 import CssModules exposing (css)
 import Models.Talk exposing (Talk, LanguageCode, talkDecoder)
@@ -18,17 +19,22 @@ import TalkPage.Sidebar as Sidebar
         }
 
 
+type alias Transcript =
+    String
+
+
 type alias Model =
     { slug : String
     , talk : Maybe Talk
     , selectedLangs : Set.Set LanguageCode
     , transcript : String
+    , transcriptDict : Dict.Dict LanguageCode Transcript
     }
 
 
 type Msg
     = TalkResult (Result Http.Error Talk)
-    | Transcript (Result Http.Error String)
+    | Transcript (Result Http.Error ( LanguageCode, Transcript ))
     | Sidebar Sidebar.Msg
 
 
@@ -38,6 +44,7 @@ init slug =
       , talk = Nothing
       , selectedLangs = Set.empty
       , transcript = ""
+      , transcriptDict = Dict.empty
       }
     , getTalk slug
     )
@@ -52,23 +59,46 @@ update msg model =
         TalkResult (Err _) ->
             ( model, Cmd.none )
 
-        Transcript (Ok transcript) ->
-            ( { model | transcript = transcript }, Cmd.none )
+        Transcript (Ok ( code, transcript )) ->
+            ( { model
+                | transcript = transcript
+                , transcriptDict = Dict.insert code transcript model.transcriptDict
+              }
+            , Cmd.none
+            )
 
         Transcript (Err _) ->
             ( model, Cmd.none )
 
         Sidebar (Sidebar.SelectLang lang) ->
             let
-                newSet =
+                ( newSet, needFetch ) =
                     if Set.member lang.code model.selectedLangs then
-                        Set.remove lang.code model.selectedLangs
+                        ( Set.remove lang.code model.selectedLangs, False )
                     else if Set.size model.selectedLangs < 2 then
-                        Set.insert lang.code model.selectedLangs
+                        ( Set.insert lang.code model.selectedLangs, True )
                     else
-                        model.selectedLangs
+                        ( model.selectedLangs, False )
+
+                ( transcript, newCmd ) =
+                    case Dict.get lang.code model.transcriptDict of
+                        Just transcript ->
+                            ( transcript, Cmd.none )
+
+                        _ ->
+                            ( ""
+                            , if needFetch then
+                                getTranscript model.talk lang.code
+                              else
+                                Cmd.none
+                            )
             in
-                ( { model | selectedLangs = newSet }, getTranscript model.talk lang.code )
+                ( { model
+                    | selectedLangs = newSet
+                    , transcript = transcript
+                  }
+                , newCmd
+                )
 
 
 view : Model -> Html Msg
@@ -106,8 +136,16 @@ getTranscript mtalk code =
             let
                 url =
                     "/api/talks/" ++ toString talk.id ++ "/transcripts/txt?lang=" ++ code
+
+                handleResult result =
+                    case result of
+                        Ok transcript ->
+                            Transcript <| Ok ( code, transcript )
+
+                        Err err ->
+                            Transcript <| Err err
             in
-                Http.send Transcript (Http.getString url)
+                Http.send handleResult (Http.getString url)
 
         Nothing ->
             Cmd.none
