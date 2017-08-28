@@ -22,11 +22,13 @@ type alias Model =
     { slug : String
     , talk : Maybe Talk
     , selectedLangs : Set.Set LanguageCode
+    , transcript : String
     }
 
 
 type Msg
     = TalkResult (Result Http.Error Talk)
+    | Transcript (Result Http.Error String)
     | Sidebar Sidebar.Msg
 
 
@@ -35,6 +37,7 @@ init slug =
     ( { slug = slug
       , talk = Nothing
       , selectedLangs = Set.empty
+      , transcript = ""
       }
     , getTalk slug
     )
@@ -49,6 +52,12 @@ update msg model =
         TalkResult (Err _) ->
             ( model, Cmd.none )
 
+        Transcript (Ok transcript) ->
+            ( { model | transcript = transcript }, Cmd.none )
+
+        Transcript (Err _) ->
+            ( model, Cmd.none )
+
         Sidebar (Sidebar.SelectLang lang) ->
             let
                 newSet =
@@ -59,7 +68,7 @@ update msg model =
                     else
                         model.selectedLangs
             in
-                ( { model | selectedLangs = newSet }, Cmd.none )
+                ( { model | selectedLangs = newSet }, getTranscript model.talk lang.code )
 
 
 view : Model -> Html Msg
@@ -70,8 +79,7 @@ view model =
                 [ main_ [ class .main ]
                     [ text <| "talk page, slug is " ++ model.slug
                     , TalkHeader.view talk
-
-                    -- , text (String.join "," <| List.map (\l -> l.languageCode) model.selectedLangs)
+                    , text model.transcript
                     ]
                 , aside []
                     [ Sidebar.view talk model.selectedLangs |> Html.map Sidebar
@@ -89,3 +97,17 @@ getTalk slug =
             "/api/talks/" ++ slug
     in
         Http.send TalkResult (Http.get url talkDecoder)
+
+
+getTranscript : Maybe Talk -> LanguageCode -> Cmd Msg
+getTranscript mtalk code =
+    case mtalk of
+        Just talk ->
+            let
+                url =
+                    "/api/talks/" ++ toString talk.id ++ "/transcripts/txt?lang=" ++ code
+            in
+                Http.send Transcript (Http.getString url)
+
+        Nothing ->
+            Cmd.none
