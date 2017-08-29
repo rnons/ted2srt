@@ -2,7 +2,7 @@ module Route exposing (..)
 
 import Navigation exposing (Location)
 import String
-import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
+import UrlParser as Url exposing ((</>), (<?>), Parser, oneOf, parseHash, parsePath, s, string, stringParam)
 
 
 type Route
@@ -20,7 +20,4 @@ route =
 
 fromLocation : Location -> Maybe Route
 fromLocation location =
-    if String.isEmpty location.hash then
-        Just Home
-    else
-        parseHash route location
+    parsePath route location

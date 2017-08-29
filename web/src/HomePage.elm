@@ -92,7 +92,7 @@ talksView talks =
             (\talk ->
                 a
                     [ class .tile
-                    , href ("/#/talks/" ++ talk.slug)
+                    , href ("/talks/" ++ talk.slug)
                     ]
                     [ div
                         [ class .image
