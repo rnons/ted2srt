@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Regex exposing (..)
 import Html exposing (..)
 import Navigation
 import Route
@@ -30,6 +31,15 @@ init loc =
     setRoute loc <| Model Blank
 
 
+routeToTalkPage : Model -> String -> ( Model, Cmd Msg )
+routeToTalkPage model slug =
+    let
+        ( submodel, cmd ) =
+            TalkPage.init slug
+    in
+        ( { model | page = Talk submodel }, Cmd.map TalkMsg cmd )
+
+
 setRoute : Navigation.Location -> Model -> ( Model, Cmd Msg )
 setRoute loc model =
     case Route.fromLocation loc of
@@ -41,14 +51,26 @@ setRoute loc model =
                 ( { model | page = Home submodel }, Cmd.map HomeMsg cmd )
 
         Just (Route.Talk slug) ->
-            let
-                ( submodel, cmd ) =
-                    TalkPage.init slug
-            in
-                ( { model | page = Talk submodel }, Cmd.map TalkMsg cmd )
+            routeToTalkPage model slug
 
         Just (Route.Search q) ->
-            ( { model | page = Search }, Cmd.none )
+            case q of
+                Just query ->
+                    let
+                        matches =
+                            find (AtMost 1)
+                                (regex "^https?://www.ted.com/talks/(\\w+)")
+                                query
+                    in
+                        case (List.map .submatches matches) of
+                            ((Just slug) :: _) :: _ ->
+                                routeToTalkPage model slug
+
+                            _ ->
+                                ( { model | page = Search }, Cmd.none )
+
+                Nothing ->
+                    ( { model | page = Blank }, Cmd.none )
 
         _ ->
             ( { model | page = Blank }, Cmd.none )
