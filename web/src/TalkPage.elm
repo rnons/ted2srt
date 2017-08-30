@@ -7,6 +7,7 @@ import Dict
 import Set
 import CssModules exposing (css)
 import Models.Talk exposing (Talk, LanguageCode, talkDecoder)
+import Components.Header.Header as Header
 import TalkPage.Header as TalkHeader
 import TalkPage.Sidebar as Sidebar
 
@@ -145,14 +146,17 @@ view : Model -> Html Msg
 view model =
     case model.talk of
         Just talk ->
-            div [ class .root ]
-                [ main_ [ class .main ]
-                    [ text <| "talk page, slug is " ++ model.slug
-                    , TalkHeader.view talk
-                    , article [] (transcriptView model)
-                    ]
-                , aside []
-                    [ Sidebar.view talk model.selectedLangs |> Html.map Sidebar
+            div []
+                [ Header.view
+                , div [ class .root ]
+                    [ main_ [ class .main ]
+                        [ text <| "talk page, slug is " ++ model.slug
+                        , TalkHeader.view talk
+                        , article [] (transcriptView model)
+                        ]
+                    , aside []
+                        [ Sidebar.view talk model.selectedLangs |> Html.map Sidebar
+                        ]
                     ]
                 ]
 

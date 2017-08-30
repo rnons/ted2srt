@@ -5,6 +5,7 @@ import Navigation
 import Route
 import HomePage
 import TalkPage
+import SearchPage
 
 
 main =
@@ -16,6 +17,7 @@ type Page
     = Blank
     | Home HomePage.Model
     | Talk TalkPage.Model
+    | Search
 
 
 type alias Model =
@@ -44,6 +46,9 @@ setRoute loc model =
                     TalkPage.init slug
             in
                 ( { model | page = Talk submodel }, Cmd.map TalkMsg cmd )
+
+        Just (Route.Search q) ->
+            ( { model | page = Search }, Cmd.none )
 
         _ ->
             ( { model | page = Blank }, Cmd.none )
@@ -92,6 +97,9 @@ view model =
 
         Talk submodel ->
             TalkPage.view submodel |> Html.map TalkMsg
+
+        Search ->
+            SearchPage.view
 
         _ ->
             div [] [ text "loading" ]
