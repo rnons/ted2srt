@@ -74,9 +74,9 @@ talkView talk =
 
 view : Model -> Html msg
 view model =
-    div [ class .root ]
+    div []
         [ Header.view
-        , div []
+        , div [ class .root ]
             (List.map talkView model.talks)
         ]
 
