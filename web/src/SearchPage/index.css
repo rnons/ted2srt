@@ -1,0 +1,44 @@
+@value primaryGray from '../css/color.css';
+@value large from '../css/media-query.css';
+
+.root {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1.25rem 0;
+}
+
+.item:not(:last-child) {
+  margin-bottom: 1.25rem;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.75rem;
+}
+
+.cover {
+  background-size: cover;
+  background-position: 50%;
+  width: 100%;
+  height: 70vw;
+}
+
+@media large {
+  .info {
+    flex-direction: row;
+  }
+
+  .cover {
+    flex-shrink: 0;
+    width: 240px;
+    height: 180px;
+    margin-right: 1rem;
+  }
+}
+
+.date {
+  display: block;
+  font-style: italic;
+  color: primaryGray;
+}

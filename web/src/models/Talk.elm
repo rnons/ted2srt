@@ -20,6 +20,7 @@ type alias Talk =
     { id : Int
     , slug : String
     , image : String
+    , name : String
     , title : String
     , speaker : String
     , languages : List Language
@@ -52,10 +53,11 @@ talkNameDecoder name =
         title =
             get 1 array
     in
-        map7 Talk
+        map8 Talk
             (field "id" int)
             (field "slug" string)
             (map (String.join "&" << String.split "&amp;") <| field "image" string)
+            (succeed name)
             (succeed <| Maybe.withDefault name title)
             (succeed <| Maybe.withDefault name speaker)
             (field "languages" (list languageDecoder))

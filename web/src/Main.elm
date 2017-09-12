@@ -18,7 +18,7 @@ type Page
     = Blank
     | Home HomePage.Model
     | Talk TalkPage.Model
-    | Search
+    | Search SearchPage.Model
 
 
 type alias Model =
@@ -38,6 +38,15 @@ routeToTalkPage model slug =
             TalkPage.init slug
     in
         ( { model | page = Talk submodel }, Cmd.map TalkMsg cmd )
+
+
+routeToSearchPage : Model -> String -> ( Model, Cmd Msg )
+routeToSearchPage model q =
+    let
+        ( submodel, cmd ) =
+            SearchPage.init q
+    in
+        ( { model | page = Search submodel }, Cmd.map SearchMsg cmd )
 
 
 setRoute : Navigation.Location -> Model -> ( Model, Cmd Msg )
@@ -67,7 +76,7 @@ setRoute loc model =
                                 routeToTalkPage model slug
 
                             _ ->
-                                ( { model | page = Search }, Cmd.none )
+                                routeToSearchPage model query
 
                 Nothing ->
                     ( { model | page = Blank }, Cmd.none )
@@ -80,6 +89,7 @@ type Msg
     = UrlChange Navigation.Location
     | HomeMsg HomePage.Msg
     | TalkMsg TalkPage.Msg
+    | SearchMsg SearchPage.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -102,6 +112,9 @@ update msg model =
             ( TalkMsg msg, Talk submodel ) ->
                 toPage Talk TalkMsg TalkPage.update msg submodel
 
+            ( SearchMsg msg, Search submodel ) ->
+                toPage Search SearchMsg SearchPage.update msg submodel
+
             _ ->
                 ( model, Cmd.none )
 
@@ -120,8 +133,8 @@ view model =
         Talk submodel ->
             TalkPage.view submodel |> Html.map TalkMsg
 
-        Search ->
-            SearchPage.view
+        Search submodel ->
+            SearchPage.view submodel |> Html.map SearchMsg
 
         _ ->
             div [] [ text "loading" ]
