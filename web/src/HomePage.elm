@@ -9,13 +9,13 @@ import Http
 import Json.Decode as Decode
 import CssModules exposing (css)
 import Models.Talk exposing (..)
+import Components.SearchForm.SearchForm as SearchForm
 
 
 { class, classList } =
-    css "./main.css"
-        { input = ""
-        , util = ""
-        , root = ""
+    css "./HomePage/index.css"
+        { root = ""
+        , logo = ""
         , list = ""
         , tile = ""
         , image = ""
@@ -66,21 +66,8 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div [ class .root ]
-        [ Html.form [ onSubmit Submit ]
-            [ input
-                [ type_ "text"
-                , classList [ ( .input, True ), ( .util, True ) ]
-                , value model.url
-                , placeholder "TED talk url or keywords"
-                , onInput Input
-                ]
-                []
-            , input
-                [ type_ "submit"
-                , hidden True
-                ]
-                []
-            ]
+        [ div [ class .logo ] [ text ":: TED -> [SRT]" ]
+        , SearchForm.view
         , div [ class .list ] (talksView model.talks)
         ]
 
