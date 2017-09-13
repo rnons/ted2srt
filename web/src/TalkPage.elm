@@ -150,8 +150,7 @@ view model =
                 [ Header.view
                 , div [ class .root ]
                     [ main_ [ class .main ]
-                        [ text <| "talk page, slug is " ++ model.slug
-                        , TalkHeader.view talk
+                        [ TalkHeader.view talk
                         , article [] (transcriptView model)
                         ]
                     , aside []
