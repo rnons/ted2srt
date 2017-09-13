@@ -7,6 +7,7 @@ import Json.Decode as Decode
 import Models.Talk exposing (Talk, talkDecoder)
 import CssModules exposing (css)
 import Components.Header.Header as Header
+import Utils exposing (getDateString)
 
 
 { class, classList } =
@@ -16,6 +17,7 @@ import Components.Header.Header as Header
         , info = ""
         , cover = ""
         , description = ""
+        , date = ""
         }
 
 
@@ -66,7 +68,10 @@ talkView talk =
                     ]
                     []
                 , div []
-                    [ p [] [ text talk.description ]
+                    [ p []
+                        [ text talk.description
+                        , span [ class .date ] [ text ("Published: " ++ getDateString talk.publishedAt) ]
+                        ]
                     ]
                 ]
             ]
