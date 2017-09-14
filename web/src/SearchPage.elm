@@ -8,7 +8,6 @@ import Models.Talk exposing (Talk, talkDecoder)
 import CssModules exposing (css)
 import Utils exposing (getDateString)
 import Components.Header.Header as Header
-import Components.Footer.Footer as Footer
 
 
 { class, classList } =
@@ -84,7 +83,6 @@ view model =
         [ Header.view
         , div [ class .root ]
             (List.map talkView model.talks)
-        , Footer.view
         ]
 
 

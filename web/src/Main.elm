@@ -2,11 +2,14 @@ module Main exposing (..)
 
 import Regex exposing (..)
 import Html exposing (..)
+import Http
 import Navigation
 import Route
+import Models.Talk exposing (Talk, talkDecoder)
 import HomePage
 import TalkPage
 import SearchPage
+import Components.Footer.Footer as Footer
 
 
 main =
@@ -31,13 +34,20 @@ init loc =
     setRoute loc <| Model Blank
 
 
+redirectToTalkPage : Model -> String -> ( Model, Cmd Msg )
+redirectToTalkPage model slug =
+    ( model, Navigation.newUrl ("/talks/" ++ slug) )
+
+
 routeToTalkPage : Model -> String -> ( Model, Cmd Msg )
 routeToTalkPage model slug =
     let
         ( submodel, cmd ) =
             TalkPage.init slug
     in
-        ( { model | page = Talk submodel }, Cmd.map TalkMsg cmd )
+        ( { model | page = Talk submodel }
+        , Cmd.map TalkMsg cmd
+        )
 
 
 routeToSearchPage : Model -> String -> ( Model, Cmd Msg )
@@ -73,7 +83,7 @@ setRoute loc model =
                     in
                         case (List.map .submatches matches) of
                             ((Just slug) :: _) :: _ ->
-                                routeToTalkPage model slug
+                                redirectToTalkPage model slug
 
                             _ ->
                                 routeToSearchPage model query
@@ -90,6 +100,8 @@ type Msg
     | HomeMsg HomePage.Msg
     | TalkMsg TalkPage.Msg
     | SearchMsg SearchPage.Msg
+    | FooterMsg Footer.Msg
+    | RandomTalkResult (Result Http.Error Talk)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -115,6 +127,12 @@ update msg model =
             ( SearchMsg msg, Search submodel ) ->
                 toPage Search SearchMsg SearchPage.update msg submodel
 
+            ( FooterMsg Footer.RandomTalk, _ ) ->
+                ( model, getRandomTalk )
+
+            ( RandomTalkResult (Ok talk), _ ) ->
+                redirectToTalkPage model talk.slug
+
             _ ->
                 ( model, Cmd.none )
 
@@ -126,15 +144,31 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    case model.page of
-        Home submodel ->
-            HomePage.view submodel |> Html.map HomeMsg
+    let
+        content =
+            case model.page of
+                Home submodel ->
+                    HomePage.view submodel |> Html.map HomeMsg
 
-        Talk submodel ->
-            TalkPage.view submodel |> Html.map TalkMsg
+                Talk submodel ->
+                    TalkPage.view submodel |> Html.map TalkMsg
 
-        Search submodel ->
-            SearchPage.view submodel |> Html.map SearchMsg
+                Search submodel ->
+                    SearchPage.view submodel |> Html.map SearchMsg
 
-        _ ->
-            div [] [ text "loading" ]
+                _ ->
+                    div [] [ text "loading" ]
+    in
+        div []
+            [ content
+            , Html.map FooterMsg Footer.view
+            ]
+
+
+getRandomTalk : Cmd Msg
+getRandomTalk =
+    let
+        url =
+            "/api/talks/random"
+    in
+        Http.send RandomTalkResult (Http.get url talkDecoder)

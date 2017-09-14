@@ -8,7 +8,6 @@ import Set
 import CssModules exposing (css)
 import Models.Talk exposing (Talk, LanguageCode, talkDecoder)
 import Components.Header.Header as Header
-import Components.Footer.Footer as Footer
 import TalkPage.Header as TalkHeader
 import TalkPage.Sidebar as Sidebar
 
@@ -158,7 +157,6 @@ view model =
                         [ Sidebar.view talk model.selectedLangs |> Html.map Sidebar
                         ]
                     ]
-                , Footer.view
                 ]
 
         _ ->

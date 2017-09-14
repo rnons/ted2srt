@@ -10,7 +10,6 @@ import Json.Decode as Decode
 import CssModules exposing (css)
 import Models.Talk exposing (..)
 import Components.SearchForm.SearchForm as SearchForm
-import Components.Footer.Footer as Footer
 
 
 { class, classList } =
@@ -70,7 +69,6 @@ view model =
         [ div [ class .logo ] [ text ":: TED -> [SRT]" ]
         , SearchForm.view
         , div [ class .list ] (talksView model.talks)
-        , Footer.view
         ]
 
 
