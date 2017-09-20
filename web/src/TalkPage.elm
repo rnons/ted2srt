@@ -2,10 +2,12 @@ module TalkPage exposing (..)
 
 import Html exposing (..)
 import Http
+import Json.Encode as Encode
 import Json.Decode as Decode
 import Dict
 import Set
 import CssModules exposing (css)
+import LocalStorage
 import Models.Talk exposing (Talk, LanguageCode, talkDecoder)
 import Components.Header.Header as Header
 import TalkPage.Header as TalkHeader
@@ -29,7 +31,6 @@ type alias Model =
     { slug : String
     , talk : Maybe Talk
     , selectedLangs : Set.Set LanguageCode
-    , transcript : String
     , transcriptDict : Dict.Dict LanguageCode Transcript
     }
 
@@ -38,6 +39,7 @@ type Msg
     = TalkResult (Result Http.Error Talk)
     | Transcript (Result Http.Error ( LanguageCode, Transcript ))
     | Sidebar Sidebar.Msg
+    | StoredLang String
 
 
 init : String -> ( Model, Cmd Msg )
@@ -45,16 +47,21 @@ init slug =
     ( { slug = slug
       , talk = Nothing
       , selectedLangs = Set.empty
-      , transcript = ""
       , transcriptDict = Dict.empty
       }
-    , getTalk slug
+    , Cmd.batch
+        [ LocalStorage.getLangs ()
+        , getTalk slug
+        ]
     )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        StoredLang langs ->
+            ( model, Cmd.none )
+
         TalkResult (Ok talk) ->
             ( { model | talk = Just talk }, Cmd.none )
 
@@ -63,8 +70,7 @@ update msg model =
 
         Transcript (Ok ( code, transcript )) ->
             ( { model
-                | transcript = transcript
-                , transcriptDict = Dict.insert code transcript model.transcriptDict
+                | transcriptDict = Dict.insert code transcript model.transcriptDict
               }
             , Cmd.none
             )
@@ -82,25 +88,28 @@ update msg model =
                     else
                         ( model.selectedLangs, False )
 
-                ( transcript, newCmd ) =
-                    case Dict.get lang.code model.transcriptDict of
-                        Just transcript ->
-                            ( transcript, Cmd.none )
+                newCmd =
+                    if needFetch then
+                        getTranscript model.talk lang.code
+                    else
+                        Cmd.none
 
-                        _ ->
-                            ( ""
-                            , if needFetch then
-                                getTranscript model.talk lang.code
-                              else
-                                Cmd.none
-                            )
+                encodedLangs =
+                    Set.toList newSet |> List.map Encode.string |> Encode.list |> Encode.encode 0
             in
                 ( { model
                     | selectedLangs = newSet
-                    , transcript = transcript
                   }
-                , newCmd
+                , Cmd.batch
+                    [ newCmd
+                    , LocalStorage.setLangs encodedLangs
+                    ]
                 )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    LocalStorage.onReceiveLangs StoredLang
 
 
 rowView : String -> String -> Html Msg

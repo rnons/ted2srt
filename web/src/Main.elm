@@ -139,7 +139,12 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    case model.page of
+        Talk submodel ->
+            TalkPage.subscriptions submodel |> Sub.map TalkMsg
+
+        _ ->
+            Sub.none
 
 
 view : Model -> Html Msg
