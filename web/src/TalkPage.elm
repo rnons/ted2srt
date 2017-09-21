@@ -39,7 +39,7 @@ type Msg
     = TalkResult (Result Http.Error Talk)
     | Transcript (Result Http.Error ( LanguageCode, Transcript ))
     | Sidebar Sidebar.Msg
-    | StoredLang String
+    | StoreLangs (List LanguageCode)
 
 
 init : String -> ( Model, Cmd Msg )
@@ -59,11 +59,16 @@ init slug =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        StoredLang langs ->
-            ( model, Cmd.none )
+        StoreLangs langs ->
+            ( { model | selectedLangs = Set.fromList langs }
+            , Cmd.none
+            )
 
         TalkResult (Ok talk) ->
-            ( { model | talk = Just talk }, Cmd.none )
+            ( { model | talk = Just talk }
+              -- selectedLangs is read from localStorage, StoreLangs comes before TalkResult
+            , Cmd.batch <| List.map (getTranscript (Just talk)) (Set.toList model.selectedLangs)
+            )
 
         TalkResult (Err _) ->
             ( model, Cmd.none )
@@ -109,7 +114,12 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    LocalStorage.onReceiveLangs StoredLang
+    LocalStorage.onReceiveLangs
+        (Decode.decodeString (Decode.list Decode.string)
+            >> Result.toMaybe
+            >> Maybe.withDefault []
+            >> StoreLangs
+        )
 
 
 rowView : String -> String -> Html Msg
