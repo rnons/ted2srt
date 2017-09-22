@@ -37,7 +37,7 @@ type alias Model =
 
 type Msg
     = TalkResult (Result Http.Error Talk)
-    | Transcript (Result Http.Error ( LanguageCode, Transcript ))
+    | Transcript (Result ( LanguageCode, Http.Error ) ( LanguageCode, Transcript ))
     | Sidebar Sidebar.Msg
     | StoreLangs (List LanguageCode)
 
@@ -80,8 +80,8 @@ update msg model =
             , Cmd.none
             )
 
-        Transcript (Err _) ->
-            ( model, Cmd.none )
+        Transcript (Err ( code, _ )) ->
+            ( { model | selectedLangs = Set.remove code model.selectedLangs }, Cmd.none )
 
         Sidebar (Sidebar.SelectLang lang) ->
             let
@@ -205,7 +205,7 @@ getTranscript mtalk code =
                             Transcript <| Ok ( code, transcript )
 
                         Err err ->
-                            Transcript <| Err err
+                            Transcript <| Err ( code, err )
             in
                 Http.send handleResult (Http.getString url)
 
