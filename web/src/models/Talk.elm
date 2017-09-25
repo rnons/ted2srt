@@ -1,10 +1,17 @@
-module Models.Talk exposing (Talk, Language, LanguageCode, talkDecoder)
+module Models.Talk exposing (..)
 
 import Array exposing (fromList, get)
+import Set
 import Date
 import String exposing (split)
 import Json.Decode exposing (Decoder, field, int, list, string, andThen, map)
 import Json.Decode.Pipeline exposing (decode, required, hardcoded, custom)
+
+
+type TranscriptFormat
+    = TXT
+    | SRT
+    | VTT
 
 
 type alias LanguageCode =
@@ -27,6 +34,7 @@ type alias Talk =
     , speaker : String
     , languages : List Language
     , description : String
+    , mediaSlug : String
     , publishedAt : Maybe Date.Date
     }
 
@@ -72,4 +80,34 @@ talkNameDecoder name =
                )
             |> required "languages" (list languageDecoder)
             |> required "description" string
+            |> required "mediaSlug" string
             |> (custom <| map (Result.toMaybe << Date.fromString) <| field "publishedAt" string)
+
+
+formatString : TranscriptFormat -> String
+formatString format =
+    case format of
+        TXT ->
+            "txt"
+
+        SRT ->
+            "srt"
+
+        VTT ->
+            "vtt"
+
+
+getTranscriptUrl : Talk -> Set.Set LanguageCode -> TranscriptFormat -> String
+getTranscriptUrl talk selectedLangs format =
+    let
+        query =
+            case Set.size selectedLangs of
+                0 ->
+                    "lang=en"
+
+                _ ->
+                    String.join "&" <|
+                        List.map (\code -> "lang=" ++ code) <|
+                            Set.toList selectedLangs
+    in
+        "/api/talks/" ++ toString talk.id ++ "/transcripts/" ++ formatString format ++ "?" ++ query

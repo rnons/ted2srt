@@ -169,7 +169,7 @@ view model =
                 [ Header.view
                 , div [ class .root ]
                     [ main_ [ class .main ]
-                        [ TalkHeader.view talk
+                        [ TalkHeader.view talk model.selectedLangs
                         , article [] (transcriptView model)
                         ]
                     , aside []
