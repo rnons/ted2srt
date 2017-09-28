@@ -7,7 +7,9 @@ var app = Elm.Main.fullscreen();
 
 app.ports.getLangs.subscribe(function() {
   var langs = localStorage.getItem(KEY)
-  app.ports.onReceiveLangs.send(langs);
+  if (langs) {
+    app.ports.onReceiveLangs.send(langs);
+  }
 })
 
 app.ports.setLangs.subscribe(function(langs) {

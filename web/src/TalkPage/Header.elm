@@ -3,6 +3,7 @@ module TalkPage.Header exposing (view)
 import Set
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Keyed as Keyed
 import Models.Talk exposing (Talk, LanguageCode, TranscriptFormat(..), talkDecoder, getTranscriptUrl)
 import CssModules exposing (css)
 import Utils exposing (getDateString)
@@ -34,9 +35,10 @@ view talk selectedLangs =
                 [ a [ href talk.slug ]
                     [ text (talk.speaker ++ ": " ++ talk.title) ]
                 ]
-            , video [ class .player, preload "none", controls True, hidden True ]
-                [ source [ src videoUrl, type_ "video/mp4" ] []
-                , track [ kind "captions", src vttUrl, default True ] []
+            , Keyed.node "video"
+                [ class .player, preload "none", controls True, hidden True ]
+                [ ( "source", source [ src videoUrl, type_ "video/mp4" ] [] )
+                , ( vttUrl, track [ kind "captions", src vttUrl, default True ] [] )
                 ]
             , div [ class .info ]
                 [ div
