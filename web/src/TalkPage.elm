@@ -32,12 +32,14 @@ type alias Model =
     , talk : Maybe Talk
     , selectedLangs : Set.Set LanguageCode
     , transcriptDict : Dict.Dict LanguageCode Transcript
+    , isPlaying : Bool
     }
 
 
 type Msg
     = TalkResult (Result Http.Error Talk)
     | Transcript (Result ( LanguageCode, Http.Error ) ( LanguageCode, Transcript ))
+    | TalkHeader TalkHeader.Msg
     | Sidebar Sidebar.Msg
     | StoreLangs (List LanguageCode)
 
@@ -48,6 +50,7 @@ init slug =
       , talk = Nothing
       , selectedLangs = Set.empty
       , transcriptDict = Dict.empty
+      , isPlaying = False
       }
     , Cmd.batch
         [ LocalStorage.getLangs ()
@@ -82,6 +85,9 @@ update msg model =
 
         Transcript (Err ( code, _ )) ->
             ( { model | selectedLangs = Set.remove code model.selectedLangs }, Cmd.none )
+
+        TalkHeader TalkHeader.Play ->
+            ( { model | isPlaying = True }, Cmd.none )
 
         Sidebar (Sidebar.SelectLang lang) ->
             let
@@ -169,7 +175,7 @@ view model =
                 [ Header.view
                 , div [ class .root ]
                     [ main_ [ class .main ]
-                        [ TalkHeader.view talk model.selectedLangs
+                        [ TalkHeader.view talk model.selectedLangs model.isPlaying |> Html.map TalkHeader
                         , article [] (transcriptView model)
                         ]
                     , aside []
