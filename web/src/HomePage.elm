@@ -67,7 +67,7 @@ view : Model -> Html Msg
 view model =
     div [ class .root ]
         [ div [ class .logo ] [ text ":: TED -> [SRT]" ]
-        , SearchForm.view
+        , SearchForm.view ""
         , div [ class .list ] (talksView model.talks)
         ]
 

@@ -80,7 +80,7 @@ talkView talk =
 view : Model -> Html msg
 view model =
     div []
-        [ Header.view
+        [ Header.view model.q
         , div [ class .root ]
             (List.map talkView model.talks)
         ]

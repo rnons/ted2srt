@@ -14,8 +14,8 @@ import CssModules exposing (css)
         }
 
 
-view : Html msg
-view =
+view : String -> Html msg
+view q =
     Html.form
         [ class .form
         , method "GET"
@@ -25,6 +25,7 @@ view =
             [ class .input
             , type_ "text"
             , name "q"
+            , value q
             , placeholder "TED talk url or keywords"
             ]
             []

@@ -172,7 +172,7 @@ view model =
     case model.talk of
         Just talk ->
             div []
-                [ Header.view
+                [ Header.view ""
                 , div [ class .root ]
                     [ main_ [ class .main ]
                         [ TalkHeader.view talk model.selectedLangs model.isPlaying |> Html.map TalkHeader

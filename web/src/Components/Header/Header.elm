@@ -14,13 +14,13 @@ import CssModules exposing (css)
         }
 
 
-view : Html msg
-view =
+view : String -> Html msg
+view q =
     div [ class .header ]
         [ div [ class .container ]
             [ a [ class .logo, href "/" ]
                 [ text ":: TED -> [SRT]"
                 ]
-            , SearchForm.view
+            , SearchForm.view q
             ]
         ]
