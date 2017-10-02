@@ -1,4 +1,4 @@
-module TalkPage exposing (..)
+module TalkPage exposing (Model, Msg, init, view, update, subscriptions, onLoad)
 
 import Html exposing (..)
 import Http
@@ -6,6 +6,7 @@ import Json.Encode as Encode
 import Json.Decode as Decode
 import Dict
 import Set
+import Task
 import CssModules exposing (css)
 import LocalStorage
 import Models.Talk exposing (Talk, LanguageCode, talkDecoder)
@@ -37,26 +38,29 @@ type alias Model =
 
 
 type Msg
-    = TalkResult (Result Http.Error Talk)
-    | Transcript (Result ( LanguageCode, Http.Error ) ( LanguageCode, Transcript ))
+    = Transcript (Result ( LanguageCode, Http.Error ) ( LanguageCode, Transcript ))
     | TalkHeader TalkHeader.Msg
     | Sidebar Sidebar.Msg
     | StoreLangs (List LanguageCode)
 
 
-init : String -> ( Model, Cmd Msg )
+init : String -> Task.Task Http.Error Model
 init slug =
-    ( { slug = slug
-      , talk = Nothing
-      , selectedLangs = Set.empty
-      , transcriptDict = Dict.empty
-      , isPlaying = False
-      }
-    , Cmd.batch
-        [ LocalStorage.getLangs ()
-        , getTalk slug
-        ]
-    )
+    Http.toTask (getTalk slug)
+        |> Task.map
+            (\talk ->
+                { slug = slug
+                , talk = Just talk
+                , selectedLangs = Set.empty
+                , transcriptDict = Dict.empty
+                , isPlaying = False
+                }
+            )
+
+
+onLoad : Cmd Msg
+onLoad =
+    LocalStorage.getLangs ()
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -64,17 +68,8 @@ update msg model =
     case msg of
         StoreLangs langs ->
             ( { model | selectedLangs = Set.fromList langs }
-            , Cmd.none
+            , Cmd.batch <| List.map (getTranscript model.talk) langs
             )
-
-        TalkResult (Ok talk) ->
-            ( { model | talk = Just talk }
-              -- selectedLangs is read from localStorage, StoreLangs comes before TalkResult
-            , Cmd.batch <| List.map (getTranscript (Just talk)) (Set.toList model.selectedLangs)
-            )
-
-        TalkResult (Err _) ->
-            ( model, Cmd.none )
 
         Transcript (Ok ( code, transcript )) ->
             ( { model
@@ -188,13 +183,13 @@ view model =
             div [] [ text "loading" ]
 
 
-getTalk : String -> Cmd Msg
+getTalk : String -> Http.Request Talk
 getTalk slug =
     let
         url =
             "/api/talks/" ++ slug
     in
-        Http.send TalkResult (Http.get url talkDecoder)
+        Http.get url talkDecoder
 
 
 getTranscript : Maybe Talk -> LanguageCode -> Cmd Msg

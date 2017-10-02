@@ -1,4 +1,4 @@
-module HomePage exposing (..)
+module HomePage exposing (Model, init, view)
 
 import Array exposing (fromList, get)
 import String exposing (split)
@@ -7,6 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onSubmit)
 import Http
 import Json.Decode as Decode
+import Task
 import CssModules exposing (css)
 import Models.Talk exposing (..)
 import Components.SearchForm.SearchForm as SearchForm
@@ -26,44 +27,16 @@ import Components.SearchForm.SearchForm as SearchForm
 
 
 type alias Model =
-    { url : String
-    , talks : List Talk
+    { talks : List Talk
     }
 
 
-init : ( Model, Cmd Msg )
+init : Task.Task Http.Error Model
 init =
-    ( Model "" [], getTalks )
+    Task.map Model <| Http.toTask getTalks
 
 
-type Msg
-    = Input String
-    | Submit
-    | TalksResult (Result Http.Error (List Talk))
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        Input text ->
-            ( { model | url = text }, Cmd.none )
-
-        Submit ->
-            ( { model | url = model.url ++ " SUBMITTED" }, Cmd.none )
-
-        TalksResult (Ok talks) ->
-            ( { model | talks = talks }, Cmd.none )
-
-        TalksResult (Err _) ->
-            ( model, Cmd.none )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
-view : Model -> Html Msg
+view : Model -> Html msg
 view model =
     div [ class .root ]
         [ div [ class .logo ] [ text ":: TED -> [SRT]" ]
@@ -72,7 +45,7 @@ view model =
         ]
 
 
-talksView : List Talk -> List (Html Msg)
+talksView : List Talk -> List (Html msg)
 talksView talks =
     talks
         |> List.map
@@ -95,15 +68,10 @@ talksView talks =
             )
 
 
-getTalks : Cmd Msg
+getTalks : Http.Request (List Talk)
 getTalks =
     let
         url =
             "/api/talks?limit=5"
     in
-        Http.send TalksResult (Http.get url <| Decode.list talkDecoder)
-
-
-decodeTalks : Decode.Decoder (List Talk)
-decodeTalks =
-    Decode.list talkDecoder
+        Http.get url <| Decode.list talkDecoder

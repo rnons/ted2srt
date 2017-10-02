@@ -1,9 +1,10 @@
-module SearchPage exposing (Msg, Model, init, view, update)
+module SearchPage exposing (Model, init, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (href, style)
 import Http
 import Json.Decode as Decode
+import Task
 import Models.Talk exposing (Talk, talkDecoder)
 import CssModules exposing (css)
 import Utils exposing (getDateString)
@@ -21,33 +22,15 @@ import Components.Header.Header as Header
         }
 
 
-type Msg
-    = SearchResult (Result Http.Error (List Talk))
-
-
 type alias Model =
     { q : String
     , talks : List Talk
     }
 
 
-init : String -> ( Model, Cmd Msg )
+init : String -> Task.Task Http.Error Model
 init q =
-    ( { q = q
-      , talks = []
-      }
-    , searchTalk q
-    )
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        SearchResult (Ok talks) ->
-            ( { model | talks = talks }, Cmd.none )
-
-        SearchResult (Err _) ->
-            ( model, Cmd.none )
+    Http.toTask (searchTalk q) |> Task.map (\talks -> { q = q, talks = talks })
 
 
 talkView : Talk -> Html msg
@@ -86,10 +69,10 @@ view model =
         ]
 
 
-searchTalk : String -> Cmd Msg
+searchTalk : String -> Http.Request (List Talk)
 searchTalk q =
     let
         url =
             "/api/search?q=" ++ q
     in
-        Http.send SearchResult (Http.get url <| Decode.list talkDecoder)
+        Http.get url <| Decode.list talkDecoder
