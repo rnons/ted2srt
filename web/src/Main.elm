@@ -11,6 +11,7 @@ import HomePage
 import TalkPage
 import SearchPage
 import Components.Footer.Footer as Footer
+import Components.Loading.Loading as Loading
 
 
 main =
@@ -165,8 +166,11 @@ view model =
                 Loaded (Search submodel) ->
                     SearchPage.view submodel
 
-                _ ->
-                    div [] [ text "loading" ]
+                RedirectFrom _ ->
+                    Loading.view
+
+                Loaded Blank ->
+                    text ""
     in
         div []
             [ content
