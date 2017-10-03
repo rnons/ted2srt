@@ -26,6 +26,7 @@ view q =
             , type_ "text"
             , name "q"
             , value q
+            , required True
             , placeholder "TED talk url or keywords"
             ]
             []

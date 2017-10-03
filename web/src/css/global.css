@@ -37,8 +37,12 @@ h4 {
 
 p {
   margin: 0;
+  margin-bottom: 1em;
   line-height: 1.6;
-  min-height: 1.25rem;
+}
+
+p:empty {
+  margin: 0;
 }
 
 a {

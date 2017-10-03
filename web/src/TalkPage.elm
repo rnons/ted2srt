@@ -30,7 +30,7 @@ type alias Transcript =
 
 type alias Model =
     { slug : String
-    , talk : Maybe Talk
+    , talk : Talk
     , selectedLangs : Set.Set LanguageCode
     , transcriptDict : Dict.Dict LanguageCode Transcript
     , isPlaying : Bool
@@ -50,7 +50,7 @@ init slug =
         |> Task.map
             (\talk ->
                 { slug = slug
-                , talk = Just talk
+                , talk = talk
                 , selectedLangs = Set.empty
                 , transcriptDict = Dict.empty
                 , isPlaying = False
@@ -164,23 +164,18 @@ transcriptView model =
 
 view : Model -> Html Msg
 view model =
-    case model.talk of
-        Just talk ->
-            div []
-                [ Header.view ""
-                , div [ class .root ]
-                    [ main_ [ class .main ]
-                        [ TalkHeader.view talk model.selectedLangs model.isPlaying |> Html.map TalkHeader
-                        , article [] (transcriptView model)
-                        ]
-                    , aside []
-                        [ Sidebar.view talk model.selectedLangs |> Html.map Sidebar
-                        ]
-                    ]
+    div []
+        [ Header.view ""
+        , div [ class .root ]
+            [ main_ [ class .main ]
+                [ TalkHeader.view model.talk model.selectedLangs model.isPlaying |> Html.map TalkHeader
+                , article [] (transcriptView model)
                 ]
-
-        _ ->
-            div [] [ text "loading" ]
+            , aside []
+                [ Sidebar.view model.talk model.selectedLangs |> Html.map Sidebar
+                ]
+            ]
+        ]
 
 
 getTalk : String -> Http.Request Talk
@@ -192,23 +187,18 @@ getTalk slug =
         Http.get url talkDecoder
 
 
-getTranscript : Maybe Talk -> LanguageCode -> Cmd Msg
-getTranscript mtalk code =
-    case mtalk of
-        Just talk ->
-            let
-                url =
-                    "/api/talks/" ++ toString talk.id ++ "/transcripts/txt?lang=" ++ code
+getTranscript : Talk -> LanguageCode -> Cmd Msg
+getTranscript talk code =
+    let
+        url =
+            "/api/talks/" ++ toString talk.id ++ "/transcripts/txt?lang=" ++ code
 
-                handleResult result =
-                    case result of
-                        Ok transcript ->
-                            Transcript <| Ok ( code, transcript )
+        handleResult result =
+            case result of
+                Ok transcript ->
+                    Transcript <| Ok ( code, transcript )
 
-                        Err err ->
-                            Transcript <| Err ( code, err )
-            in
-                Http.send handleResult (Http.getString url)
-
-        Nothing ->
-            Cmd.none
+                Err err ->
+                    Transcript <| Err ( code, err )
+    in
+        Http.send handleResult (Http.getString url)

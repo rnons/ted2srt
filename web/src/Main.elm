@@ -10,6 +10,7 @@ import Models.Talk exposing (Talk, talkDecoder)
 import HomePage
 import TalkPage
 import SearchPage
+import NotFoundPage
 import Components.Footer.Footer as Footer
 import Components.Loading.Loading as Loading
 
@@ -21,6 +22,7 @@ main =
 
 type Page
     = Blank
+    | NotFound
     | Home HomePage.Model
     | Talk TalkPage.Model
     | Search SearchPage.Model
@@ -88,10 +90,10 @@ setRoute loc model =
                                     redirectTo SearchLoaded (SearchPage.init query)
 
                     Nothing ->
-                        ( { model | pageStatus = Loaded Blank }, Cmd.none )
+                        ( { model | pageStatus = Loaded NotFound }, Cmd.none )
 
             _ ->
-                ( { model | pageStatus = Loaded Blank }, Cmd.none )
+                ( { model | pageStatus = Loaded NotFound }, Cmd.none )
 
 
 type Msg
@@ -157,6 +159,15 @@ view model =
     let
         content =
             case model.pageStatus of
+                RedirectFrom _ ->
+                    Loading.view
+
+                Loaded Blank ->
+                    text ""
+
+                Loaded NotFound ->
+                    NotFoundPage.view
+
                 Loaded (Home submodel) ->
                     HomePage.view submodel
 
@@ -165,12 +176,6 @@ view model =
 
                 Loaded (Search submodel) ->
                     SearchPage.view submodel
-
-                RedirectFrom _ ->
-                    Loading.view
-
-                Loaded Blank ->
-                    text ""
     in
         div []
             [ content
