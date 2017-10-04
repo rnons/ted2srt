@@ -11,6 +11,7 @@ import HomePage
 import TalkPage
 import SearchPage
 import NotFoundPage
+import ErrorPage
 import Components.Footer.Footer as Footer
 import Components.Loading.Loading as Loading
 
@@ -23,6 +24,7 @@ main =
 type Page
     = Blank
     | NotFound
+    | Errored
     | Home HomePage.Model
     | Talk TalkPage.Model
     | Search SearchPage.Model
@@ -92,7 +94,7 @@ setRoute loc model =
                     Nothing ->
                         ( { model | pageStatus = Loaded NotFound }, Cmd.none )
 
-            _ ->
+            Nothing ->
                 ( { model | pageStatus = Loaded NotFound }, Cmd.none )
 
 
@@ -115,6 +117,9 @@ update msg model =
                     subUpdate subMsg subModel
             in
                 ( { model | pageStatus = Loaded (toModel newModel) }, Cmd.map toMsg newCmd )
+
+        toError =
+            ( { model | pageStatus = Loaded Errored }, Cmd.none )
     in
         case ( msg, model.pageStatus ) of
             ( UrlChange loc, _ ) ->
@@ -123,16 +128,28 @@ update msg model =
             ( TalkMsg msg, Loaded (Talk submodel) ) ->
                 toPage Talk TalkMsg TalkPage.update msg submodel
 
+            ( TalkMsg msg, _ ) ->
+                ( model, Cmd.none )
+
             ( HomeLoaded (Ok submodel), _ ) ->
                 ( { model | pageStatus = Loaded (Home submodel) }, Cmd.none )
+
+            ( HomeLoaded (Err _), _ ) ->
+                toError
 
             ( TalkLoaded (Ok submodel), _ ) ->
                 ( { model | pageStatus = Loaded (Talk submodel) }
                 , Cmd.map TalkMsg TalkPage.onLoad
                 )
 
+            ( TalkLoaded (Err _), _ ) ->
+                toError
+
             ( SearchLoaded (Ok submodel), _ ) ->
                 ( { model | pageStatus = Loaded (Search submodel) }, Cmd.none )
+
+            ( SearchLoaded (Err _), _ ) ->
+                toError
 
             ( FooterMsg Footer.RandomTalk, _ ) ->
                 ( model, getRandomTalk )
@@ -140,8 +157,8 @@ update msg model =
             ( RandomTalkResult (Ok talk), _ ) ->
                 redirectToTalkPage model talk.slug
 
-            _ ->
-                ( model, Cmd.none )
+            ( RandomTalkResult (Err _), _ ) ->
+                toError
 
 
 subscriptions : Model -> Sub Msg
@@ -167,6 +184,9 @@ view model =
 
                 Loaded NotFound ->
                     NotFoundPage.view
+
+                Loaded Errored ->
+                    ErrorPage.view
 
                 Loaded (Home submodel) ->
                     HomePage.view submodel
