@@ -5,7 +5,14 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
-import Models.Talk exposing (Talk, LanguageCode, TranscriptFormat(..), talkDecoder, getTranscriptUrl)
+import Models.Talk
+    exposing
+        ( Talk
+        , LanguageCode
+        , TranscriptFormat(..)
+        , talkDecoder
+        , mkTranscriptUrl
+        )
 import CssModules exposing (css)
 import Utils exposing (getDateString)
 
@@ -50,7 +57,7 @@ viewPlayer talk selectedLangs =
             "https://download.ted.com/talks/" ++ talk.mediaSlug ++ "-950k.mp4"
 
         vttUrl =
-            getTranscriptUrl talk selectedLangs VTT
+            mkTranscriptUrl talk selectedLangs VTT
     in
         Keyed.node "video"
             [ class .player, preload "none", controls True, autoplay True ]

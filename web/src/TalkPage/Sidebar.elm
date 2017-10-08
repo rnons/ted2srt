@@ -4,7 +4,15 @@ import Set
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Models.Talk exposing (Talk, Language, LanguageCode, talkDecoder)
+import Models.Talk
+    exposing
+        ( Talk
+        , Language
+        , LanguageCode
+        , TranscriptFormat(..)
+        , talkDecoder
+        , mkTranscriptDownloadUrl
+        )
 import CssModules exposing (css)
 
 
@@ -34,41 +42,58 @@ type Msg
 
 videoListView : Talk -> Html Msg
 videoListView talk =
-    div [ class .panel ]
-        [ h4 [ class .panelTitle ] [ text "Download Video" ]
-        , ul [ class .list ]
-            (videoFormats
-                |> List.map
-                    (\( fLabel, bitrate, resolution ) ->
-                        li []
-                            [ a [ href "" ] [ text fLabel ]
-                            ]
-                    )
-            )
-        ]
+    let
+        mkUrl bitrate =
+            "https://download.ted.com/talks/"
+                ++ talk.mediaSlug
+                ++ "-"
+                ++ bitrate
+                ++ ".mp4"
+
+        mkTitle resolution =
+            "Resolution: " ++ resolution
+    in
+        div [ class .panel ]
+            [ h4 [ class .panelTitle ] [ text "Download Video" ]
+            , ul [ class .list ]
+                (videoFormats
+                    |> List.map
+                        (\( fLabel, bitrate, resolution ) ->
+                            li []
+                                [ a
+                                    [ href <| mkUrl bitrate
+                                    , title <| mkTitle resolution
+                                    , download True
+                                    ]
+                                    [ text fLabel ]
+                                ]
+                        )
+                )
+            ]
 
 
 transcriptFormats =
-    [ "srt"
-    , "txt"
-    , "lrc"
-    ]
+    [ TXT, SRT, VTT ]
 
 
-transcriptListView : Html Msg
-transcriptListView =
-    div [ class .panel ]
-        [ h4 [ class .panelTitle ] [ text "Download Transcript" ]
-        , ul [ class .list ]
-            (transcriptFormats
-                |> List.map
-                    (\format ->
-                        li []
-                            [ a [] [ text <| String.toUpper format ]
-                            ]
-                    )
-            )
-        ]
+transcriptListView : Talk -> Set.Set LanguageCode -> Html Msg
+transcriptListView talk selectedLangs =
+    let
+        mkUrl =
+            mkTranscriptDownloadUrl talk selectedLangs
+    in
+        div [ class .panel ]
+            [ h4 [ class .panelTitle ] [ text "Download Transcript" ]
+            , ul [ class .list ]
+                (transcriptFormats
+                    |> List.map
+                        (\format ->
+                            li []
+                                [ a [ href (mkUrl format) ] [ text <| toString format ]
+                                ]
+                        )
+                )
+            ]
 
 
 languageListView : Talk -> Set.Set LanguageCode -> Html Msg
@@ -101,6 +126,6 @@ view : Talk -> Set.Set LanguageCode -> Html Msg
 view talk selectedLangs =
     div []
         [ videoListView talk
-        , transcriptListView
+        , transcriptListView talk selectedLangs
         , languageListView talk selectedLangs
         ]

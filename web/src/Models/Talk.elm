@@ -97,8 +97,8 @@ formatString format =
             "vtt"
 
 
-getTranscriptUrl : Talk -> Set.Set LanguageCode -> TranscriptFormat -> String
-getTranscriptUrl talk selectedLangs format =
+mkTranscriptUrl_ : Talk -> Set.Set LanguageCode -> TranscriptFormat -> Bool -> String
+mkTranscriptUrl_ talk selectedLangs format isDownload =
     let
         query =
             case Set.size selectedLangs of
@@ -109,5 +109,21 @@ getTranscriptUrl talk selectedLangs format =
                     String.join "&" <|
                         List.map (\code -> "lang=" ++ code) <|
                             Set.toList selectedLangs
+
+        downloadSlug =
+            if isDownload then
+                "download/"
+            else
+                ""
     in
-        "/api/talks/" ++ toString talk.id ++ "/transcripts/" ++ formatString format ++ "?" ++ query
+        "/api/talks/" ++ toString talk.id ++ "/transcripts/" ++ downloadSlug ++ formatString format ++ "?" ++ query
+
+
+mkTranscriptUrl : Talk -> Set.Set LanguageCode -> TranscriptFormat -> String
+mkTranscriptUrl talk selectedLangs format =
+    mkTranscriptUrl_ talk selectedLangs format False
+
+
+mkTranscriptDownloadUrl : Talk -> Set.Set LanguageCode -> TranscriptFormat -> String
+mkTranscriptDownloadUrl talk selectedLangs format =
+    mkTranscriptUrl_ talk selectedLangs format True
