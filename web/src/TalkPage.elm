@@ -21,6 +21,7 @@ import TalkPage.Sidebar as Sidebar
         , main = ""
         , sidebar = ""
         , row = ""
+        , help = ""
         }
 
 
@@ -159,7 +160,10 @@ transcriptView model =
                         []
 
             _ ->
-                []
+                [ div [ class .help ]
+                    [ text "You can read the transcripts by selecting one or two languages from the sidebar."
+                    ]
+                ]
 
 
 view : Model -> Html Msg
