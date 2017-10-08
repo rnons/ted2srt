@@ -1,15 +1,15 @@
-import Elm from './Main.elm';
-import './css/global.css';
+import Elm from './Main.elm'
+import './css/global.css'
 
 var KEY = 'languages'
 
-var app = Elm.Main.fullscreen();
+var app = Elm.Main.fullscreen()
 
 app.ports.getLangs.subscribe(function() {
   var langs = localStorage.getItem(KEY)
   if (langs) {
-    setTimeout(() => {
-      app.ports.onReceiveLangs.send(langs);
+    setTimeout(function() {
+      app.ports.onReceiveLangs.send(langs)
     })
   }
 })
