@@ -13,7 +13,7 @@ module.exports = {
     publicPath: '/'
   },
   resolve: {
-    extensions: ['.ts', '.js']
+    extensions: ['.js']
   },
   module: {
     rules: [
@@ -30,11 +30,6 @@ module.exports = {
             }
           },
           'postcss-loader',
-        ]
-      }, {
-        test: /\.ts$/,
-        use: [
-          'awesome-typescript-loader',
         ]
       }, {
         test: /\.elm$/,

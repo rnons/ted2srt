@@ -1,7 +1,0 @@
-<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-    <ShortName>TED2srt</ShortName>
-    <Description>Download bilingual subtitles of TED talks</Description>
-    <InputEncoding>UTF-8</InputEncoding>
-    <Image type="image/x-icon">http://ted2srt.org/favicon.ico</Image>
-    <Url type="text/html" template="http://ted2srt.org/search?q={searchTerms}"/>
-</OpenSearchDescription>
