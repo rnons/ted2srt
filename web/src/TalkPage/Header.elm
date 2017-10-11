@@ -41,7 +41,9 @@ viewTalkInfo talk =
             , onClick Play
             , style [ ( "backgroundImage", "url(" ++ talk.image ++ ")" ) ]
             ]
-            [ span [ class .playButton ] []
+            [ button [ class .playButton ]
+                [ span [ style [ ( "margin-left", "2px" ) ] ] [ text "▶" ]
+                ]
             ]
         , p [ class .description ]
             [ text talk.description
@@ -70,7 +72,7 @@ view : Talk -> Set.Set LanguageCode -> Bool -> Html Msg
 view talk selectedLangs isPlaying =
     div []
         [ h3 [ class .title ]
-            [ a [ href talk.slug ]
+            [ a [ href <| "https://www.ted.com/talks/" ++ talk.slug, target "_blank" ]
                 [ text (talk.speaker ++ ": " ++ talk.title) ]
             ]
         , if isPlaying then
