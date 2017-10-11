@@ -21,5 +21,5 @@ view =
                 , ( "padding", "1.25rem 0" )
                 ]
             ]
-            [ text "Sorry, we cannot find anything" ]
+            [ text "Sorry, we cannot find anything." ]
         ]

@@ -121,8 +121,18 @@ update msg model =
             in
                 ( { model | pageStatus = Loaded (toModel newModel) }, Cmd.map toMsg newCmd )
 
-        toError =
-            ( { model | pageStatus = Loaded Errored }, Ports.setTitle ErrorPage.title )
+        toError err =
+            case err of
+                Http.BadStatus res ->
+                    case res.status.code of
+                        404 ->
+                            ( { model | pageStatus = Loaded NotFound }, Ports.setTitle NotFoundPage.title )
+
+                        _ ->
+                            ( { model | pageStatus = Loaded Errored }, Ports.setTitle ErrorPage.title )
+
+                _ ->
+                    ( { model | pageStatus = Loaded Errored }, Ports.setTitle ErrorPage.title )
     in
         case ( msg, model.pageStatus ) of
             ( UrlChange loc, _ ) ->
@@ -137,8 +147,8 @@ update msg model =
             ( HomeLoaded (Ok submodel), _ ) ->
                 ( { model | pageStatus = Loaded (Home submodel) }, Cmd.none )
 
-            ( HomeLoaded (Err _), _ ) ->
-                toError
+            ( HomeLoaded (Err err), _ ) ->
+                toError err
 
             ( TalkLoaded (Ok submodel), _ ) ->
                 ( { model | pageStatus = Loaded (Talk submodel) }
@@ -148,16 +158,16 @@ update msg model =
                     ]
                 )
 
-            ( TalkLoaded (Err _), _ ) ->
-                toError
+            ( TalkLoaded (Err err), _ ) ->
+                toError err
 
             ( SearchLoaded (Ok submodel), _ ) ->
                 ( { model | pageStatus = Loaded (Search submodel) }
                 , Ports.setTitle <| SearchPage.title submodel
                 )
 
-            ( SearchLoaded (Err _), _ ) ->
-                toError
+            ( SearchLoaded (Err err), _ ) ->
+                toError err
 
             ( FooterMsg Footer.RandomTalk, _ ) ->
                 ( model, getRandomTalk )
@@ -165,8 +175,8 @@ update msg model =
             ( RandomTalkResult (Ok talk), _ ) ->
                 redirectToTalkPage model talk.slug
 
-            ( RandomTalkResult (Err _), _ ) ->
-                toError
+            ( RandomTalkResult (Err err), _ ) ->
+                toError err
 
 
 subscriptions : Model -> Sub Msg
