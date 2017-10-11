@@ -7,6 +7,7 @@ import Navigation
 import Route
 import Task
 import Models.Talk exposing (Talk, talkDecoder)
+import Ports
 import HomePage
 import TalkPage
 import SearchPage
@@ -92,10 +93,12 @@ setRoute loc model =
                                     redirectTo SearchLoaded (SearchPage.init query)
 
                     Nothing ->
-                        ( { model | pageStatus = Loaded NotFound }, Cmd.none )
+                        ( { model | pageStatus = Loaded NotFound }
+                        , Ports.setTitle NotFoundPage.title
+                        )
 
             Nothing ->
-                ( { model | pageStatus = Loaded NotFound }, Cmd.none )
+                ( { model | pageStatus = Loaded NotFound }, Ports.setTitle NotFoundPage.title )
 
 
 type Msg
@@ -119,7 +122,7 @@ update msg model =
                 ( { model | pageStatus = Loaded (toModel newModel) }, Cmd.map toMsg newCmd )
 
         toError =
-            ( { model | pageStatus = Loaded Errored }, Cmd.none )
+            ( { model | pageStatus = Loaded Errored }, Ports.setTitle ErrorPage.title )
     in
         case ( msg, model.pageStatus ) of
             ( UrlChange loc, _ ) ->
@@ -139,14 +142,19 @@ update msg model =
 
             ( TalkLoaded (Ok submodel), _ ) ->
                 ( { model | pageStatus = Loaded (Talk submodel) }
-                , Cmd.map TalkMsg TalkPage.onLoad
+                , Cmd.batch
+                    [ Ports.setTitle <| TalkPage.title submodel
+                    , Cmd.map TalkMsg TalkPage.onLoad
+                    ]
                 )
 
             ( TalkLoaded (Err _), _ ) ->
                 toError
 
             ( SearchLoaded (Ok submodel), _ ) ->
-                ( { model | pageStatus = Loaded (Search submodel) }, Cmd.none )
+                ( { model | pageStatus = Loaded (Search submodel) }
+                , Ports.setTitle <| SearchPage.title submodel
+                )
 
             ( SearchLoaded (Err _), _ ) ->
                 toError

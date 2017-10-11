@@ -1,4 +1,4 @@
-module SearchPage exposing (Model, init, view)
+module SearchPage exposing (Model, init, title, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (href, style)
@@ -31,6 +31,11 @@ type alias Model =
 init : String -> Task.Task Http.Error Model
 init q =
     Http.toTask (searchTalk q) |> Task.map (\talks -> { q = q, talks = talks })
+
+
+title : Model -> String
+title model =
+    model.q ++ " - TED2srt search"
 
 
 talkView : Talk -> Html msg

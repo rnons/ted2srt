@@ -1,8 +1,13 @@
-module NotFoundPage exposing (view)
+module NotFoundPage exposing (title, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Components.Header.Header as Header
+
+
+title : String
+title =
+    "404 error - TED2srt"
 
 
 view : Html msg

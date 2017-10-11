@@ -1,8 +1,13 @@
-module ErrorPage exposing (view)
+module ErrorPage exposing (title, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (style, href)
 import Components.Header.Header as Header
+
+
+title : String
+title =
+    "Server error - TED2srt"
 
 
 view : Html msg

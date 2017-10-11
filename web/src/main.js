@@ -17,3 +17,8 @@ app.ports.getLangs.subscribe(function() {
 app.ports.setLangs.subscribe(function(langs) {
   localStorage.setItem(KEY, langs)
 })
+
+
+app.ports.setTitle.subscribe(function(title) {
+  document.title = title
+})

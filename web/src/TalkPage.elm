@@ -1,4 +1,4 @@
-module TalkPage exposing (Model, Msg, init, view, update, subscriptions, onLoad)
+module TalkPage exposing (Model, Msg, init, title, view, update, subscriptions, onLoad)
 
 import Html exposing (..)
 import Http
@@ -122,6 +122,11 @@ subscriptions model =
             >> Maybe.withDefault []
             >> StoreLangs
         )
+
+
+title : Model -> String
+title model =
+    model.talk.name ++ " - TED2srt"
 
 
 rowView : String -> String -> Html Msg
