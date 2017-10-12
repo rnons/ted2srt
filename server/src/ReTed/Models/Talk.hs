@@ -74,10 +74,11 @@ data TalkObj = TalkObj
 
 instance FromJSON TalkObj where
     parseJSON (Object v) =
-        TalkObj <$> v .: "id"
+        TalkObj <$> liftM read (v .: "id")
              <*> v .: "name"
              <*> v .: "slug"
-             <*> liftM posixSecondsToUTCTime (v .: "filmed")
+             <*> liftM posixSecondsToUTCTime (v .: "published")
+             -- no filmed field now
              <*> liftM posixSecondsToUTCTime (v .: "published")
              <*> v .: "languages"
     parseJSON _          = mzero
@@ -186,8 +187,8 @@ fetchTalk url = do
             mdSlug = parseMediaSlug body
             mdPad = parseMediaPad body
         let core = parseTalkObject body
-        case decode core of
-            Just talk -> do
+        case eitherDecode core of
+            Right talk -> do
                 return $ Just Talk { id = oId talk
                                    , name = oName talk
                                    , slug = oSlug talk
@@ -199,7 +200,7 @@ fetchTalk url = do
                                    , mediaSlug = mdSlug
                                    , mediaPad = mdPad
                                    }
-            _      -> error "parse error"
+            Left err   -> error err
 
 getRandomTalk :: Config -> IO (Maybe Talk)
 getRandomTalk config = do
