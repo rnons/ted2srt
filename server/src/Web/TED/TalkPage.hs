@@ -51,7 +51,7 @@ parseImage cursor = head $ head $
 parseTalkObject :: ByteString -> ByteString
 parseTalkObject body = last $ last r
   where
-    pat = "player_talks\":\\[(.+)\\],\"recorded_at" :: ByteString
+    pat = "player_talks\":\\[(.+)\\],\"ratings" :: ByteString
     r = body =~ pat :: [[ByteString]]
 
 -- | Given talk url, return mediaSlug and mediaPad of talk.
@@ -66,7 +66,7 @@ getSlugAndPad rurl = E.catch
 parseMediaSlug :: ByteString -> Text
 parseMediaSlug body = T.pack $ L8.unpack $ last $ last r
   where
-    pat = "/([^/]+)-320k.mp4\\?dnt" :: ByteString
+    pat = "\"file\":\"https://download.ted.com/talks/(.+)-320k.mp4\\?dnt" :: ByteString
     r = body =~ pat :: [[ByteString]]
 
 -- TED talk videos begin with different versions of TED promos.
