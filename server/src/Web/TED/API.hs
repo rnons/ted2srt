@@ -11,6 +11,7 @@ module Web.TED.API
   , queryTalk
   , searchTalk
   , talkHasAudio
+  , getTalkTranscript
   ) where
 
 import qualified Control.Exception as E
@@ -79,3 +80,12 @@ searchTalk q = do
     query = B8.unpack $ urlEncode True $ B8.pack $ T.unpack q
     rurl = "http://api.ted.com/v1/search.json?q=" <> query <>
            "&categories=talks&api-key=2a9uggd876y5qua7ydghfzrq"
+
+getTalkTranscript :: Int -> Text -> IO Text
+getTalkTranscript talkId language = do
+    res <- simpleHttp rurl
+    case eitherDecode res of
+        Right r -> return $ transcriptToText r
+        Left er -> error er
+  where
+    rurl = "https://www.ted.com/talks/" <> show talkId <> "/transcript.json?language=" <> T.unpack language

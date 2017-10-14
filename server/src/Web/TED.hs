@@ -20,10 +20,7 @@ import           GHC.Generics (Generic)
 import           Network.HTTP.Conduit hiding (path)
 import           System.Directory
 import           System.IO
-import           Text.HTML.DOM (parseLBS)
 import           Text.Printf
-import           Text.XML.Cursor (attributeIs, element, fromDocument, ($//), (&//))
-import qualified Text.XML.Cursor as XC
 
 import Web.TED.API as TED
 import Web.TED.TalkPage as TED
@@ -159,27 +156,18 @@ oneSub sub = do
 
 oneTxt :: Subtitle -> IO (Maybe FilePath)
 oneTxt sub = do
+    print sub
     path <- subtitlePath sub
     cached <- doesFileExist path
     if cached
        then return $ Just path
        else do
-           let rurl = T.unpack $ "http://www.ted.com/talks/" <> talkslug sub
-                               <> "/transcript?language=" <> head (language sub)
-           res <- simpleHttp rurl
-           let cursor = fromDocument $ parseLBS res
-               con = cursor $// element "p"
-                            >=> attributeIs "class" "m-b:0"
-                            &// XC.content
-               txt = T.unlines $ map ppr con
+           txt <- TED.getTalkTranscript (talkId sub) (head $ language sub)
            -- Prepend the UTF-8 byte order mark to do Windows user a favor.
            withBinaryFile path WriteMode $ \h ->
                hPutStr h "\xef\xbb\xbf"
            T.appendFile path txt
            return $ Just path
-  where
-    ppr :: Text -> Text
-    ppr = T.strip . T.intercalate " " . map T.strip . T.lines
 
 oneLrc :: Subtitle -> IO (Maybe FilePath)
 oneLrc sub = do
