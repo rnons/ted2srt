@@ -1,14 +1,14 @@
-module HomePage exposing (Model, init, view)
+module HomePage exposing (Msg(..), Model, init, view)
 
 import Array exposing (fromList, get)
 import String exposing (split)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onSubmit)
 import Http
 import Json.Decode as Decode
 import Task
 import CssModules exposing (css)
+import Utils exposing (onPreventDefaultClick)
 import Route
 import Models.Talk exposing (..)
 import Components.SearchForm.SearchForm as SearchForm
@@ -27,6 +27,10 @@ import Components.SearchForm.SearchForm as SearchForm
         }
 
 
+type Msg
+    = RouteTo Route.Route
+
+
 type alias Model =
     { talks : List Talk
     }
@@ -37,7 +41,7 @@ init =
     Task.map Model <| Http.toTask getTalks
 
 
-view : Model -> Html msg
+view : Model -> Html Msg
 view model =
     div [ class .root ]
         [ div [ class .logo ] [ text ":: TED -> [SRT]" ]
@@ -46,7 +50,7 @@ view model =
         ]
 
 
-talksView : List Talk -> List (Html msg)
+talksView : List Talk -> List (Html Msg)
 talksView talks =
     talks
         |> List.map
@@ -58,6 +62,7 @@ talksView talks =
                     a
                         [ class .tile
                         , href (Route.toString route)
+                        , onPreventDefaultClick (RouteTo route)
                         ]
                         [ div
                             [ class .image

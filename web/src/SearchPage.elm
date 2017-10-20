@@ -1,4 +1,4 @@
-module SearchPage exposing (Model, init, title, view)
+module SearchPage exposing (Msg(..), Model, init, title, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (href, style)
@@ -8,7 +8,7 @@ import Task
 import Route
 import Models.Talk exposing (Talk, talkDecoder)
 import CssModules exposing (css)
-import Utils exposing (getDateString)
+import Utils exposing (getDateString, onPreventDefaultClick)
 import Components.Header.Header as Header
 
 
@@ -21,6 +21,10 @@ import Components.Header.Header as Header
         , description = ""
         , date = ""
         }
+
+
+type Msg
+    = RouteTo Route.Route
 
 
 type alias Model =
@@ -39,21 +43,29 @@ title model =
     model.q ++ " - TED2srt search"
 
 
-talkView : Talk -> Html msg
+talkView : Talk -> Html Msg
 talkView talk =
     let
+        route =
+            Route.talkToRoute talk
+
         talkUrl =
-            Route.toString <| Route.talkToRoute talk
+            Route.toString route
     in
         div [ class .item ]
             [ h3 []
-                [ a [ href talkUrl ] [ text talk.name ]
+                [ a
+                    [ href talkUrl
+                    , onPreventDefaultClick (RouteTo route)
+                    ]
+                    [ text talk.name ]
                 ]
             , div [ class .info ]
                 [ a
                     [ class .cover
                     , style [ ( "backgroundImage", "url(" ++ talk.image ++ ")" ) ]
                     , href talkUrl
+                    , onPreventDefaultClick (RouteTo route)
                     ]
                     []
                 , div []
@@ -66,7 +78,7 @@ talkView talk =
             ]
 
 
-view : Model -> Html msg
+view : Model -> Html Msg
 view model =
     div []
         [ Header.view model.q

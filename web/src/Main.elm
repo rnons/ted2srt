@@ -106,7 +106,9 @@ type Msg
     | HomeLoaded (Result Http.Error HomePage.Model)
     | TalkLoaded (Result Http.Error TalkPage.Model)
     | SearchLoaded (Result Http.Error SearchPage.Model)
+    | HomeMsg HomePage.Msg
     | TalkMsg TalkPage.Msg
+    | SearchMsg SearchPage.Msg
     | FooterMsg Footer.Msg
     | RandomTalkResult (Result Http.Error Talk)
 
@@ -138,11 +140,17 @@ update msg model =
             ( UrlChange loc, _ ) ->
                 setRoute loc model
 
+            ( HomeMsg (HomePage.RouteTo route), _ ) ->
+                ( model, Navigation.newUrl <| Route.toString route )
+
             ( TalkMsg msg, Loaded (Talk submodel) ) ->
                 toPage Talk TalkMsg TalkPage.update msg submodel
 
             ( TalkMsg msg, _ ) ->
                 ( model, Cmd.none )
+
+            ( SearchMsg (SearchPage.RouteTo route), _ ) ->
+                ( model, Navigation.newUrl <| Route.toString route )
 
             ( HomeLoaded (Ok submodel), _ ) ->
                 ( { model | pageStatus = Loaded (Home submodel) }, Cmd.none )
@@ -207,13 +215,13 @@ view model =
                     ErrorPage.view
 
                 Loaded (Home submodel) ->
-                    HomePage.view submodel
+                    HomePage.view submodel |> Html.map HomeMsg
 
                 Loaded (Talk submodel) ->
                     TalkPage.view submodel |> Html.map TalkMsg
 
                 Loaded (Search submodel) ->
-                    SearchPage.view submodel
+                    SearchPage.view submodel |> Html.map SearchMsg
     in
         div []
             [ content
