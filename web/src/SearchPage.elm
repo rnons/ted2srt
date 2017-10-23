@@ -5,6 +5,7 @@ import Html.Attributes exposing (href, style)
 import Http
 import Json.Decode as Decode
 import Task
+import Route
 import Models.Talk exposing (Talk, talkDecoder)
 import CssModules exposing (css)
 import Utils exposing (getDateString)
@@ -42,7 +43,7 @@ talkView : Talk -> Html msg
 talkView talk =
     let
         talkUrl =
-            "/talks/" ++ talk.slug
+            Route.toString <| Route.talkToRoute talk
     in
         div [ class .item ]
             [ h3 []

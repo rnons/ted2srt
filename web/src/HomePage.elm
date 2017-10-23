@@ -9,6 +9,7 @@ import Http
 import Json.Decode as Decode
 import Task
 import CssModules exposing (css)
+import Route
 import Models.Talk exposing (..)
 import Components.SearchForm.SearchForm as SearchForm
 
@@ -50,21 +51,25 @@ talksView talks =
     talks
         |> List.map
             (\talk ->
-                a
-                    [ class .tile
-                    , href ("/talks/" ++ talk.slug)
-                    ]
-                    [ div
-                        [ class .image
-                        , style [ ( "backgroundImage", "url(" ++ talk.image ++ ")" ) ]
+                let
+                    route =
+                        Route.talkToRoute talk
+                in
+                    a
+                        [ class .tile
+                        , href (Route.toString route)
                         ]
-                        []
-                    , div
-                        [ class .info ]
-                        [ div [ class .title ] [ text talk.title ]
-                        , div [ class .speaker ] [ text talk.speaker ]
+                        [ div
+                            [ class .image
+                            , style [ ( "backgroundImage", "url(" ++ talk.image ++ ")" ) ]
+                            ]
+                            []
+                        , div
+                            [ class .info ]
+                            [ div [ class .title ] [ text talk.title ]
+                            , div [ class .speaker ] [ text talk.speaker ]
+                            ]
                         ]
-                    ]
             )
 
 
