@@ -10,7 +10,7 @@ title =
     "Server error - TED2srt"
 
 
-view : Html msg
+view : Html Header.Msg
 view =
     div []
         [ Header.view ""

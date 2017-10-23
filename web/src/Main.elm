@@ -13,6 +13,7 @@ import TalkPage
 import SearchPage
 import NotFoundPage
 import ErrorPage
+import Components.Header.Header as Header
 import Components.Footer.Footer as Footer
 import Components.Loading.Loading as Loading
 
@@ -109,6 +110,7 @@ type Msg
     | HomeMsg HomePage.Msg
     | TalkMsg TalkPage.Msg
     | SearchMsg SearchPage.Msg
+    | HeaderMsg Header.Msg
     | FooterMsg Footer.Msg
     | RandomTalkResult (Result Http.Error Talk)
 
@@ -141,6 +143,9 @@ update msg model =
                 setRoute loc model
 
             ( HomeMsg (HomePage.RouteTo route), _ ) ->
+                ( model, Navigation.newUrl <| Route.toString route )
+
+            ( TalkMsg (TalkPage.RouteTo route), _ ) ->
                 ( model, Navigation.newUrl <| Route.toString route )
 
             ( TalkMsg msg, Loaded (Talk submodel) ) ->
@@ -177,6 +182,9 @@ update msg model =
             ( SearchLoaded (Err err), _ ) ->
                 toError err
 
+            ( HeaderMsg (Header.RouteTo route), _ ) ->
+                ( model, Navigation.newUrl <| Route.toString route )
+
             ( FooterMsg Footer.RandomTalk, _ ) ->
                 ( model, getRandomTalk )
 
@@ -209,10 +217,10 @@ view model =
                     text ""
 
                 Loaded NotFound ->
-                    NotFoundPage.view
+                    NotFoundPage.view |> Html.map HeaderMsg
 
                 Loaded Errored ->
-                    ErrorPage.view
+                    ErrorPage.view |> Html.map HeaderMsg
 
                 Loaded (Home submodel) ->
                     HomePage.view submodel |> Html.map HomeMsg

@@ -81,7 +81,7 @@ talkView talk =
 view : Model -> Html Msg
 view model =
     div []
-        [ Header.view model.q
+        [ Header.view model.q |> Html.map (\(Header.RouteTo route) -> RouteTo route)
         , div [ class .root ]
             (List.map talkView model.talks)
         ]

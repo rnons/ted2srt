@@ -1,4 +1,4 @@
-module TalkPage exposing (Model, Msg, init, title, view, update, subscriptions, onLoad)
+module TalkPage exposing (Model, Msg(..), init, title, view, update, subscriptions, onLoad)
 
 import Html exposing (..)
 import Http
@@ -9,6 +9,7 @@ import Set
 import Task
 import CssModules exposing (css)
 import LocalStorage
+import Route
 import Models.Talk exposing (Talk, LanguageCode, talkDecoder)
 import Components.Header.Header as Header
 import TalkPage.Header as TalkHeader
@@ -43,6 +44,7 @@ type Msg
     | TalkHeader TalkHeader.Msg
     | Sidebar Sidebar.Msg
     | StoreLangs (List LanguageCode)
+    | RouteTo Route.Route
 
 
 init : String -> Task.Task Http.Error Model
@@ -67,6 +69,9 @@ onLoad =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        RouteTo _ ->
+            ( model, Cmd.none )
+
         StoreLangs langs ->
             ( { model | selectedLangs = Set.fromList langs }
             , Cmd.batch <| List.map (getTranscript model.talk) langs
@@ -174,7 +179,7 @@ transcriptView model =
 view : Model -> Html Msg
 view model =
     div []
-        [ Header.view ""
+        [ Header.view "" |> Html.map (\(Header.RouteTo route) -> RouteTo route)
         , div [ class .root ]
             [ main_ [ class .main ]
                 [ TalkHeader.view model.talk model.selectedLangs model.isPlaying |> Html.map TalkHeader
