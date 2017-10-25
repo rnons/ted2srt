@@ -6,12 +6,10 @@ var KEY = 'languages'
 var app = Elm.Main.fullscreen()
 
 app.ports.getLangs.subscribe(function() {
-  var langs = localStorage.getItem(KEY)
-  if (langs) {
-    setTimeout(function() {
-      app.ports.onReceiveLangs.send(langs)
-    })
-  }
+  var langs = localStorage.getItem(KEY) || ""
+  setTimeout(function() {
+    app.ports.onReceiveLangs.send(langs)
+  })
 })
 
 app.ports.setLangs.subscribe(function(langs) {

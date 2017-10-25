@@ -124,7 +124,7 @@ subscriptions model =
     LocalStorage.onReceiveLangs
         (Decode.decodeString (Decode.list Decode.string)
             >> Result.toMaybe
-            >> Maybe.withDefault []
+            >> Maybe.withDefault [ "en" ]
             >> StoreLangs
         )
 
