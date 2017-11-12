@@ -4,6 +4,7 @@ import Array exposing (fromList, get)
 import Set
 import Date
 import String exposing (split)
+import Regex exposing (HowMany(All), regex, replace)
 import Json.Decode exposing (Decoder, field, int, list, string, andThen, map)
 import Json.Decode.Pipeline exposing (decode, required, hardcoded, custom)
 
@@ -39,6 +40,15 @@ type alias Talk =
     }
 
 
+unescape : String -> String
+unescape =
+    replace All (regex "&amp;") (\_ -> "&")
+        >> replace All (regex "&quot;") (\_ -> "\"")
+        >> replace All (regex "&#39;") (\_ -> "'")
+        >> replace All (regex "&lt;") (\_ -> "<")
+        >> replace All (regex "&gt;") (\_ -> ">")
+
+
 languageDecoder : Decoder Language
 languageDecoder =
     decode Language
@@ -68,7 +78,7 @@ talkNameDecoder name =
             |> required "id" int
             |> required "slug" string
             |> (custom <|
-                    map (String.join "&" << String.split "&amp;") <|
+                    map unescape <|
                         field "image" string
                )
             |> hardcoded name
@@ -79,7 +89,10 @@ talkNameDecoder name =
                     Maybe.withDefault name speaker
                )
             |> required "languages" (list languageDecoder)
-            |> required "description" string
+            |> (custom <|
+                    map unescape <|
+                        field "description" string
+               )
             |> required "mediaSlug" string
             |> (custom <| map (Result.toMaybe << Date.fromString) <| field "publishedAt" string)
 
