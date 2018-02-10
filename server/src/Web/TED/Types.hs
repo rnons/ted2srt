@@ -1,6 +1,6 @@
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE OverloadedStrings  #-}
-{-# LANGUAGE RecordWildCards  #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 module Web.TED.Types
   ( Talk (..)
   , SearchTalk (..)
@@ -16,18 +16,18 @@ module Web.TED.Types
   ) where
 
 import           Control.Applicative ((<$>), (<*>))
-import           Control.Monad (mzero, liftM)
+import           Control.Monad       (liftM, mzero)
 import           Data.Aeson
-import           Data.Aeson.Types (defaultOptions, Options(..), parseMaybe)
+import           Data.Aeson.Types    (Options (..), defaultOptions, parseMaybe)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (sort)
-import           Data.Maybe (fromMaybe)
-import           Data.Text (Text)
-import qualified Data.Text as T
-import           Data.Time (UTCTime)
-import           Data.Time.Format (parseTimeM, defaultTimeLocale)
-import qualified Data.Vector as V
-import           GHC.Generics (Generic)
+import           Data.List           (sort)
+import           Data.Maybe          (fromMaybe)
+import           Data.Text           (Text)
+import qualified Data.Text           as T
+import           Data.Time           (UTCTime)
+import           Data.Time.Format    (defaultTimeLocale, parseTimeM)
+import qualified Data.Vector         as V
+import           GHC.Generics        (Generic)
 
 
 newtype TEDTime = TEDTime { fromTEDTime :: UTCTime }
@@ -41,7 +41,7 @@ instance FromJSON TEDTime where
         timeFormat = "%Y-%m-%d %H:%M:%S"
 
 data Image = Image
-    { small :: Text
+    { small  :: Text
     , medium :: Text
     } deriving (Generic, Show)
 instance FromJSON Image
@@ -86,7 +86,7 @@ instance FromJSON Languages where
         in  return $ Languages $ map (uncurry Language) $ sort $ zip langName langCode
       where
         parseLanguage (Object o) = o .: "name"
-        parseLanguage _ = mzero
+        parseLanguage _          = mzero
     parseJSON _ = mzero
 
 data Tag = Tag
@@ -100,8 +100,8 @@ data Theme = Theme
 instance FromJSON Theme
 
 data TM = TM
-    { tm_id         :: Int
-    , tm_name       :: Text
+    { tm_id   :: Int
+    , tm_name :: Text
     } deriving (Generic, Show)
 instance FromJSON TM where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 3 }
@@ -112,28 +112,28 @@ data Speaker = Speaker
 instance FromJSON Speaker
 
 data Sp = Sp
-    { sp_id         :: Int
-    , sp_name       :: Text
+    { sp_id   :: Int
+    , sp_name :: Text
     } deriving (Generic, Show)
 instance FromJSON Sp where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 3 }
 
 -- | Some talks (performance) has no language infomation e.g. 581.
 data Talk = Talk
-    { id           :: Int
-    , name         :: Text
-    , description  :: Text
-    , slug         :: Text
-    , recordedAt   :: UTCTime
-    , publishedAt  :: UTCTime
-    , updatedAt    :: UTCTime
-    , viewedCount  :: Int
-    , images       :: Image
-    , media        :: Value
-    , languages    :: [Language]
-    , tags         :: [Tag]
-    , themes       :: [Theme]
-    , speakers     :: [Speaker]
+    { id          :: Int
+    , name        :: Text
+    , description :: Text
+    , slug        :: Text
+    , recordedAt  :: UTCTime
+    , publishedAt :: UTCTime
+    , updatedAt   :: UTCTime
+    , viewedCount :: Int
+    , images      :: Image
+    , media       :: Value
+    , languages   :: [Language]
+    , tags        :: [Tag]
+    , themes      :: [Theme]
+    , speakers    :: [Speaker]
     } deriving (Generic, Show)
 instance FromJSON Talk where
     parseJSON (Object v) =
@@ -154,13 +154,13 @@ instance FromJSON Talk where
     parseJSON _          = mzero
 
 data SearchTalk = SearchTalk
-    { s_id          :: Int
-    , s_name        :: Text
-    , s_description :: Text
-    , s_slug        :: Text
-    , s_recorded_at :: Text
+    { s_id           :: Int
+    , s_name         :: Text
+    , s_description  :: Text
+    , s_slug         :: Text
+    , s_recorded_at  :: Text
     , s_published_at:: Text
-    , s_updated_at  :: Text
+    , s_updated_at   :: Text
     } deriving (Generic, Show)
 instance FromJSON SearchTalk where
     parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 2 }
@@ -184,4 +184,4 @@ instance FromJSON Transcript
 transcriptToText :: Transcript -> Text
 transcriptToText (Transcript ps) =
     T.intercalate "\n" $ map (
-      \(Paragraph cues) -> T.concat $ map (T.replace "\n" "" . text) cues) ps
+      \(Paragraph cues) -> T.intercalate " " $ map (T.replace "\n" " " . text) cues) ps
