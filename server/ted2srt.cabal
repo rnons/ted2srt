@@ -38,7 +38,7 @@ library
                      , random
                      , regex-posix >= 0.95
                      , postgresql-simple
-                     , servant-server
+                     , servant-server == 0.11.*
                      , system-filepath
                      , text >= 1.1
                      , time
@@ -87,7 +87,7 @@ executable server
                      , ted2srt
                      , hedis >= 0.6
                      , load-env
-                     , servant-server
+                     , servant-server == 0.11.*
                      , wai
                      , wai-extra
                      , warp
@@ -110,7 +110,7 @@ test-suite spec
                      , mtl
                      , postgresql-simple
                      , process
-                     , servant-server
+                     , servant-server == 0.11.*
                      , string-conversions
                      , text
                      , th-printf
