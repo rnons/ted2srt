@@ -1,8 +1,6 @@
 -- | TED API module
 -- Documented at <http://developer.ted.com/io-docs>
 
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE OverloadedStrings  #-}
 module Web.TED.API
   ( Talk (..)
   , SearchTalk (..)
@@ -14,20 +12,21 @@ module Web.TED.API
   , getTalkTranscript
   ) where
 
-import qualified Control.Exception as E
+import qualified Control.Exception     as E
 import           Data.Aeson
-import           Data.Aeson.Types (defaultOptions, Options(..))
+import           Data.Aeson.Types      (Options (..), defaultOptions)
 import qualified Data.ByteString.Char8 as B8
-import qualified Data.HashMap.Strict as HM
-import           Data.Maybe (isJust)
-import           Data.Monoid ((<>))
-import           Data.Text (Text)
-import qualified Data.Text as T
-import           GHC.Generics (Generic)
-import           Network.HTTP.Conduit (simpleHttp)
-import           Network.HTTP.Types (urlEncode)
+import qualified Data.HashMap.Strict   as HM
+import           Data.Maybe            (isJust)
+import           Data.Text             (Text)
+import qualified Data.Text             as T
+import           GHC.Generics          (Generic)
+import           Network.HTTP.Conduit  (simpleHttp)
+import           Network.HTTP.Types    (urlEncode)
+import           RIO
+import           System.IO             (print)
 
-import Web.TED.Types
+import           Web.TED.Types
 
 
 -- | Response of https://api.ted.com/v1/talks/:id.json

@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 module ReTed.API
   ( tedApi
@@ -10,12 +9,12 @@ module ReTed.API
 import           Control.Monad.IO.Class    (liftIO)
 import qualified Data.ByteString.Char8     as C
 import           Data.Maybe                (fromMaybe)
-import           Data.Monoid               ((<>))
 import           Data.Text                 (Text)
 import qualified Filesystem.Path.CurrentOS as FS
 import           Network.HTTP.Types        (status200, status404)
 import           Network.Wai               (Application, Response, responseFile,
                                             responseLBS)
+import           RIO                       hiding (Handler)
 import           Servant
 
 import           ReTed.Config              (Config (..))

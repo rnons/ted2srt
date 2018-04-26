@@ -4,6 +4,7 @@
 *.lrc
 .env
 .stack-work/
+ted2srt.cabal
 
 .DS_Store
 

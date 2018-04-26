@@ -4,6 +4,7 @@ module ReTed.TestUtils
   ( resetDb
   ) where
 
+import           RIO
 import           System.Process (callCommand)
 import           Text.Printf.TH (s)
 

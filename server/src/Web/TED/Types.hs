@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
 module Web.TED.Types
   ( Talk (..)
   , SearchTalk (..)
@@ -28,6 +25,7 @@ import           Data.Time           (UTCTime)
 import           Data.Time.Format    (defaultTimeLocale, parseTimeM)
 import qualified Data.Vector         as V
 import           GHC.Generics        (Generic)
+import           RIO
 
 
 newtype TEDTime = TEDTime { fromTEDTime :: UTCTime }

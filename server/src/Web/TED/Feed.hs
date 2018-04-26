@@ -1,7 +1,5 @@
 -- Mostly taken from yesod-newsfeed
 -- https://hackage.haskell.org/package/yesod-newsfeed
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Web.TED.Feed
   ( Feed (..)
@@ -9,10 +7,11 @@ module Web.TED.Feed
   , template
   ) where
 
-import qualified Data.Map as Map
+import qualified Data.Map  as Map
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           Data.Time (UTCTime, formatTime, defaultTimeLocale)
+import           Data.Time (UTCTime, defaultTimeLocale, formatTime)
+import           RIO
 import           Text.XML
 
 
@@ -26,10 +25,10 @@ data Feed = Feed
     }
 
 data FeedEntry = FeedEntry
-    { feedEntryTitle      :: Text
-    , feedEntryLink       :: Text
-    , feedEntryUpdated    :: UTCTime
-    , feedEntryContent    :: Text
+    { feedEntryTitle   :: Text
+    , feedEntryLink    :: Text
+    , feedEntryUpdated :: UTCTime
+    , feedEntryContent :: Text
     }
 
 -- | Format a 'UTCTime' in W3 format.
@@ -42,7 +41,7 @@ template Feed {..} =
   where
     addNS (Element (Name ln _ _) as ns) = Element (Name ln (Just namespace) Nothing) as (map addNS' ns)
     addNS' (NodeElement e) = NodeElement $ addNS e
-    addNS' n = n
+    addNS' n               = n
     namespace = "http://www.w3.org/2005/Atom"
 
     root = Element "feed" Map.empty $ map NodeElement

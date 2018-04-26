@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE OverloadedStrings  #-}
 module Web.TED
   ( Subtitle (..)
   , FileType (..)
@@ -9,22 +7,23 @@ module Web.TED
   , module TED
   ) where
 
-import           Control.Exception as E
+import           Control.Exception    as E
 import           Control.Monad
 import           Data.Aeson
-import           Data.Monoid ((<>))
-import           Data.Text (Text)
-import           qualified Data.Text as T
-import           qualified Data.Text.IO as T
-import           GHC.Generics (Generic)
+import           Data.Text            (Text)
+import qualified Data.Text            as T
+import qualified Data.Text.IO         as T
+import           GHC.Generics         (Generic)
 import           Network.HTTP.Conduit hiding (path)
+import           RIO
+import           RIO.List.Partial     (head)
 import           System.Directory
-import           System.IO
+import           System.IO            (hPutStr, hPutStrLn, openFile, print)
 import           Text.Printf
 
-import Web.TED.API as TED
-import Web.TED.TalkPage as TED
-import Web.TED.Feed as TED
+import           Web.TED.API          as TED
+import           Web.TED.Feed         as TED
+import           Web.TED.TalkPage     as TED
 
 
 data Caption = Caption
@@ -33,10 +32,10 @@ data Caption = Caption
 instance FromJSON Caption
 
 data Item = Item
-    { duration          :: Int
-    , content           :: Text
-    , startOfParagraph  :: Bool
-    , startTime         :: Int
+    { duration         :: Int
+    , content          :: Text
+    , startOfParagraph :: Bool
+    , startTime        :: Int
     } deriving (Generic, Show)
 instance FromJSON Item
 
@@ -44,12 +43,12 @@ data FileType = SRT | VTT | TXT | LRC
     deriving (Show, Eq)
 
 data Subtitle = Subtitle
-    { talkId            :: Int
-    , talkslug          :: Text
-    , language          :: [Text]
-    , filename           :: Text
-    , timeLag           :: Double
-    , filetype          :: FileType
+    { talkId   :: Int
+    , talkslug :: Text
+    , language :: [Text]
+    , filename :: Text
+    , timeLag  :: Double
+    , filetype :: FileType
     } deriving Show
 
 availableLanguages :: [Text]
@@ -67,33 +66,35 @@ availableLanguages =
 
 toSub :: Subtitle -> IO (Maybe FilePath)
 toSub sub
-    | any (`notElem` availableLanguages) lang = return Nothing
-    | filetype sub == LRC = oneLrc sub
-    | length lang == 1 = func sub
-    | length lang == 2 = do
-        pwd <- getCurrentDirectory
-        let (s1, s2) = (head lang, last lang)
+  | any (`notElem` availableLanguages) lang = return Nothing
+  | filetype sub == LRC = oneLrc sub
+  | length lang == 1 = func sub
+  | otherwise =
+      case lang of
+        [s1, s2] -> do
+          pwd <- getCurrentDirectory
+          let
             path = T.unpack $ T.concat [ T.pack pwd
-                                       , dir
-                                       , filename sub
-                                       , "."
-                                       , s1
-                                       , "."
-                                       , s2
-                                       , suffix
-                                       ]
-        cached <- doesFileExist path
-        if cached
-           then return $ Just path
-           else do
-                p1 <- func sub { language = [s1] }
-                p2 <- func sub { language = [s2] }
-                case (p1, p2) of
-                     (Just p1', Just p2') -> do
-                         mergeFile p1' p2' path
-                         return $ Just path
-                     _                    -> return Nothing
-    | otherwise = return Nothing
+                                      , dir
+                                      , filename sub
+                                      , "."
+                                      , s1
+                                      , "."
+                                      , s2
+                                      , suffix
+                                      ]
+          cached <- doesFileExist path
+          if cached
+            then return $ Just path
+            else do
+                  p1 <- func sub { language = [s1] }
+                  p2 <- func sub { language = [s2] }
+                  case (p1, p2) of
+                      (Just p1', Just p2') -> do
+                          mergeFile p1' p2' path
+                          return $ Just path
+                      _                    -> return Nothing
+        _ -> return Nothing
   where
     lang = language sub
     (dir, suffix, func) = case filetype sub of
@@ -156,18 +157,18 @@ oneSub sub = do
 
 oneTxt :: Subtitle -> IO (Maybe FilePath)
 oneTxt sub = do
-    print sub
-    path <- subtitlePath sub
-    cached <- doesFileExist path
-    if cached
-       then return $ Just path
-       else do
-           txt <- TED.getTalkTranscript (talkId sub) (head $ language sub)
-           -- Prepend the UTF-8 byte order mark to do Windows user a favor.
-           withBinaryFile path WriteMode $ \h ->
-               hPutStr h "\xef\xbb\xbf"
-           T.appendFile path txt
-           return $ Just path
+  print sub
+  path <- subtitlePath sub
+  cached <- doesFileExist path
+  if cached
+      then return $ Just path
+      else do
+          txt <- TED.getTalkTranscript (talkId sub) (head $ language sub)
+          -- Prepend the UTF-8 byte order mark to do Windows user a favor.
+          withBinaryFile path WriteMode $ \h ->
+              hPutStr h "\xef\xbb\xbf"
+          T.appendFile path txt
+          return $ Just path
 
 oneLrc :: Subtitle -> IO (Maybe FilePath)
 oneLrc sub = do
@@ -219,21 +220,24 @@ merge _      _      = []
 
 -- Construct file path according to filetype.
 subtitlePath :: Subtitle -> IO FilePath
-subtitlePath sub =
-    case filetype sub of
-        SRT -> path ("/static/srt/", ".srt")
-        VTT -> pathTr ("/static/vtt/", ".vtt")
-        TXT -> path ("/static/txt/", ".txt")
+subtitlePath sub = do
+  case language sub of
+    [ lang ] -> do
+      case filetype sub of
+        SRT -> path lang ("/static/srt/", ".srt")
+        VTT -> path lang ("/static/vtt/", ".vtt")
+        TXT -> path lang ("/static/txt/", ".txt")
         LRC -> pathEn ("/static/lrc/", ".lrc")
+    _ -> error "subtitlePath only works on one lang"
   where
-    path = if head (language sub) == "en" then pathEn else pathTr
-    pathTr (dir, suffix) = do
+    path lang = if lang == "en" then pathEn else pathTr lang
+    pathTr lang (dir, suffix) = do
         pwd <- getCurrentDirectory
         return $ T.unpack $ T.concat [ T.pack pwd
                                      , dir
                                      , filename sub
                                      , "."
-                                     , head $ language sub
+                                     , lang
                                      , suffix
                                      ]
     pathEn (dir, suffix) = do
