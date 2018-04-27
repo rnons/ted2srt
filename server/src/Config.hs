@@ -3,10 +3,9 @@ module Config where
 import           Data.Maybe                 (fromMaybe)
 import qualified Database.PostgreSQL.Simple as DB
 import qualified Database.Redis             as KV
+import           Network.Socket.Internal    (PortNumber)
 import           RIO
 import           System.Environment         (getEnv, lookupEnv)
-import Network.Socket.Internal (PortNumber)
-
 
 data Config = Config
     { dbConn :: DB.Connection
