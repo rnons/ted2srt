@@ -40,11 +40,12 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-- load-env-0.1.2
+- beam-postgres-0.3.2.0
 - conduit-1.2.13.1
 - conduit-extra-1.2.3.2
 - html-conduit-1.2.1.2
 - http-types-0.10
+- load-env-0.1.2
 - resourcet-1.1.11
 - rio-0.1.1.0
 - servant-0.11

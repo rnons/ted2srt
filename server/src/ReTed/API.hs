@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeOperators     #-}
@@ -17,10 +18,10 @@ import           Network.Wai               (Application, Response, responseFile,
 import           RIO                       hiding (Handler)
 import           Servant
 
+import           Model                     (Talk, TalkT (..))
 import           ReTed.Config              (Config (..))
-import           ReTed.Models.Talk         (Talk (..), getRandomTalk,
-                                            getTalkById, getTalkBySlug,
-                                            getTalks, searchTalk)
+import           ReTed.Models.Talk         (getRandomTalk, getTalkById,
+                                            getTalkBySlug, getTalks, searchTalk)
 import           Web.TED                   (FileType (..), Subtitle (..), toSub)
 
 
@@ -56,13 +57,13 @@ notFound :: (Response -> t) -> t
 notFound respond = respond $ responseLBS status404 [] "Not Found"
 
 getTalksH :: Config -> Maybe Int -> Maybe Int -> Handler [Talk]
-getTalksH config mStartTid mLimit = do
+getTalksH config _ mLimit = do
     talks <- liftIO $ getTalks conn limit
     return talks
   where
     conn = dbConn config
     defaultLimit = 10
-    startTid = fromMaybe 0 mStartTid
+    -- startTid = fromMaybe 0 mStartTid
     limit' = fromMaybe defaultLimit mLimit
     limit = if limit' > defaultLimit then defaultLimit else limit'
 
@@ -77,8 +78,8 @@ getSubtitlePath :: Config -> Int -> FileType -> [Text] -> IO (Maybe FilePath)
 getSubtitlePath config tid format lang = do
     mTalk <- getTalkById config tid Nothing
     case mTalk of
-        Just talk -> toSub $
-            Subtitle tid (slug talk) lang (mediaSlug talk) (mediaPad talk) format
+        Just (Talk {..}) -> toSub $
+            Subtitle tid _talkSlug lang _talkMediaSlug _talkMediaPad format
         Nothing -> return Nothing
 
 getTalkSubtitleH :: Config -> Int -> FileType -> [Text] -> Application

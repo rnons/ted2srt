@@ -8,6 +8,8 @@ dependencies:
 - base >=4.8.2.0 && <4.9 || >=4.9.1.0 && <5
 
 - aeson
+- beam-core
+- beam-postgres
 - bytestring
 - conduit < 1.3
 - conduit-extra < 1.3
@@ -40,12 +42,14 @@ library:
   source-dirs: src
   default-extensions:
   - DeriveGeneric
+  - FlexibleInstances
   - NamedFieldPuns
   - NoImplicitPrelude
   - OverloadedStrings
   - QuasiQuotes
   - RecordWildCards
   - TemplateHaskell
+  - TypeFamilies
   ghc-options:
   - -Wall
   - -fwarn-tabs

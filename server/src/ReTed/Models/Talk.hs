@@ -1,75 +1,50 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module ReTed.Models.Talk where
 
-import           Control.Exception (handle)
-import           Control.Monad (forM, mzero, liftM, void)
+import           Control.Exception                  (handle)
+import           Control.Monad                      (forM, liftM, mzero, void)
 import           Data.Aeson
-import qualified Data.ByteString.Char8 as C
-import           Data.Maybe (catMaybes)
-import           Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import           Data.Time (UTCTime)
-import           Data.Time.Clock.POSIX (posixSecondsToUTCTime)
-import qualified Database.PostgreSQL.Simple as DB
-import qualified Database.PostgreSQL.Simple.FromField as DB
+import qualified Data.ByteString.Char8              as C
+import           Data.Maybe                         (catMaybes)
+import           Data.Text                          (Text)
+import qualified Data.Text                          as T
+import qualified Data.Text.IO                       as T
+import           Data.Time                          (UTCTime)
+import           Data.Time.Clock.POSIX              (posixSecondsToUTCTime)
+import           Database.Beam
+import           Database.Beam.Postgres
+import qualified Database.PostgreSQL.Simple         as DB
+import           Database.PostgreSQL.Simple.SqlQQ   (sql)
 import qualified Database.PostgreSQL.Simple.ToField as DB
-import           Database.PostgreSQL.Simple.SqlQQ (sql)
-import qualified Database.Redis as KV
-import           GHC.Generics (Generic)
-import           Network.HTTP.Conduit (HttpException, simpleHttp)
-import           Prelude hiding (id)
-import           Text.HTML.DOM (parseLBS)
-import           Text.XML.Cursor (fromDocument)
+import qualified Database.Redis                     as KV
+import           GHC.Generics                       (Generic)
+import           Network.HTTP.Conduit               (HttpException, simpleHttp)
+import           Prelude                            hiding (id)
+import           Text.HTML.DOM                      (parseLBS)
+import           Text.XML.Cursor                    (fromDocument)
 
-import Web.TED.TalkPage (parseDescription, parseImage, parseTalkObject,
-                         parseMediaPad, parseMediaSlug)
-import ReTed.Config (Config(..))
-import ReTed.Types (mkTalkUrl)
-import qualified ReTed.Models.RedisKeys as Keys
-import Web.TED (FileType(..), Subtitle(..), toSub)
-import Web.TED.Types (SearchTalk(s_slug))
-import qualified Web.TED.API as API
-
-
-data Language = Language
-    { languageName  :: Text
-    , languageCode  :: Text
-    , endonym       :: Text
-    } deriving (Generic, Show)
-instance FromJSON Language
-instance ToJSON Language
-
-instance DB.FromField [Language] where
-    fromField = DB.fromJSONField
-
-
-data Talk = Talk
-    { id            :: Int
-    , name          :: Text
-    , slug          :: Text
-    , filmedAt      :: UTCTime
-    , publishedAt   :: UTCTime
-    , description   :: Text
-    , image         :: Text
-    , languages     :: [Language]
-    , mediaSlug     :: Text
-    , mediaPad      :: Double
-    } deriving (Generic, Show)
-
-instance DB.FromRow Talk
-instance ToJSON Talk
+import           Model                              (Language (..), Talk,
+                                                     TalkT (..), talkDb, _talks)
+import           ReTed.Config                       (Config (..))
+import qualified ReTed.Models.RedisKeys             as Keys
+import           ReTed.Types                        (mkTalkUrl)
+import           Web.TED                            (FileType (..),
+                                                     Subtitle (..), toSub)
+import qualified Web.TED.API                        as API
+import           Web.TED.TalkPage                   (parseDescription,
+                                                     parseImage, parseMediaPad,
+                                                     parseMediaSlug,
+                                                     parseTalkObject)
+import           Web.TED.Types                      (SearchTalk (s_slug))
 
 
 data TalkObj = TalkObj
-    { oId           :: Int
-    , oName         :: Text
-    , oSlug         :: Text
-    , oFilmedAt     :: UTCTime
-    , oPublishedAt  :: UTCTime
-    , oLanguages    :: [Language]
+    { oId          :: Int
+    , oName        :: Text
+    , oSlug        :: Text
+    , oFilmedAt    :: UTCTime
+    , oPublishedAt :: UTCTime
+    , oLanguages   :: [Language]
     } deriving (Generic, Show)
 
 instance FromJSON TalkObj where
@@ -85,11 +60,10 @@ instance FromJSON TalkObj where
 
 getTalks :: DB.Connection -> Int -> IO [Talk]
 getTalks conn limit = do
-    DB.query conn [sql|
-        SELECT * FROM talks
-        ORDER BY id DESC
-        LIMIT ?
-        |] [limit]
+  runBeamPostgres conn $ do
+    runSelectReturningList $ select
+      (limit_ (fromIntegral limit)
+       $ orderBy_ (\t -> desc_ (_talkId t)) $ all_ (_talks talkDb))
 
 getTalk :: Config -> Int -> Text -> IO (Maybe Talk)
 getTalk config tid url = do
@@ -97,8 +71,8 @@ getTalk config tid url = do
         KV.get $ Keys.cache tid
     case cached of
         Right (Just _) -> getTalkById config tid (Just url)
-        Right Nothing -> saveToDB config url
-        Left _ -> saveToDB config url
+        Right Nothing  -> saveToDB config url
+        Left _         -> saveToDB config url
   where
     kv = kvConn config
 
@@ -110,7 +84,7 @@ getTalkById config tid mUrl = do
         |] [tid]
     case xs of
         [talk] -> return $ Just talk
-        _ -> maybe (return Nothing) (saveToDB config) mUrl
+        _      -> maybe (return Nothing) (saveToDB config) mUrl
   where
     conn = dbConn config
 
@@ -131,13 +105,12 @@ saveToDB :: Config -> Text -> IO (Maybe Talk)
 saveToDB config url = do
     mTalk <- fetchTalk url
     case mTalk of
-        Just talk@Talk {id, name, slug, description, image, filmedAt,
-                        publishedAt, languages, mediaSlug, mediaPad} -> do
-            KV.runRedis kv $ KV.multiExec $ do
-                KV.setex (Keys.cache id) (3600*24) ""
-                KV.set (Keys.slug slug) (C.pack $ show id)
-            let jsonLang = DB.toJSONField languages
-            DB.execute conn [sql|
+        Just talk@Talk {..} -> do
+            void $ KV.runRedis kv $ KV.multiExec $ do
+                void $ KV.setex (Keys.cache _talkId) (3600*24) ""
+                KV.set (Keys.slug _talkSlug) (C.pack $ show _talkId)
+            let jsonLang = DB.toJSONField _talkLanguages
+            void $ DB.execute conn [sql|
                 INSERT INTO talks (id, name, slug, description, image, filmed,
                                    published, languages, media_slug, media_pad)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -145,8 +118,8 @@ saveToDB config url = do
                 SET languages = EXCLUDED.languages,
                     media_slug = EXCLUDED.media_slug,
                     media_pad = EXCLUDED.media_pad
-                |] (id, name, slug, description, image, filmedAt,
-                    publishedAt, jsonLang, mediaSlug, mediaPad)
+                |] (_talkId, _talkName, _talkSlug, _talkDescription, _talkImage, _talkFilmed,
+                    _talkPublished, jsonLang, _talkMediaSlug, _talkMediaPad)
             saveTranscriptIfNotAlready config talk
             return $ Just talk
         Nothing -> return Nothing
@@ -155,23 +128,23 @@ saveToDB config url = do
     kv = kvConn config
 
 saveTranscriptIfNotAlready :: Config -> Talk -> IO ()
-saveTranscriptIfNotAlready config Talk {id, name, slug, mediaSlug, mediaPad} = do
+saveTranscriptIfNotAlready config Talk {..} = do
     xs <- DB.query conn [sql|
         SELECT id FROM transcripts
         WHERE id = ?
-        |] [id]
+        |] [_talkId]
     case xs of
         [DB.Only (_::Int)] -> return ()
         _   -> do
             path <- toSub $
-                Subtitle 0 slug ["en"] mediaSlug mediaPad TXT
+                Subtitle 0 _talkSlug ["en"] _talkMediaSlug _talkMediaPad TXT
             case path of
                 Just path' -> do
                     transcript <- T.drop 2 <$> T.readFile path'
                     void $ DB.execute conn [sql|
                         INSERT INTO transcripts (id, name, en, en_tsvector)
                         VALUES (?, ?, ?, to_tsvector('english', ? || ?))
-                    |] (id, name, transcript, name, transcript)
+                    |] (_talkId, _talkName, transcript, _talkName, transcript)
                 Nothing -> return ()
   where
     conn = dbConn config
@@ -188,16 +161,16 @@ fetchTalk url = do
         let core = parseTalkObject body
         case decode core of
             Just talk -> do
-                return $ Just Talk { id = oId talk
-                                   , name = oName talk
-                                   , slug = oSlug talk
-                                   , filmedAt = oFilmedAt talk
-                                   , publishedAt = oPublishedAt talk
-                                   , description = desc
-                                   , image = img
-                                   , languages = oLanguages talk
-                                   , mediaSlug = mdSlug
-                                   , mediaPad = mdPad
+                return $ Just Talk { _talkId = oId talk
+                                   , _talkName = oName talk
+                                   , _talkSlug = oSlug talk
+                                   , _talkFilmed = oFilmedAt talk
+                                   , _talkPublished = oPublishedAt talk
+                                   , _talkDescription = desc
+                                   , _talkImage = img
+                                   , _talkLanguages = oLanguages talk
+                                   , _talkMediaSlug = mdSlug
+                                   , _talkMediaPad = mdPad
                                    }
             _      -> error "parse error"
 
@@ -210,7 +183,7 @@ getRandomTalk config = do
         |]
     case xs of
         [talk] -> return $ Just talk
-        _ -> return Nothing
+        _      -> return Nothing
   where
     conn = dbConn config
 
