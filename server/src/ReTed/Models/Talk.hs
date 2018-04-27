@@ -59,11 +59,12 @@ instance FromJSON TalkObj where
 
 
 getTalks :: DB.Connection -> Int -> IO [Talk]
-getTalks conn limit = do
-  runBeamPostgres conn $ do
-    runSelectReturningList $ select
-      (limit_ (fromIntegral limit)
-       $ orderBy_ (\t -> desc_ (_talkId t)) $ all_ (_talks talkDb))
+getTalks conn limit = runBeamPostgres conn $ do
+  runSelectReturningList $ select
+    ( limit_ (fromIntegral limit)
+    $ orderBy_ (\t -> desc_ (_talkId t))
+    $ all_ (_talks talkDb)
+    )
 
 getTalk :: Config -> Int -> Text -> IO (Maybe Talk)
 getTalk config tid url = do
@@ -78,15 +79,13 @@ getTalk config tid url = do
 
 getTalkById :: Config -> Int -> Maybe Text -> IO (Maybe Talk)
 getTalkById config tid mUrl = do
-    xs <- DB.query conn [sql|
-        SELECT * FROM talks
-        WHERE id = ?
-        |] [tid]
-    case xs of
-        [talk] -> return $ Just talk
-        _      -> maybe (return Nothing) (saveToDB config) mUrl
-  where
-    conn = dbConn config
+  xs <- runBeamPostgres (dbConn config) $ runSelectReturningOne $ select
+    ( filter_ (\talk -> (_talkId talk ==. val_ tid))
+    $ all_ (_talks talkDb)
+    )
+  case xs of
+    Just talk -> return $ Just talk
+    _         -> maybe (return Nothing) (saveToDB config) mUrl
 
 getTalkBySlug :: Config -> Text -> IO (Maybe Talk)
 getTalkBySlug config slug = do
