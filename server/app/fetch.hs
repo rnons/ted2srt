@@ -1,24 +1,25 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
-import           Control.Monad (void)
-import           Data.Maybe (catMaybes)
-import           Data.Monoid ((<>))
-import           Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import           Data.Time (getCurrentTime)
+{-# LANGUAGE RecordWildCards   #-}
+import           Control.Monad              (void)
+import           Data.Maybe                 (catMaybes)
+import           Data.Monoid                ((<>))
+import           Data.Text                  (Text)
+import qualified Data.Text                  as T
+import qualified Data.Text.IO               as T
+import           Data.Time                  (getCurrentTime)
 import qualified Database.PostgreSQL.Simple as DB
-import           LoadEnv (loadEnv)
-import           Network.HTTP.Conduit (simpleHttp)
-import           Text.HTML.DOM (parseLBS)
-import qualified Text.XML as X
+import           LoadEnv                    (loadEnv)
+import           Network.HTTP.Conduit       (simpleHttp)
+import           Text.HTML.DOM              (parseLBS)
+import qualified Text.XML                   as X
 import           Text.XML.Cursor
 
-import           ReTed.Config (Config(..), getConfig)
-import           ReTed.Models.Talk (Talk(..), getTalks, saveToDB)
-import           Web.TED (Feed(..), FeedEntry(..), FileType(..), Subtitle(..),
-                          template, toSub)
-
+import           Config                     (Config (..), getConfig)
+import           Model                      (Talk, TalkT (..))
+import           ReTed.Models.Talk          (getTalks, saveToDB)
+import           Web.TED                    (Feed (..), FeedEntry (..),
+                                             FileType (..), Subtitle (..),
+                                             template, toSub)
 
 type TalkId = Int
 
@@ -49,14 +50,14 @@ main = do
 talkToFeedEntry :: Talk -> IO (Maybe FeedEntry)
 talkToFeedEntry Talk {..} = do
     path <- toSub $
-        Subtitle 0 slug ["en"] mediaSlug mediaPad TXT
+        Subtitle 0 _talkSlug ["en"] _talkMediaSlug _talkMediaPad TXT
     case path of
         Just path' -> do
           transcript <- T.drop 2 <$> T.readFile path'
           return $ Just FeedEntry
-              { feedEntryTitle = name
-              , feedEntryLink  = "http://ted2srt.org/talks/" <> slug
-              , feedEntryUpdated = publishedAt
+              { feedEntryTitle = _talkName
+              , feedEntryLink  = "http://ted2srt.org/talks/" <> _talkSlug
+              , feedEntryUpdated = _talkPublished
               , feedEntryContent = ppr transcript
               }
         Nothing -> return Nothing

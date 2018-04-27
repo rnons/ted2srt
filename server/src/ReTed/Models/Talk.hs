@@ -23,9 +23,9 @@ import           Prelude                            hiding (id)
 import           Text.HTML.DOM                      (parseLBS)
 import           Text.XML.Cursor                    (fromDocument)
 
+import           Config                             (Config (..))
 import           Model                              (Language (..), Talk,
                                                      TalkT (..), talkDb, _talks)
-import           ReTed.Config                       (Config (..))
 import qualified ReTed.Models.RedisKeys             as Keys
 import           ReTed.Types                        (mkTalkUrl)
 import           Web.TED                            (FileType (..),

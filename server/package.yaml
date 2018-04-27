@@ -21,6 +21,7 @@ dependencies:
 - http-conduit
 - http-types
 - load-env
+- network
 - postgresql-simple
 - random
 - regex-posix
@@ -48,6 +49,7 @@ library:
   - OverloadedStrings
   - QuasiQuotes
   - RecordWildCards
+  - ScopedTypeVariables
   - TemplateHaskell
   - TypeFamilies
   ghc-options:
@@ -66,8 +68,8 @@ executables:
     dependencies:
     - ted2srt
 
-  server:
-    main: server.hs
+  ted2srt:
+    main: main.hs
     source-dirs: app
     ghc-options:
     - -threaded

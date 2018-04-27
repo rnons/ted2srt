@@ -2,7 +2,7 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeOperators     #-}
-module ReTed.API
+module Server
   ( tedApi
   , tedServer
   ) where
@@ -18,8 +18,8 @@ import           Network.Wai               (Application, Response, responseFile,
 import           RIO                       hiding (Handler)
 import           Servant
 
+import           Config                    (Config (..))
 import           Model                     (Talk, TalkT (..))
-import           ReTed.Config              (Config (..))
 import           ReTed.Models.Talk         (getRandomTalk, getTalkById,
                                             getTalkBySlug, getTalks, searchTalk)
 import           Web.TED                   (FileType (..), Subtitle (..), toSub)
