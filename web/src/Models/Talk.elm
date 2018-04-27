@@ -36,7 +36,7 @@ type alias Talk =
     , languages : List Language
     , description : String
     , mediaSlug : String
-    , publishedAt : Maybe Date.Date
+    , published : Maybe Date.Date
     }
 
 
@@ -94,7 +94,7 @@ talkNameDecoder name =
                         field "description" string
                )
             |> required "mediaSlug" string
-            |> (custom <| map (Result.toMaybe << Date.fromString) <| field "publishedAt" string)
+            |> (custom <| map (Result.toMaybe << Date.fromString) <| field "published" string)
 
 
 formatString : TranscriptFormat -> String
