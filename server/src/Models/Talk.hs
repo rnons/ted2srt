@@ -33,7 +33,7 @@ import           Web.TED.TalkPage                 (parseDescription, parseImage,
                                                    parseMediaPad,
                                                    parseMediaSlug,
                                                    parseTalkObject)
-import           Web.TED.Types                    (SearchTalk (s_slug))
+import           Web.TED.Types                    (SearchTalk (..))
 
 
 data TalkObj = TalkObj
@@ -210,4 +210,4 @@ searchTalk config q =
   handle (\(e::HttpException) -> print e >> searchTalkFromDb config q) $ do
     searchResults <- API.searchTalk q
     liftM catMaybes $ forM searchResults $ \t -> do
-      getTalkBySlug config (s_slug t)
+      getTalkBySlug config (slug t)

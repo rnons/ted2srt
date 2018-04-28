@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 module Web.TED.Types
   ( Talk (..)
   , SearchTalk (..)
@@ -152,16 +154,15 @@ instance FromJSON Talk where
     parseJSON _          = mzero
 
 data SearchTalk = SearchTalk
-    { s_id           :: Int
-    , s_name         :: Text
-    , s_description  :: Text
-    , s_slug         :: Text
-    , s_recorded_at  :: Text
-    , s_published_at:: Text
-    , s_updated_at   :: Text
+    { id           :: Int
+    , name         :: Text
+    , description  :: Text
+    , slug         :: Text
+    , recorded_at  :: Text
+    , published_at:: Text
+    , updated_at   :: Text
     } deriving (Generic, Show)
-instance FromJSON SearchTalk where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = drop 2 }
+instance FromJSON SearchTalk
 
 data Cue = Cue
     { time :: Int

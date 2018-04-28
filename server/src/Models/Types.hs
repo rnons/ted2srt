@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 module Models.Types where
 
 import           Data.Aeson
@@ -12,17 +14,13 @@ mkTalkUrl :: Text -> Text
 mkTalkUrl s = "http://www.ted.com/talks/" <> s
 
 marshal :: TED.Talk -> IO RedisTalk
-marshal talk = do
-    (mediaSlug, mediaPad) <- TED.getSlugAndPad $ mkTalkUrl $ TED.slug talk
-    return RedisTalk { id = TED.id talk
-                     , name = TED.name talk
-                     , description = TED.description talk
-                     , slug = TED.slug talk
-                     , images = TED.images talk
-                     , publishedAt = TED.publishedAt talk
-                     , mSlug = mediaSlug
-                     , mPad = mediaPad
-                     }
+marshal talk@(TED.Talk{..}) = do
+  (mediaSlug, mediaPad) <- TED.getSlugAndPad $ mkTalkUrl $ TED.slug (talk :: TED.Talk)
+  return RedisTalk
+    { mediaSlug = mediaSlug
+    , mediaPad = mediaPad
+    , ..
+    }
 
 data RedisTalk = RedisTalk
     { id          :: Int
@@ -31,8 +29,8 @@ data RedisTalk = RedisTalk
     , slug        :: Text
     , images      :: TED.Image
     , publishedAt :: UTCTime
-    , mSlug       :: Text
-    , mPad        :: Double
+    , mediaSlug   :: Text
+    , mediaPad    :: Double
     } deriving (Generic, Show)
 instance FromJSON RedisTalk
 instance ToJSON RedisTalk
@@ -54,7 +52,7 @@ instance ToJSON TalkResp where
                , "slug" .= slug talk
                , "images" .= images talk
                , "publishedAt" .= publishedAt talk
-               , "mSlug" .= mSlug talk
+               , "mediaSlug" .= mediaSlug talk
                , "languages" .= caLanguages cache
                , "hasAudio" .= caAudio cache
                ]
