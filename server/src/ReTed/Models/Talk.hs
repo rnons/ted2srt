@@ -1,41 +1,41 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module ReTed.Models.Talk where
 
-import           Control.Exception                  (handle)
-import           Control.Monad                      (forM, liftM, mzero, void)
+import           Control.Exception                (handle)
+import           Control.Monad                    (forM, liftM, mzero, void)
 import           Data.Aeson
-import qualified Data.ByteString.Char8              as C
-import           Data.Maybe                         (catMaybes)
-import           Data.Text                          (Text)
-import qualified Data.Text                          as T
-import qualified Data.Text.IO                       as T
-import           Data.Time                          (UTCTime)
-import           Data.Time.Clock.POSIX              (posixSecondsToUTCTime)
+import qualified Data.ByteString.Char8            as C
+import           Data.Maybe                       (catMaybes)
+import           Data.Text                        (Text)
+import qualified Data.Text                        as T
+import qualified Data.Text.IO                     as T
+import           Data.Time                        (UTCTime)
+import           Data.Time.Clock.POSIX            (posixSecondsToUTCTime)
 import           Database.Beam
 import           Database.Beam.Postgres
-import qualified Database.PostgreSQL.Simple         as DB
-import           Database.PostgreSQL.Simple.SqlQQ   (sql)
-import qualified Database.PostgreSQL.Simple.ToField as DB
-import qualified Database.Redis                     as KV
-import           GHC.Generics                       (Generic)
-import           Network.HTTP.Conduit               (HttpException, simpleHttp)
-import           Prelude                            hiding (id)
-import           Text.HTML.DOM                      (parseLBS)
-import           Text.XML.Cursor                    (fromDocument)
+import qualified Database.Beam.Postgres.Full      as Pg
+import qualified Database.PostgreSQL.Simple       as DB
+import           Database.PostgreSQL.Simple.SqlQQ (sql)
+import qualified Database.Redis                   as KV
+import           GHC.Generics                     (Generic)
+import           Network.HTTP.Conduit             (HttpException, simpleHttp)
+import           Prelude                          hiding (id)
+import           Text.HTML.DOM                    (parseLBS)
+import           Text.XML.Cursor                  (fromDocument)
 
-import           Config                             (Config (..))
-import           Model                              (Language (..), Talk,
-                                                     TalkT (..), talkDb, _talks)
-import qualified ReTed.Models.RedisKeys             as Keys
-import           ReTed.Types                        (mkTalkUrl)
-import           Web.TED                            (FileType (..),
-                                                     Subtitle (..), toSub)
-import qualified Web.TED.API                        as API
-import           Web.TED.TalkPage                   (parseDescription,
-                                                     parseImage, parseMediaPad,
-                                                     parseMediaSlug,
-                                                     parseTalkObject)
-import           Web.TED.Types                      (SearchTalk (s_slug))
+import           Config                           (Config (..))
+import           Model                            (Language (..), Talk,
+                                                   TalkT (..), talkDb, _talks)
+import qualified ReTed.Models.RedisKeys           as Keys
+import           ReTed.Types                      (mkTalkUrl)
+import           Web.TED                          (FileType (..), Subtitle (..),
+                                                   toSub)
+import qualified Web.TED.API                      as API
+import           Web.TED.TalkPage                 (parseDescription, parseImage,
+                                                   parseMediaPad,
+                                                   parseMediaSlug,
+                                                   parseTalkObject)
+import           Web.TED.Types                    (SearchTalk (s_slug))
 
 
 data TalkObj = TalkObj
@@ -102,26 +102,24 @@ getTalkBySlug config slug = do
 
 saveToDB :: Config -> Text -> IO (Maybe Talk)
 saveToDB config url = do
-    mTalk <- fetchTalk url
-    case mTalk of
-        Just talk@Talk {..} -> do
-            void $ KV.runRedis kv $ KV.multiExec $ do
-                void $ KV.setex (Keys.cache _talkId) (3600*24) ""
-                KV.set (Keys.slug _talkSlug) (C.pack $ show _talkId)
-            let jsonLang = DB.toJSONField _talkLanguages
-            void $ DB.execute conn [sql|
-                INSERT INTO talks (id, name, slug, description, image, filmed,
-                                   published, languages, media_slug, media_pad)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (id) DO UPDATE
-                SET languages = EXCLUDED.languages,
-                    media_slug = EXCLUDED.media_slug,
-                    media_pad = EXCLUDED.media_pad
-                |] (_talkId, _talkName, _talkSlug, _talkDescription, _talkImage, _talkFilmed,
-                    _talkPublished, jsonLang, _talkMediaSlug, _talkMediaPad)
-            saveTranscriptIfNotAlready config talk
-            return $ Just talk
-        Nothing -> return Nothing
+  mTalk <- fetchTalk url
+  case mTalk of
+    Just talk -> do
+      void $ KV.runRedis kv $ KV.multiExec $ do
+          void $ KV.setex (Keys.cache $ _talkId talk) (3600*24) ""
+          KV.set (Keys.slug $ _talkSlug talk) (C.pack $ show $ _talkId talk)
+
+      runBeamPostgres conn $ runInsert $
+        Pg.insert (_talks talkDb) (insertValues [ talk ]) $
+          Pg.onConflict (Pg.conflictingFields primaryKey) $
+            Pg.onConflictUpdateInstead $
+              \t -> ( _talkLanguages t
+                    , _talkMediaPad t
+                    )
+
+      saveTranscriptIfNotAlready config talk
+      return $ Just talk
+    Nothing -> return Nothing
   where
     conn = dbConn config
     kv = kvConn config

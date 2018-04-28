@@ -7,7 +7,9 @@ import           Data.Aeson
 import qualified Data.Char                            as Char
 import           Data.Time                            (UTCTime)
 import           Database.Beam
+import           Database.Beam.Backend.SQL.SQL92      (HasSqlValueSyntax)
 import           Database.Beam.Postgres
+import           Database.Beam.Postgres.Syntax        (PgValueSyntax)
 import qualified Database.PostgreSQL.Simple           as DB
 import qualified Database.PostgreSQL.Simple.FromField as DB
 import           RIO
@@ -24,6 +26,7 @@ instance DB.FromField [Language] where
     fromField = DB.fromJSONField
 
 instance FromBackendRow Postgres [Language]
+instance HasSqlValueSyntax PgValueSyntax [Language]
 
 data TalkT f = Talk
   { _talkId          :: Columnar f Int
