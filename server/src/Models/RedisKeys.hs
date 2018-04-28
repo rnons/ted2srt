@@ -1,4 +1,4 @@
-module ReTed.Models.RedisKeys where
+module Models.RedisKeys where
 
 import qualified Data.ByteString.Char8 as C
 import           Data.Text             (Text, unpack)

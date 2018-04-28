@@ -20,7 +20,7 @@ import           Servant
 
 import           Config                    (Config (..))
 import           Model                     (Talk, TalkT (..))
-import           ReTed.Models.Talk         (getRandomTalk, getTalkById,
+import           Models.Talk               (getRandomTalk, getTalkById,
                                             getTalkBySlug, getTalks, searchTalk)
 import           Web.TED                   (FileType (..), Subtitle (..), toSub)
 

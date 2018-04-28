@@ -16,7 +16,7 @@ import           Text.XML.Cursor
 
 import           Config                     (Config (..), getConfig)
 import           Model                      (Talk, TalkT (..))
-import           ReTed.Models.Talk          (getTalks, saveToDB)
+import           Models.Talk                (getTalks, saveToDB)
 import           Web.TED                    (Feed (..), FeedEntry (..),
                                              FileType (..), Subtitle (..),
                                              template, toSub)

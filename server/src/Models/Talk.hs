@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module ReTed.Models.Talk where
+module Models.Talk where
 
 import           Control.Exception                (handle)
 import           Control.Monad                    (forM, liftM, mzero, void)
@@ -25,8 +25,8 @@ import           Text.XML.Cursor                  (fromDocument)
 
 import           Config                           (Config (..))
 import           Model
-import qualified ReTed.Models.RedisKeys           as Keys
-import           ReTed.Types                      (mkTalkUrl)
+import qualified Models.RedisKeys                 as Keys
+import           Models.Types                     (mkTalkUrl)
 import           Web.TED                          (FileType (..), Subtitle (..),
                                                    toSub)
 import qualified Web.TED.API                      as API

@@ -1,15 +1,15 @@
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE OverloadedStrings  #-}
-module ReTed.Types where
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
+module Models.Types where
 
 import           Data.Aeson
-import           Data.Monoid ((<>))
-import           Data.Text (Text)
-import           Data.Time (UTCTime)
+import           Data.Monoid  ((<>))
+import           Data.Text    (Text)
+import           Data.Time    (UTCTime)
 import           GHC.Generics (Generic)
-import           Prelude hiding (id)
+import           Prelude      hiding (id)
 
-import qualified Web.TED as TED
+import qualified Web.TED      as TED
 
 mkTalkUrl :: Text -> Text
 mkTalkUrl s = "http://www.ted.com/talks/" <> s
@@ -28,21 +28,21 @@ marshal talk = do
                      }
 
 data RedisTalk = RedisTalk
-    { id            :: Int
-    , name          :: Text
-    , description   :: Text
-    , slug          :: Text
-    , images        :: TED.Image
-    , publishedAt   :: UTCTime
-    , mSlug         :: Text
-    , mPad          :: Double
+    { id          :: Int
+    , name        :: Text
+    , description :: Text
+    , slug        :: Text
+    , images      :: TED.Image
+    , publishedAt :: UTCTime
+    , mSlug       :: Text
+    , mPad        :: Double
     } deriving (Generic, Show)
 instance FromJSON RedisTalk
 instance ToJSON RedisTalk
 
 data TalkCache = TalkCache
-    { caLanguages   :: [TED.Language]
-    , caAudio       :: Bool
+    { caLanguages :: [TED.Language]
+    , caAudio     :: Bool
     } deriving (Generic, Show)
 instance FromJSON TalkCache
 instance ToJSON TalkCache
