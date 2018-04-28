@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 module Models.Talk where
 
 import           Control.Monad                    (forM, liftM, mzero, void)

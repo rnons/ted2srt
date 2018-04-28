@@ -1,13 +1,10 @@
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings #-}
 module Models.Types where
 
 import           Data.Aeson
-import           Data.Monoid  ((<>))
 import           Data.Text    (Text)
 import           Data.Time    (UTCTime)
 import           GHC.Generics (Generic)
-import           Prelude      hiding (id)
+import           RIO          hiding (id)
 
 import qualified Web.TED      as TED
 
