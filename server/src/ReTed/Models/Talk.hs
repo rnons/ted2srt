@@ -24,8 +24,7 @@ import           Text.HTML.DOM                    (parseLBS)
 import           Text.XML.Cursor                  (fromDocument)
 
 import           Config                           (Config (..))
-import           Model                            (Language (..), Talk,
-                                                   TalkT (..), talkDb, _talks)
+import           Model
 import qualified ReTed.Models.RedisKeys           as Keys
 import           ReTed.Types                      (mkTalkUrl)
 import           Web.TED                          (FileType (..), Subtitle (..),
@@ -126,23 +125,29 @@ saveToDB config url = do
 
 saveTranscriptIfNotAlready :: Config -> Talk -> IO ()
 saveTranscriptIfNotAlready config Talk {..} = do
-    xs <- DB.query conn [sql|
-        SELECT id FROM transcripts
-        WHERE id = ?
-        |] [_talkId]
-    case xs of
-        [DB.Only (_::Int)] -> return ()
-        _   -> do
-            path <- toSub $
-                Subtitle 0 _talkSlug ["en"] _talkMediaSlug _talkMediaPad TXT
-            case path of
-                Just path' -> do
-                    transcript <- T.drop 2 <$> T.readFile path'
-                    void $ DB.execute conn [sql|
-                        INSERT INTO transcripts (id, name, en, en_tsvector)
-                        VALUES (?, ?, ?, to_tsvector('english', ? || ?))
-                    |] (_talkId, _talkName, transcript, _talkName, transcript)
-                Nothing -> return ()
+  xs <- runBeamPostgres conn $ runSelectReturningOne $ select
+    ( filter_ (\transcript -> (_transcriptTalk transcript ==. val_ (TalkId _talkId)))
+    $ all_ (_transcripts talkDb)
+    )
+  case xs of
+    Just _ -> pure ()
+    Nothing   -> do
+      path <- toSub $
+        Subtitle 0 _talkSlug ["en"] _talkMediaSlug _talkMediaPad TXT
+      case path of
+        Just path' -> do
+          transcript <- T.drop 2 <$> T.readFile path'
+          -- runBeamPostgres conn $ runInsert $
+          --   Pg.insert (_transcripts talkDb)
+          --     ( insertExpressions
+          --       [ Transcript (val_ $ TalkId _talkId) $ toTsVector (Just english) (val_ transcript) ]
+          --     ) $
+          --     Pg.onConflict Pg.anyConflict Pg.onConflictDoNothing
+          void $ DB.execute conn [sql|
+              INSERT INTO transcripts (id, en_tsvector)
+              VALUES (?, to_tsvector('english', ? || ?))
+          |] (_talkId, _talkName, transcript)
+        Nothing -> return ()
   where
     conn = dbConn config
 
