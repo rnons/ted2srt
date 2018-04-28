@@ -193,22 +193,3 @@ getRandomTalk config = do
         _      -> return Nothing
   where
     conn = dbConn config
-
-searchTalkFromDb :: Config -> Text -> IO [Talk]
-searchTalkFromDb config q = do
-    DB.query conn [sql|
-        SELECT talks.* FROM talks JOIN transcripts
-        ON talks.id = transcripts.id
-        WHERE en_tsvector @@
-              to_tsquery('english', ?)
-        |] [query]
-  where
-    conn = dbConn config
-    query = T.intercalate "&" $ T.words q
-
-searchTalk :: Config -> Text -> IO [Talk]
-searchTalk config q =
-  handle (\(e::HttpException) -> print e >> searchTalkFromDb config q) $ do
-    searchResults <- API.searchTalk q
-    liftM catMaybes $ forM searchResults $ \SearchTalk{slug} -> do
-      getTalkBySlug config slug

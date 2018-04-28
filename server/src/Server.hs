@@ -19,9 +19,10 @@ import           RIO                       hiding (Handler)
 import           Servant
 
 import           Config                    (Config (..))
+import           Handler.Search            (getSearchH)
 import           Model                     (Talk, TalkT (..))
 import           Models.Talk               (getRandomTalk, getTalkById,
-                                            getTalkBySlug, getTalks, searchTalk)
+                                            getTalkBySlug, getTalks)
 import           Web.TED                   (FileType (..), Subtitle (..), toSub)
 
 
@@ -107,10 +108,6 @@ downloadTalkSubtitleH config tid format lang _ respond = do
                 p
                 Nothing
         Nothing -> notFound respond
-
-getSearchH :: Config -> Maybe Text -> Handler [Talk]
-getSearchH config (Just q) = liftIO $ searchTalk config q
-getSearchH _ Nothing       = throwError err400
 
 getRandomTalkH :: Config -> Handler Talk
 getRandomTalkH config = do
