@@ -1,9 +1,8 @@
 module Models.Talk where
 
-import           Control.Monad                    (forM, liftM, mzero, void)
+import           Control.Monad                    (liftM, mzero, void)
 import           Data.Aeson
 import qualified Data.ByteString.Char8            as C
-import           Data.Maybe                       (catMaybes)
 import           Data.Text                        (Text)
 import qualified Data.Text                        as T
 import qualified Data.Text.IO                     as T
@@ -16,9 +15,10 @@ import qualified Database.PostgreSQL.Simple       as DB
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import qualified Database.Redis                   as KV
 import           GHC.Generics                     (Generic)
-import           Network.HTTP.Conduit             (HttpException, simpleHttp)
+import           Network.HTTP.Conduit             (HttpException, Manager,
+                                                   httpLbs, parseUrlThrow,
+                                                   responseBody)
 import           RIO                              hiding (id)
-import           System.IO                        (print)
 import           Text.HTML.DOM                    (parseLBS)
 import           Text.XML.Cursor                  (fromDocument)
 
@@ -26,14 +26,13 @@ import           Config                           (Config (..))
 import           Model
 import qualified Models.RedisKeys                 as Keys
 import           Models.Types                     (mkTalkUrl)
+import           System.IO                        (print)
 import           Web.TED                          (FileType (..), Subtitle (..),
                                                    toSub)
-import qualified Web.TED.API                      as API
 import           Web.TED.TalkPage                 (parseDescription, parseImage,
                                                    parseMediaPad,
                                                    parseMediaSlug,
                                                    parseTalkObject)
-import           Web.TED.Types                    (SearchTalk (..))
 
 
 data TalkObj = TalkObj
@@ -104,15 +103,15 @@ getTalkBySlug config slug = do
     kv = kvConn config
 
 saveToDB :: Config -> Text -> IO (Maybe Talk)
-saveToDB config url = do
-  mTalk <- fetchTalk url
+saveToDB config@Config{..} url = do
+  mTalk <- fetchTalk httpManager url
   case mTalk of
     Just talk -> do
-      void $ KV.runRedis kv $ KV.multiExec $ do
+      void $ KV.runRedis kvConn $ KV.multiExec $ do
           void $ KV.setex (Keys.cache $ _talkId talk) (3600*24) ""
           KV.set (Keys.slug $ _talkSlug talk) (C.pack $ show $ _talkId talk)
 
-      runBeamPostgres conn $ runInsert $
+      runBeamPostgres dbConn $ runInsert $
         Pg.insert (_talks talkDb) (insertValues [ talk ]) $
           Pg.onConflict (Pg.conflictingFields primaryKey) $
             Pg.onConflictUpdateInstead $
@@ -123,9 +122,6 @@ saveToDB config url = do
       saveTranscriptIfNotAlready config talk
       return $ Just talk
     Nothing -> return Nothing
-  where
-    conn = dbConn config
-    kv = kvConn config
 
 saveTranscriptIfNotAlready :: Config -> Talk -> IO ()
 saveTranscriptIfNotAlready config Talk {..} = do
@@ -155,16 +151,19 @@ saveTranscriptIfNotAlready config Talk {..} = do
   where
     conn = dbConn config
 
-fetchTalk :: Text -> IO (Maybe Talk)
-fetchTalk url = do
+fetchTalk :: Manager -> Text -> IO (Maybe Talk)
+fetchTalk manager url = do
   handle (\(_::HttpException) -> return Nothing) $ do
-    body <- simpleHttp $ T.unpack url
-    let cursor = fromDocument $ parseLBS body
-        desc = parseDescription cursor
-        img = parseImage cursor
-        mdSlug = parseMediaSlug body
-        mdPad = parseMediaPad body
-    let core = parseTalkObject body
+    req <- parseUrlThrow $ T.unpack url
+    res <- httpLbs req manager
+    let
+      body = responseBody res
+      cursor = fromDocument $ parseLBS body
+      desc = parseDescription cursor
+      img = parseImage cursor
+      mdSlug = parseMediaSlug body
+      mdPad = parseMediaPad body
+      core = parseTalkObject body
     case decode core of
       Just TalkObj{..} -> do
         return $ Just Talk
@@ -179,7 +178,9 @@ fetchTalk url = do
           , _talkMediaSlug = mdSlug
           , _talkMediaPad = mdPad
           }
-      _      -> error "parse error"
+      _      -> do
+        print $ "<fetchTalk>: parse error " <> T.unpack url
+        pure Nothing
 
 getRandomTalk :: Config -> IO (Maybe Talk)
 getRandomTalk config = do
