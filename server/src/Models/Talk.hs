@@ -17,7 +17,7 @@ import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import qualified Database.Redis                   as KV
 import           GHC.Generics                     (Generic)
 import           Network.HTTP.Conduit             (HttpException, simpleHttp)
-import           RIO
+import           RIO                              hiding (id)
 import           System.IO                        (print)
 import           Text.HTML.DOM                    (parseLBS)
 import           Text.XML.Cursor                  (fromDocument)
@@ -37,23 +37,23 @@ import           Web.TED.Types                    (SearchTalk (..))
 
 
 data TalkObj = TalkObj
-    { oId          :: Int
-    , oName        :: Text
-    , oSlug        :: Text
-    , oFilmedAt    :: UTCTime
-    , oPublishedAt :: UTCTime
-    , oLanguages   :: [Language]
-    } deriving (Generic, Show)
+  { id          :: Int
+  , name        :: Text
+  , slug        :: Text
+  , filmedAt    :: UTCTime
+  , publishedAt :: UTCTime
+  , languages   :: [Language]
+  } deriving (Generic, Show)
 
 instance FromJSON TalkObj where
-    parseJSON (Object v) =
-        TalkObj <$> v .: "id"
-             <*> v .: "name"
-             <*> v .: "slug"
-             <*> liftM posixSecondsToUTCTime (v .: "filmed")
-             <*> liftM posixSecondsToUTCTime (v .: "published")
-             <*> v .: "languages"
-    parseJSON _          = mzero
+  parseJSON (Object v) = TalkObj
+    <$> v .: "id"
+    <*> v .: "name"
+    <*> v .: "slug"
+    <*> liftM posixSecondsToUTCTime (v .: "filmed")
+    <*> liftM posixSecondsToUTCTime (v .: "published")
+    <*> v .: "languages"
+  parseJSON _          = mzero
 
 
 getTalks :: DB.Connection -> Int -> IO [Talk]
@@ -157,28 +157,29 @@ saveTranscriptIfNotAlready config Talk {..} = do
 
 fetchTalk :: Text -> IO (Maybe Talk)
 fetchTalk url = do
-    handle (\(_::HttpException) -> return Nothing) $ do
-        body <- simpleHttp $ T.unpack url
-        let cursor = fromDocument $ parseLBS body
-            desc = parseDescription cursor
-            img = parseImage cursor
-            mdSlug = parseMediaSlug body
-            mdPad = parseMediaPad body
-        let core = parseTalkObject body
-        case decode core of
-            Just talk -> do
-                return $ Just Talk { _talkId = oId talk
-                                   , _talkName = oName talk
-                                   , _talkSlug = oSlug talk
-                                   , _talkFilmed = oFilmedAt talk
-                                   , _talkPublished = oPublishedAt talk
-                                   , _talkDescription = desc
-                                   , _talkImage = img
-                                   , _talkLanguages = oLanguages talk
-                                   , _talkMediaSlug = mdSlug
-                                   , _talkMediaPad = mdPad
-                                   }
-            _      -> error "parse error"
+  handle (\(_::HttpException) -> return Nothing) $ do
+    body <- simpleHttp $ T.unpack url
+    let cursor = fromDocument $ parseLBS body
+        desc = parseDescription cursor
+        img = parseImage cursor
+        mdSlug = parseMediaSlug body
+        mdPad = parseMediaPad body
+    let core = parseTalkObject body
+    case decode core of
+      Just TalkObj{..} -> do
+        return $ Just Talk
+          { _talkId = id
+          , _talkName = name
+          , _talkSlug = slug
+          , _talkFilmed = filmedAt
+          , _talkPublished = publishedAt
+          , _talkDescription = desc
+          , _talkImage = img
+          , _talkLanguages = languages
+          , _talkMediaSlug = mdSlug
+          , _talkMediaPad = mdPad
+          }
+      _      -> error "parse error"
 
 getRandomTalk :: Config -> IO (Maybe Talk)
 getRandomTalk config = do
@@ -209,5 +210,5 @@ searchTalk :: Config -> Text -> IO [Talk]
 searchTalk config q =
   handle (\(e::HttpException) -> print e >> searchTalkFromDb config q) $ do
     searchResults <- API.searchTalk q
-    liftM catMaybes $ forM searchResults $ \t -> do
-      getTalkBySlug config (slug t)
+    liftM catMaybes $ forM searchResults $ \SearchTalk{slug} -> do
+      getTalkBySlug config slug

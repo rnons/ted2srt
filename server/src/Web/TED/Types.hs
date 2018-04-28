@@ -14,6 +14,7 @@ module Web.TED.Types
   , transcriptToText
   ) where
 
+
 import           Control.Applicative ((<$>), (<*>))
 import           Control.Monad       (liftM, mzero)
 import           Data.Aeson
@@ -28,7 +29,6 @@ import           Data.Time.Format    (defaultTimeLocale, parseTimeM)
 import qualified Data.Vector         as V
 import           GHC.Generics        (Generic)
 import           RIO
-
 
 newtype TEDTime = TEDTime { fromTEDTime :: UTCTime }
 
@@ -154,15 +154,16 @@ instance FromJSON Talk where
     parseJSON _          = mzero
 
 data SearchTalk = SearchTalk
-    { id           :: Int
-    , name         :: Text
-    , description  :: Text
-    , slug         :: Text
-    , recorded_at  :: Text
-    , published_at:: Text
-    , updated_at   :: Text
-    } deriving (Generic, Show)
-instance FromJSON SearchTalk
+  { id          :: Int
+  , name        :: Text
+  , description :: Text
+  , slug        :: Text
+  , recordedAt  :: Text
+  , publishedAt :: Text
+  , updatedAt   :: Text
+  } deriving (Generic, Show)
+instance FromJSON SearchTalk where
+  parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
 
 data Cue = Cue
     { time :: Int
