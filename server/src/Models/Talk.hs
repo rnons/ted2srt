@@ -1,7 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Models.Talk where
 
-import           Control.Exception                (handle)
 import           Control.Monad                    (forM, liftM, mzero, void)
 import           Data.Aeson
 import qualified Data.ByteString.Char8            as C
@@ -19,7 +18,8 @@ import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import qualified Database.Redis                   as KV
 import           GHC.Generics                     (Generic)
 import           Network.HTTP.Conduit             (HttpException, simpleHttp)
-import           Prelude                          hiding (id)
+import           RIO
+import           System.IO                        (print)
 import           Text.HTML.DOM                    (parseLBS)
 import           Text.XML.Cursor                  (fromDocument)
 
@@ -67,12 +67,12 @@ getTalks conn limit = runBeamPostgres conn $ do
 
 getTalk :: Config -> Int -> Text -> IO (Maybe Talk)
 getTalk config tid url = do
-    cached <- KV.runRedis kv $
-        KV.get $ Keys.cache tid
-    case cached of
-        Right (Just _) -> getTalkById config tid (Just url)
-        Right Nothing  -> saveToDB config url
-        Left _         -> saveToDB config url
+  cached <- KV.runRedis kv $
+    KV.get $ Keys.cache tid
+  case cached of
+    Right (Just _) -> getTalkById config tid (Just url)
+    Right Nothing  -> saveToDB config url
+    Left _         -> saveToDB config url
   where
     kv = kvConn config
 
@@ -86,15 +86,20 @@ getTalkById config tid mUrl = do
     Just talk -> return $ Just talk
     _         -> maybe (return Nothing) (saveToDB config) mUrl
 
+hush :: Either a b -> Maybe b
+hush (Left _)  = Nothing
+hush (Right v) = Just v
+
 getTalkBySlug :: Config -> Text -> IO (Maybe Talk)
 getTalkBySlug config slug = do
-    emtid <- KV.runRedis kv $ KV.get $ Keys.slug slug
-    case emtid of
-        Right (Just tid) -> do
-            getTalk config (read $ C.unpack tid) url
-        Right Nothing -> do
-            saveToDB config url
-        Left _ -> return Nothing
+  mtid <- fmap (join . hush) <$> KV.runRedis kv $ KV.get $ Keys.slug slug
+  case mtid of
+    Just tid ->
+      case readMaybe $ C.unpack tid of
+        Just tid' -> getTalk config tid' url
+        Nothing   -> pure Nothing
+    Nothing  ->
+      saveToDB config url
   where
     url = mkTalkUrl slug
     kv = kvConn config
@@ -133,7 +138,7 @@ saveTranscriptIfNotAlready config Talk {..} = do
     Just _ -> pure ()
     Nothing   -> do
       path <- toSub $
-        Subtitle 0 _talkSlug ["en"] _talkMediaSlug _talkMediaPad TXT
+        Subtitle _talkId _talkSlug ["en"] _talkMediaSlug _talkMediaPad TXT
       case path of
         Just path' -> do
           transcript <- T.drop 2 <$> T.readFile path'
@@ -203,7 +208,7 @@ searchTalkFromDb config q = do
 
 searchTalk :: Config -> Text -> IO [Talk]
 searchTalk config q =
-    handle (\(_::HttpException) -> searchTalkFromDb config q) $ do
-        searchResults <- API.searchTalk q
-        liftM catMaybes $ forM searchResults $ \t -> do
-            getTalkBySlug config (s_slug t)
+  handle (\(e::HttpException) -> print e >> searchTalkFromDb config q) $ do
+    searchResults <- API.searchTalk q
+    liftM catMaybes $ forM searchResults $ \t -> do
+      getTalkBySlug config (s_slug t)
