@@ -1,19 +1,25 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE DeriveAnyClass        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE StandaloneDeriving    #-}
+{-# LANGUAGE TypeApplications      #-}
 module Model where
 
 import           Data.Aeson
-import qualified Data.Char                            as Char
-import           Data.Time                            (UTCTime)
+import qualified Data.Char                       as Char
+import           Data.Time                       (UTCTime)
 import           Database.Beam
-import           Database.Beam.Backend.SQL.SQL92      (HasSqlValueSyntax (..))
+import           Database.Beam.Backend.SQL.SQL92 (timestampType)
+import           Database.Beam.Migrate           (CheckedDatabaseSettings,
+                                                  HasDefaultSqlDataType (..),
+                                                  HasDefaultSqlDataTypeConstraints,
+                                                  IsSql92ColumnSchemaSyntax,
+                                                  defaultMigratableDbSettings,
+                                                  modifyCheckedTable,
+                                                  unCheckDatabase)
 import           Database.Beam.Postgres
-import           Database.Beam.Postgres.Syntax        (PgValueSyntax (..),
-                                                       pgBuildAction)
-import qualified Database.PostgreSQL.Simple           as DB
-import qualified Database.PostgreSQL.Simple.FromField as DB
-import qualified Database.PostgreSQL.Simple.ToField   as DB
+import           Database.Beam.Postgres.Syntax   (PgDataTypeSyntax)
+import qualified Database.PostgreSQL.Simple      as Pg
 import           RIO
 
 data Language = Language
@@ -24,16 +30,10 @@ data Language = Language
 instance FromJSON Language
 instance ToJSON Language
 
-instance DB.FromField [Language] where
-    fromField = DB.fromJSONField
+instance HasDefaultSqlDataType PgDataTypeSyntax UTCTime where
+  defaultSqlDataType _ _ = timestampType Nothing True
 
-instance DB.ToField [Language] where
-    toField = DB.toJSONField
-
-instance FromBackendRow Postgres [Language]
-instance HasSqlValueSyntax PgValueSyntax [Language] where
-  sqlValueSyntax =
-    PgValueSyntax . pgBuildAction . pure . DB.toField
+instance IsSql92ColumnSchemaSyntax syn => HasDefaultSqlDataTypeConstraints syn UTCTime
 
 data TalkT f = Talk
   { _talkId          :: Columnar f Int
@@ -43,7 +43,7 @@ data TalkT f = Talk
   , _talkPublished   :: Columnar f UTCTime
   , _talkDescription :: Columnar f Text
   , _talkImage       :: Columnar f Text
-  , _talkLanguages   :: Columnar f [Language]
+  , _talkLanguages   :: Columnar f (PgJSONB [Language])
   , _talkMediaSlug   :: Columnar f Text
   , _talkMediaPad    :: Columnar f Double
   } deriving (Beamable, Generic)
@@ -53,9 +53,12 @@ type TalkId = PrimaryKey TalkT Identity
 
 deriving instance Show Talk
 deriving instance Eq Talk
-deriving instance DB.FromRow Talk
+deriving instance Pg.FromRow Talk
 
 deriving instance Show TalkId
+
+instance ToJSON (PgJSONB [Language]) where
+  toJSON (PgJSONB langs) = toJSON langs
 
 instance ToJSON Talk where
   toJSON = genericToJSON defaultOptions
@@ -83,7 +86,6 @@ instance Table TranscriptT where
 instance Beamable (PrimaryKey TranscriptT)
 
 
-
 data TalkDb f = TalkDb
   { _talks       :: f (TableEntity TalkT)
   , _transcripts :: f (TableEntity TranscriptT)
@@ -91,10 +93,14 @@ data TalkDb f = TalkDb
 
 instance Database be TalkDb
 
-talkDb :: DatabaseSettings be TalkDb
-talkDb = defaultDbSettings `withDbModification`
+talkDbMigration :: CheckedDatabaseSettings Postgres TalkDb
+talkDbMigration =
+  (defaultMigratableDbSettings @PgCommandSyntax) `withDbModification`
   ( dbModification
-    { _transcripts = modifyTable (\_ -> "transcripts")
+    { _transcripts = modifyCheckedTable (\_ -> "transcripts")
       (Transcript (TalkId "id") "en_tsvector")
     }
   )
+
+talkDb :: DatabaseSettings Postgres TalkDb
+talkDb = unCheckDatabase talkDbMigration

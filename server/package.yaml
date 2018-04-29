@@ -9,6 +9,7 @@ dependencies:
 
 - aeson
 - beam-core
+- beam-migrate
 - beam-postgres
 - bytestring
 - conduit

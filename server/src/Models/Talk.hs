@@ -175,7 +175,7 @@ fetchTalk url = do
           , _talkPublished = publishedAt
           , _talkDescription = desc
           , _talkImage = img
-          , _talkLanguages = languages
+          , _talkLanguages = PgJSONB languages
           , _talkMediaSlug = mdSlug
           , _talkMediaPad = mdPad
           }

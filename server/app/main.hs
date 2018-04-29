@@ -7,6 +7,11 @@ import           Servant.Server                       (hoistServer)
 import           System.Environment                   (getEnv)
 
 import           Config                               (Config (..), getConfig)
+import           Database.Beam.Migrate                (defaultMigratableDbSettings)
+import           Database.Beam.Migrate.Simple         (autoMigrate)
+import           Database.Beam.Postgres               (runBeamPostgresDebug)
+import           Database.Beam.Postgres.Migrate       (migrationBackend)
+import           Model                                (talkDbMigration)
 import           RIO
 import           Server                               (tedApi, tedServer)
 
@@ -20,4 +25,6 @@ main = do
   loadEnv
   port <- read <$> getEnv "PORT"
   config <- getConfig
+  runBeamPostgresDebug putStrLn (dbConn config) $
+    autoMigrate migrationBackend talkDbMigration
   run port $ app config
