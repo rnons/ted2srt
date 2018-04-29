@@ -61,7 +61,7 @@ getTalks limit = do
     runSelectReturningList $ select
       ( limit_ (fromIntegral limit)
       $ orderBy_ (\t -> desc_ (_talkId t))
-      $ all_ (_talks talkDb)
+      $ all_ (_talk talkDb)
       )
 
 getTalk :: Int -> Text -> AppM (Maybe Talk)
@@ -79,7 +79,7 @@ getTalkById tid mUrl = do
   Config { dbConn } <- ask
   xs <- liftIO $ runBeamPostgres dbConn $ runSelectReturningOne $ select
     ( filter_ (\talk -> (_talkId talk ==. val_ tid))
-    $ all_ (_talks talkDb)
+    $ all_ (_talk talkDb)
     )
   case xs of
     Just talk -> return $ Just talk
@@ -114,7 +114,7 @@ saveToDB url = do
           KV.set (Keys.slug $ _talkSlug talk) (C.pack $ show $ _talkId talk)
 
       liftIO $ runBeamPostgres dbConn $ runInsert $
-        Pg.insert (_talks talkDb) (insertValues [ talk ]) $
+        Pg.insert (_talk talkDb) (insertValues [ talk ]) $
           Pg.onConflict (Pg.conflictingFields primaryKey) $
             Pg.onConflictUpdateInstead $
               \t -> ( _talkLanguages t
@@ -130,7 +130,7 @@ saveTranscriptIfNotAlready Talk {..} = do
   Config { dbConn } <- ask
   xs <- liftIO $ runBeamPostgres dbConn $ runSelectReturningOne $ select
     ( filter_ (\transcript -> (_transcriptTalk transcript ==. val_ (TalkId _talkId)))
-    $ all_ (_transcripts talkDb)
+    $ all_ (_transcript talkDb)
     )
   case xs of
     Just _ -> pure ()
@@ -141,7 +141,7 @@ saveTranscriptIfNotAlready Talk {..} = do
         Just path' -> do
           transcript <- liftIO $ T.drop 2 <$> T.readFile path'
           -- runBeamPostgres conn $ runInsert $
-          --   Pg.insert (_transcripts talkDb)
+          --   Pg.insert (_transcript talkDb)
           --     ( insertExpressions
           --       [ Transcript (val_ $ TalkId _talkId) $ toTsVector (Just english) (val_ transcript) ]
           --     ) $

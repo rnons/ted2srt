@@ -87,8 +87,8 @@ instance Beamable (PrimaryKey TranscriptT)
 
 
 data TalkDb f = TalkDb
-  { _talks       :: f (TableEntity TalkT)
-  , _transcripts :: f (TableEntity TranscriptT)
+  { _talk       :: f (TableEntity TalkT)
+  , _transcript :: f (TableEntity TranscriptT)
   } deriving Generic
 
 instance Database be TalkDb
@@ -97,7 +97,7 @@ talkDbMigration :: CheckedDatabaseSettings Postgres TalkDb
 talkDbMigration =
   (defaultMigratableDbSettings @PgCommandSyntax) `withDbModification`
   ( dbModification
-    { _transcripts = modifyCheckedTable (\_ -> "transcripts")
+    { _transcript = modifyCheckedTable (\_ -> "transcript")
       (Transcript (TalkId "id") "en_tsvector")
     }
   )
