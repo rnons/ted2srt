@@ -147,7 +147,7 @@ saveTranscriptIfNotAlready Talk {..} = do
           --     ) $
           --     Pg.onConflict Pg.anyConflict Pg.onConflictDoNothing
           void $ liftIO $ DB.execute dbConn [sql|
-              INSERT INTO transcripts (id, en_tsvector)
+              INSERT INTO transcript (id, en_tsvector)
               VALUES (?, to_tsvector('english', ? || ?))
           |] (_talkId, _talkName, transcript)
         Nothing -> return ()

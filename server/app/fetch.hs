@@ -1,22 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
-import           Control.Monad              (void)
-import           Data.Maybe                 (catMaybes)
-import           Data.Monoid                ((<>))
-import           Data.Text                  (Text)
+
 import qualified Data.Text                  as T
 import qualified Data.Text.IO               as T
 import           Data.Time                  (getCurrentTime)
 import qualified Database.PostgreSQL.Simple as DB
 import           LoadEnv                    (loadEnv)
 import           Network.HTTP.Conduit       (simpleHttp)
+import           RIO
 import           Text.HTML.DOM              (parseLBS)
 import qualified Text.XML                   as X
 import           Text.XML.Cursor
 
 import           Config                     (Config (..), getConfig)
-import           Model                      (Talk, TalkT (..))
 import           Models.Talk                (getTalks, saveToDB)
+import           Types
 import           Web.TED                    (Feed (..), FeedEntry (..),
                                              FileType (..), Subtitle (..),
                                              template, toSub)
@@ -32,9 +30,9 @@ main = do
         tids = take limit (parseTids cursor)
         urls = take limit (parseUrl cursor)
 
-    void $ mapM (saveToDB config) urls
+    runRIO config $ mapM saveToDB urls
     X.writeFile X.def "atom.xml" . template =<< mkFeed
-                                            =<< saveAsFeed (dbConn config)
+                                            =<< saveAsFeed config
   where
     limit = 5
     rurl = "http://feeds.feedburner.com/tedtalks_video"
@@ -57,16 +55,16 @@ talkToFeedEntry Talk {..} = do
           return $ Just FeedEntry
               { feedEntryTitle = _talkName
               , feedEntryLink  = "http://ted2srt.org/talks/" <> _talkSlug
-              , feedEntryUpdated = _talkPublished
+              , feedEntryUpdated = _talkPublishedAt
               , feedEntryContent = ppr transcript
               }
         Nothing -> return Nothing
   where
     ppr txt = T.concat $ map (\p -> "<p>" <> p <> "</p>") (T.lines txt)
 
-saveAsFeed :: DB.Connection -> IO [FeedEntry]
-saveAsFeed conn = do
-    talks <- getTalks conn 5
+saveAsFeed :: Config -> IO [FeedEntry]
+saveAsFeed config = do
+    talks <- runRIO config $ getTalks 5
     return . catMaybes =<< mapM talkToFeedEntry talks
 
 mkFeed :: [FeedEntry] -> IO Feed
