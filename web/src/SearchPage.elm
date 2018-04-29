@@ -71,7 +71,7 @@ talkView talk =
                 , div []
                     [ p []
                         [ text talk.description
-                        , span [ class .date ] [ text ("Published: " ++ getDateString talk.published) ]
+                        , span [ class .date ] [ text ("Published: " ++ getDateString talk.publishedAt) ]
                         ]
                     ]
                 ]
