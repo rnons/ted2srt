@@ -39,8 +39,8 @@ data TalkT f = Talk
   { _talkId          :: Columnar f Int
   , _talkName        :: Columnar f Text
   , _talkSlug        :: Columnar f Text
-  , _talkFilmed      :: Columnar f UTCTime
-  , _talkPublished   :: Columnar f UTCTime
+  , _talkFilmedAt    :: Columnar f UTCTime
+  , _talkPublishedAt :: Columnar f UTCTime
   , _talkDescription :: Columnar f Text
   , _talkImage       :: Columnar f Text
   , _talkLanguages   :: Columnar f (PgJSONB [Language])
