@@ -12,28 +12,30 @@ import           Network.HTTP.Conduit             (HttpException)
 import           RIO                              hiding (Handler)
 import           Servant                          (Handler, err400, throwError)
 import           System.IO                        (print)
+import           Types                            (AppM)
 import           Web.TED                          (SearchTalk (..))
 import qualified Web.TED                          as TED
 
-searchTalkFromDb :: Config -> Text -> IO [Talk]
-searchTalkFromDb config q = do
-    Pg.query conn [sql|
-        SELECT talks.* FROM talks JOIN transcripts
-        ON talks.id = transcripts.id
-        WHERE en_tsvector @@
-              to_tsquery('english', ?)
-        |] [query]
+searchTalkFromDb :: Text -> AppM [Talk]
+searchTalkFromDb q = do
+  Config { dbConn } <- ask
+  liftIO $ Pg.query dbConn [sql|
+      SELECT talks.* FROM talks JOIN transcripts
+      ON talks.id = transcripts.id
+      WHERE en_tsvector @@
+            to_tsquery('english', ?)
+      |] [query]
   where
-    conn = dbConn config
     query = T.intercalate "&" $ T.words q
 
-searchTalk :: Config -> Text -> IO [Talk]
-searchTalk config q =
-  handle (\(e::HttpException) -> print e >> searchTalkFromDb config q) $ do
-    searchResults <- TED.searchTalk q
+searchTalk :: Text -> AppM [Talk]
+searchTalk q = do
+  -- handle (\(e::HttpException) -> print e >> searchTalkFromDb q) $ do
+  handle (\(e::HttpException) -> searchTalkFromDb q) $ do
+    searchResults <- liftIO $ TED.searchTalk q
     liftM catMaybes $ forM searchResults $ \SearchTalk{slug} -> do
-      getTalkBySlug config slug
+      getTalkBySlug slug
 
-getSearchH :: Config -> Maybe Text -> Handler [Talk]
-getSearchH config (Just q) = liftIO $ searchTalk config q
-getSearchH _ Nothing       = throwError err400
+getSearchH :: Maybe Text -> AppM [Talk]
+getSearchH (Just q) = searchTalk q
+getSearchH Nothing  = throwM err400

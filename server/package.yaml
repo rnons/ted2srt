@@ -11,13 +11,13 @@ dependencies:
 - beam-core
 - beam-postgres
 - bytestring
-- conduit < 1.3
-- conduit-extra < 1.3
+- conduit
+- conduit-extra
 - containers
 - directory
 - either
 - hedis
-- html-conduit < 1.3
+- html-conduit
 - http-conduit
 - http-types
 - load-env
@@ -35,7 +35,7 @@ dependencies:
 - unordered-containers
 - vector
 - wai
-- xml-conduit < 1.8
+- xml-conduit
 
 # The library contains all of our application code. The executable
 # defined below is just a thin wrapper.

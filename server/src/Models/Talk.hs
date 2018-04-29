@@ -21,6 +21,7 @@ import           Network.HTTP.Conduit             (HttpException, Manager,
 import           RIO                              hiding (id)
 import           Text.HTML.DOM                    (parseLBS)
 import           Text.XML.Cursor                  (fromDocument)
+import           Types                            (AppM)
 
 import           Config                           (Config (..))
 import           Model
@@ -55,63 +56,66 @@ instance FromJSON TalkObj where
   parseJSON _          = mzero
 
 
-getTalks :: DB.Connection -> Int -> IO [Talk]
-getTalks conn limit = runBeamPostgres conn $ do
-  runSelectReturningList $ select
-    ( limit_ (fromIntegral limit)
-    $ orderBy_ (\t -> desc_ (_talkId t))
-    $ all_ (_talks talkDb)
-    )
+getTalks :: Int -> AppM [Talk]
+getTalks limit = do
+  Config { dbConn } <- ask
+  liftIO $ runBeamPostgres dbConn $ do
+    runSelectReturningList $ select
+      ( limit_ (fromIntegral limit)
+      $ orderBy_ (\t -> desc_ (_talkId t))
+      $ all_ (_talks talkDb)
+      )
 
-getTalk :: Config -> Int -> Text -> IO (Maybe Talk)
-getTalk config tid url = do
-  cached <- KV.runRedis kv $
+getTalk :: Int -> Text -> AppM (Maybe Talk)
+getTalk tid url = do
+  Config { kvConn } <- ask
+  cached <- liftIO $ KV.runRedis kvConn $
     KV.get $ Keys.cache tid
   case cached of
-    Right (Just _) -> getTalkById config tid (Just url)
-    Right Nothing  -> saveToDB config url
-    Left _         -> saveToDB config url
-  where
-    kv = kvConn config
+    Right (Just _) -> getTalkById tid (Just url)
+    Right Nothing  -> saveToDB url
+    Left _         -> saveToDB url
 
-getTalkById :: Config -> Int -> Maybe Text -> IO (Maybe Talk)
-getTalkById config tid mUrl = do
-  xs <- runBeamPostgres (dbConn config) $ runSelectReturningOne $ select
+getTalkById :: Int -> Maybe Text -> AppM (Maybe Talk)
+getTalkById tid mUrl = do
+  Config { dbConn } <- ask
+  xs <- liftIO $ runBeamPostgres dbConn $ runSelectReturningOne $ select
     ( filter_ (\talk -> (_talkId talk ==. val_ tid))
     $ all_ (_talks talkDb)
     )
   case xs of
     Just talk -> return $ Just talk
-    _         -> maybe (return Nothing) (saveToDB config) mUrl
+    _         -> maybe (return Nothing) saveToDB mUrl
 
 hush :: Either a b -> Maybe b
 hush (Left _)  = Nothing
 hush (Right v) = Just v
 
-getTalkBySlug :: Config -> Text -> IO (Maybe Talk)
-getTalkBySlug config slug = do
-  mtid <- fmap (join . hush) <$> KV.runRedis kv $ KV.get $ Keys.slug slug
+getTalkBySlug :: Text -> AppM (Maybe Talk)
+getTalkBySlug slug = do
+  Config { kvConn } <- ask
+  mtid <- liftIO $ fmap (join . hush) <$> KV.runRedis kvConn $ KV.get $ Keys.slug slug
   case mtid of
     Just tid ->
       case readMaybe $ C.unpack tid of
-        Just tid' -> getTalk config tid' url
+        Just tid' -> getTalk tid' url
         Nothing   -> pure Nothing
     Nothing  ->
-      saveToDB config url
+      saveToDB url
   where
     url = mkTalkUrl slug
-    kv = kvConn config
 
-saveToDB :: Config -> Text -> IO (Maybe Talk)
-saveToDB config@Config{..} url = do
-  mTalk <- fetchTalk httpManager url
+saveToDB :: Text -> AppM (Maybe Talk)
+saveToDB url = do
+  config@Config{..} <- ask
+  mTalk <- liftIO $ fetchTalk httpManager url
   case mTalk of
     Just talk -> do
-      void $ KV.runRedis kvConn $ KV.multiExec $ do
+      void $ liftIO $ KV.runRedis kvConn $ KV.multiExec $ do
           void $ KV.setex (Keys.cache $ _talkId talk) (3600*24) ""
           KV.set (Keys.slug $ _talkSlug talk) (C.pack $ show $ _talkId talk)
 
-      runBeamPostgres dbConn $ runInsert $
+      liftIO $ runBeamPostgres dbConn $ runInsert $
         Pg.insert (_talks talkDb) (insertValues [ talk ]) $
           Pg.onConflict (Pg.conflictingFields primaryKey) $
             Pg.onConflictUpdateInstead $
@@ -119,37 +123,36 @@ saveToDB config@Config{..} url = do
                     , _talkMediaPad t
                     )
 
-      saveTranscriptIfNotAlready config talk
+      saveTranscriptIfNotAlready talk
       return $ Just talk
     Nothing -> return Nothing
 
-saveTranscriptIfNotAlready :: Config -> Talk -> IO ()
-saveTranscriptIfNotAlready config Talk {..} = do
-  xs <- runBeamPostgres conn $ runSelectReturningOne $ select
+saveTranscriptIfNotAlready :: Talk -> AppM ()
+saveTranscriptIfNotAlready Talk {..} = do
+  Config { dbConn } <- ask
+  xs <- liftIO $ runBeamPostgres dbConn $ runSelectReturningOne $ select
     ( filter_ (\transcript -> (_transcriptTalk transcript ==. val_ (TalkId _talkId)))
     $ all_ (_transcripts talkDb)
     )
   case xs of
     Just _ -> pure ()
     Nothing   -> do
-      path <- toSub $
+      path <- liftIO $ toSub $
         Subtitle _talkId _talkSlug ["en"] _talkMediaSlug _talkMediaPad TXT
       case path of
         Just path' -> do
-          transcript <- T.drop 2 <$> T.readFile path'
+          transcript <- liftIO $ T.drop 2 <$> T.readFile path'
           -- runBeamPostgres conn $ runInsert $
           --   Pg.insert (_transcripts talkDb)
           --     ( insertExpressions
           --       [ Transcript (val_ $ TalkId _talkId) $ toTsVector (Just english) (val_ transcript) ]
           --     ) $
           --     Pg.onConflict Pg.anyConflict Pg.onConflictDoNothing
-          void $ DB.execute conn [sql|
+          void $ liftIO $ DB.execute dbConn [sql|
               INSERT INTO transcripts (id, en_tsvector)
               VALUES (?, to_tsvector('english', ? || ?))
           |] (_talkId, _talkName, transcript)
         Nothing -> return ()
-  where
-    conn = dbConn config
 
 fetchTalk :: Manager -> Text -> IO (Maybe Talk)
 fetchTalk manager url = do
@@ -181,16 +184,3 @@ fetchTalk manager url = do
       _      -> do
         print $ "<fetchTalk>: parse error " <> T.unpack url
         pure Nothing
-
-getRandomTalk :: Config -> IO (Maybe Talk)
-getRandomTalk config = do
-    xs <- DB.query_ conn [sql|
-        SELECT * FROM talks
-        TABLESAMPLE SYSTEM (1)
-        LIMIT 1
-        |]
-    case xs of
-        [talk] -> return $ Just talk
-        _      -> return Nothing
-  where
-    conn = dbConn config
