@@ -15,9 +15,8 @@ import qualified Database.PostgreSQL.Simple       as DB
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import qualified Database.Redis                   as KV
 import           GHC.Generics                     (Generic)
-import           Network.HTTP.Conduit             (HttpException, Manager,
-                                                   httpLbs, parseUrlThrow,
-                                                   responseBody)
+import           Network.HTTP.Client.Conduit      (HttpException, httpLbs,
+                                                   parseUrlThrow, responseBody)
 import           RIO                              hiding (id)
 import           Text.HTML.DOM                    (parseLBS)
 import           Text.XML.Cursor                  (fromDocument)
@@ -27,7 +26,6 @@ import           Config                           (Config (..))
 import           Model
 import qualified Models.RedisKeys                 as Keys
 import           Models.Types                     (mkTalkUrl)
-import           System.IO                        (print)
 import           Web.TED                          (FileType (..), Subtitle (..),
                                                    toSub)
 import           Web.TED.TalkPage                 (parseDescription, parseImage,
@@ -107,8 +105,8 @@ getTalkBySlug slug = do
 
 saveToDB :: Text -> AppM (Maybe Talk)
 saveToDB url = do
-  config@Config{..} <- ask
-  mTalk <- liftIO $ fetchTalk httpManager url
+  Config{..} <- ask
+  mTalk <- fetchTalk url
   case mTalk of
     Just talk -> do
       void $ liftIO $ KV.runRedis kvConn $ KV.multiExec $ do
@@ -154,11 +152,11 @@ saveTranscriptIfNotAlready Talk {..} = do
           |] (_talkId, _talkName, transcript)
         Nothing -> return ()
 
-fetchTalk :: Manager -> Text -> IO (Maybe Talk)
-fetchTalk manager url = do
+fetchTalk :: Text -> AppM (Maybe Talk)
+fetchTalk url = do
   handle (\(_::HttpException) -> return Nothing) $ do
     req <- parseUrlThrow $ T.unpack url
-    res <- httpLbs req manager
+    res <- httpLbs req
     let
       body = responseBody res
       cursor = fromDocument $ parseLBS body
@@ -182,5 +180,5 @@ fetchTalk manager url = do
           , _talkMediaPad = mdPad
           }
       _      -> do
-        print $ "<fetchTalk>: parse error " <> T.unpack url
+        logErrorS "fetchTalk" $ fromString $ "parse error " <> T.unpack url
         pure Nothing

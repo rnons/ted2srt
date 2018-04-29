@@ -9,9 +9,8 @@ import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import           Model
 import           Models.Talk
 import           Network.HTTP.Conduit             (HttpException)
-import           RIO                              hiding (Handler)
-import           Servant                          (Handler, err400, throwError)
-import           System.IO                        (print)
+import           RIO
+import           Servant                          (err400)
 import           Types                            (AppM)
 import           Web.TED                          (SearchTalk (..))
 import qualified Web.TED                          as TED
@@ -30,8 +29,10 @@ searchTalkFromDb q = do
 
 searchTalk :: Text -> AppM [Talk]
 searchTalk q = do
-  -- handle (\(e::HttpException) -> print e >> searchTalkFromDb q) $ do
-  handle (\(e::HttpException) -> searchTalkFromDb q) $ do
+  handle
+    (\(e::HttpException) ->
+       logErrorS "searchTalk" (displayShow e) >> searchTalkFromDb q
+    ) $ do
     searchResults <- liftIO $ TED.searchTalk q
     liftM catMaybes $ forM searchResults $ \SearchTalk{slug} -> do
       getTalkBySlug slug
