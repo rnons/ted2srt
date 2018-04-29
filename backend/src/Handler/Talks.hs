@@ -15,7 +15,7 @@ import           Types
 getTalksH :: Maybe Int -> Maybe Int -> AppM [Talk]
 getTalksH _ mLimit = do
   talks <- getTalks limit
-  return talks
+  pure talks
   where
     defaultLimit = 10
     -- startTid = fromMaybe 0 mStartTid
@@ -26,7 +26,7 @@ getRandomTalkH :: AppM Talk
 getRandomTalkH = do
   Config { dbConn } <- ask
   xs <- liftIO $ Pg.query_ dbConn [sql|
-      SELECT * FROM talks
+      SELECT * FROM talk
       TABLESAMPLE SYSTEM (1)
       LIMIT 1
       |]
