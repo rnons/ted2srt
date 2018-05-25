@@ -1,7 +1,7 @@
 -- | TED talk page module
 -- Parse the TED talk page to retrieve information
 
-{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Web.TED.TalkPage
   ( getTalkId
   , getSlugAndPad
@@ -12,15 +12,15 @@ module Web.TED.TalkPage
   , parseTalkObject
   ) where
 
-import           Control.Exception as E
+import           Control.Exception          as E
 import           Control.Monad
-import           Data.ByteString.Lazy (ByteString)
+import           Data.ByteString.Lazy       (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as L8
-import           Data.Text (Text)
-import           qualified Data.Text as T
+import           Data.Text                  (Text)
+import qualified Data.Text                  as T
 import           Network.HTTP.Conduit
-import           Prelude hiding (id)
-import           Text.Regex.Posix ((=~))
+import           Prelude                    hiding (id)
+import           Text.Regex.Posix           ((=~))
 import           Text.XML.Cursor
 
 
@@ -66,7 +66,7 @@ getSlugAndPad rurl = E.catch
 parseMediaSlug :: ByteString -> Text
 parseMediaSlug body = T.pack $ L8.unpack $ last $ last r
   where
-    pat = "\"file\":\"https://download.ted.com/talks/(.+)-320k.mp4\\?dnt" :: ByteString
+    pat = "\"low\":\"https://download.ted.com/talks/(.+)-light.mp4\\?apikey=" :: ByteString
     r = body =~ pat :: [[ByteString]]
 
 -- TED talk videos begin with different versions of TED promos.
