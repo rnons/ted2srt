@@ -2,10 +2,12 @@ module Models.Talk where
 
 import           Control.Monad                    (liftM, mzero, void)
 import           Data.Aeson
+import           Data.Aeson.Types                 (explicitParseField)
 import qualified Data.ByteString.Char8            as C
 import           Data.Text                        (Text)
 import qualified Data.Text                        as T
 import qualified Data.Text.IO                     as T
+import qualified Data.Text.Read                   as T
 import           Data.Time                        (UTCTime)
 import           Data.Time.Clock.POSIX            (posixSecondsToUTCTime)
 import           Database.Beam
@@ -44,13 +46,19 @@ data TalkObj = TalkObj
   } deriving (Generic, Show)
 
 instance FromJSON TalkObj where
-  parseJSON (Object v) = TalkObj
-    <$> v .: "id"
-    <*> v .: "name"
-    <*> v .: "slug"
-    <*> liftM posixSecondsToUTCTime (v .: "filmed")
-    <*> liftM posixSecondsToUTCTime (v .: "published")
-    <*> v .: "languages"
+  parseJSON (Object v) = do
+    tid <- explicitParseField
+      (withText "expect id to be text" $ \idText -> case fst <$> T.decimal idText of
+          Right tid -> pure tid
+          _         -> fail "id is not int"
+      ) v "id"
+    TalkObj
+      <$> pure tid
+      <*> v .: "name"
+      <*> v .: "slug"
+      <*> liftM posixSecondsToUTCTime (v .: "published")
+      <*> liftM posixSecondsToUTCTime (v .: "published")
+      <*> v .: "languages"
   parseJSON _          = mzero
 
 
@@ -165,8 +173,8 @@ fetchTalk url = do
       mdSlug = parseMediaSlug body
       mdPad = parseMediaPad body
       core = parseTalkObject body
-    case decode core of
-      Just TalkObj{..} -> do
+    case eitherDecode core of
+      Right TalkObj{..} -> do
         return $ Just Talk
           { _talkId = id
           , _talkName = name
@@ -179,6 +187,6 @@ fetchTalk url = do
           , _talkMediaSlug = mdSlug
           , _talkMediaPad = mdPad
           }
-      _      -> do
-        logErrorS "fetchTalk" $ fromString $ "parse error " <> T.unpack url
+      Left err      -> do
+        logErrorS "fetchTalk" $ fromString err
         pure Nothing
