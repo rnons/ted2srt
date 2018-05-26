@@ -2,7 +2,6 @@ module Models.Talk where
 
 import           Control.Monad                    (liftM, mzero, void)
 import           Data.Aeson
-import           Data.Aeson.Types                 (explicitParseField)
 import qualified Data.ByteString.Char8            as C
 import           Data.Text                        (Text)
 import qualified Data.Text                        as T
@@ -47,11 +46,10 @@ data TalkObj = TalkObj
 
 instance FromJSON TalkObj where
   parseJSON (Object v) = do
-    tid <- explicitParseField
-      (withText "expect id to be text" $ \idText -> case fst <$> T.decimal idText of
-          Right tid -> pure tid
-          _         -> fail "id is not int"
-      ) v "id"
+    idText <- v .: "id"
+    tid <- case fst <$> T.decimal idText of
+      Right tid -> pure tid
+      _         -> fail "id is not int"
     TalkObj
       <$> pure tid
       <*> v .: "name"
