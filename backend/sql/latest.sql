@@ -15,14 +15,14 @@ SET row_security = off;
 
 SET search_path = public, pg_catalog;
 
-ALTER TABLE ONLY public.transcripts DROP CONSTRAINT transcripts_id_fkey1;
-ALTER TABLE ONLY public.transcripts DROP CONSTRAINT transcripts_id_fkey;
+ALTER TABLE ONLY public.transcript DROP CONSTRAINT transcript_id_fkey1;
+ALTER TABLE ONLY public.transcript DROP CONSTRAINT transcript_id_fkey;
 DROP INDEX public.en_idx;
-ALTER TABLE ONLY public.transcripts DROP CONSTRAINT transcripts_pkey;
-ALTER TABLE ONLY public.talks DROP CONSTRAINT talks_pkey;
-ALTER TABLE ONLY public.talks DROP CONSTRAINT talks_id_name_key;
-DROP TABLE public.transcripts;
-DROP TABLE public.talks;
+ALTER TABLE ONLY public.transcript DROP CONSTRAINT transcript_pkey;
+ALTER TABLE ONLY public.talk DROP CONSTRAINT talk_pkey;
+ALTER TABLE ONLY public.talk DROP CONSTRAINT talk_id_name_key;
+DROP TABLE public.transcript;
+DROP TABLE public.talk;
 DROP EXTENSION plpgsql;
 DROP SCHEMA public;
 --
@@ -42,14 +42,14 @@ COMMENT ON SCHEMA public IS 'standard public schema';
 
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
@@ -62,15 +62,15 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: talks; Type: TABLE; Schema: public; Owner: postgres
+-- Name: talk; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE talks (
+CREATE TABLE talk (
     id smallint NOT NULL,
     name text,
     slug text,
-    filmed timestamp with time zone,
-    published timestamp with time zone,
+    filmed_at timestamp with time zone,
+    published_at timestamp with time zone,
     description text,
     image text,
     languages jsonb,
@@ -79,70 +79,59 @@ CREATE TABLE talks (
 );
 
 
-ALTER TABLE talks OWNER TO postgres;
+ALTER TABLE talk OWNER TO postgres;
 
 --
--- Name: transcripts; Type: TABLE; Schema: public; Owner: postgres
+-- Name: transcript; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE transcripts (
+CREATE TABLE transcript (
     id smallint NOT NULL,
-    name text,
-    en text,
     en_tsvector tsvector
 );
 
 
-ALTER TABLE transcripts OWNER TO postgres;
+ALTER TABLE transcript OWNER TO postgres;
 
 --
--- Name: talks_id_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: talk_id_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY talks
-    ADD CONSTRAINT talks_id_name_key UNIQUE (id, name);
-
-
---
--- Name: talks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY talks
-    ADD CONSTRAINT talks_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY talk
+    ADD CONSTRAINT talk_id_name_key UNIQUE (id, name);
 
 
 --
--- Name: transcripts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: talk_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY transcripts
-    ADD CONSTRAINT transcripts_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY talk
+    ADD CONSTRAINT talk_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: transcript_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transcript
+    ADD CONSTRAINT transcript_pkey PRIMARY KEY (id);
 
 
 --
 -- Name: en_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX en_idx ON transcripts USING gin (en_tsvector);
+CREATE INDEX en_idx ON transcript USING gin (en_tsvector);
 
 
 --
--- Name: transcripts_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: transcript_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY transcripts
-    ADD CONSTRAINT transcripts_id_fkey FOREIGN KEY (id) REFERENCES talks(id) ON DELETE CASCADE;
-
-
---
--- Name: transcripts_id_fkey1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY transcripts
-    ADD CONSTRAINT transcripts_id_fkey1 FOREIGN KEY (id, name) REFERENCES talks(id, name);
+ALTER TABLE ONLY transcript
+    ADD CONSTRAINT transcript_id_fkey FOREIGN KEY (id) REFERENCES talk(id) ON DELETE CASCADE;
 
 
 --
 -- PostgreSQL database dump complete
 --
-

@@ -25,6 +25,6 @@ main = do
   loadEnv
   port <- read <$> getEnv "PORT"
   config <- getConfig
-  runBeamPostgresDebug putStrLn (dbConn config) $
-    autoMigrate migrationBackend talkDbMigration
+  -- runBeamPostgresDebug putStrLn (dbConn config) $
+  --   autoMigrate migrationBackend talkDbMigration
   run port $ app config
