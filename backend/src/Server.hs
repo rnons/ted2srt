@@ -29,28 +29,38 @@ instance FromHttpApiData FileType where
   parseUrlPiece _     = Left "Unsupported"
 
 type TedApi =
-       "talks" :> QueryParam "tid" Int          -- ^ getTalksH
-               :> QueryParam "limit" Int
-               :> Get '[JSON] [Talk]
-  :<|> "talks" :> "random"
-               :> Get '[JSON] Talk
-  :<|> "talks" :> Capture "slug" Text           -- ^ getTalkH
-               :> Get '[JSON] Talk
-  :<|> "talks" :> Capture "tid" Int             -- ^ getTalkSubtitleH
-               :> "transcripts"
-               :> Capture "format" FileType
-               :> QueryParams "lang" Text
-               :> Raw
-  :<|> "talks" :> Capture "tid" Int             -- ^ downloadTalkSubtitleH
-               :> "transcripts"
-               :> "download"
-               :> Capture "format" FileType
-               :> QueryParams "lang" Text
-               :> Raw
-  :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [Talk]
+  "api" :>
+    (    "talks"
+      :> QueryParam "tid" Int          -- ^ getTalksH
+      :> QueryParam "limit" Int
+      :> Get '[JSON] [Talk]
+    :<|> "talks" :> "random"
+      :> Get '[JSON] Talk
+    :<|> "talks"
+      :> Capture "slug" Text           -- ^ getTalkH
+      :> Get '[JSON] Talk
+    :<|> "talks"
+      :> Capture "tid" Int             -- ^ getTalkSubtitleH
+      :> "transcripts"
+      :> Capture "format" FileType
+      :> QueryParams "lang" Text
+      :> Raw
+    :<|> "talks"
+      :> Capture "tid" Int             -- ^ downloadTalkSubtitleH
+      :> "transcripts"
+      :> "download"
+      :> Capture "format" FileType
+      :> QueryParams "lang" Text
+      :> Raw
+    :<|> "search"
+      :> QueryParam "q" Text :> Get '[JSON] [Talk]
+    )
   :<|> Get '[HTML] (Html ())
 
-type AllApi = TedApi :<|> "dist" :> Raw
+type AllApi =
+    TedApi
+  :<|>
+    "dist" :> Raw
 
 getBundleH :: Server Raw
 getBundleH = serveDirectoryWebApp "dist"
@@ -63,10 +73,10 @@ allApi = Proxy
 
 tedServer :: Config -> ServerT TedApi AppM
 tedServer config =
-        getTalksH
+   (     getTalksH
   :<|> getRandomTalkH
   :<|> getTalkH
   :<|> (\tid format lang -> Tagged (getSubtitleH config tid format lang))
   :<|> (\tid format lang -> Tagged (downloadSubtitleH config tid format lang))
   :<|> getSearchH
-  :<|> getHomeH
+  ):<|> getHomeH
