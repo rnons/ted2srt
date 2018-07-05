@@ -16,13 +16,13 @@ import           Database.Beam.Postgres.Migrate       (migrationBackend)
 import           Model                                (talkDbMigration)
 import           RIO
 import           Server                               (allApi, getBundleH,
-                                                       tedApi, tedServer)
+                                                       tedApiView, tedServer)
 
 
 app :: Config -> Application
 app config =
   logStdout $ serve allApi $
-    (hoistServer tedApi (runRIO config) (tedServer config)) :<|> getBundleH
+    (hoistServer tedApiView (runRIO config) (tedServer config)) :<|> getBundleH
 
 main :: IO ()
 main = do

@@ -1,23 +1,25 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeOperators #-}
 module Server
-  ( tedApi
+  ( tedApiView
   , tedServer
   , allApi
   , getBundleH
   ) where
 
+import           Api.Search         (getSearchH)
+import           Api.Subtitles      (downloadSubtitleH, getSubtitleH)
+import           Api.Talks          (getRandomTalkApiH, getTalkApiH,
+                                     getTalksApiH)
 import           Config             (Config (..))
-import           View.Home       (getHomeH)
-import           Api.Search     (getSearchH)
-import           Api.Subtitles  (downloadSubtitleH, getSubtitleH)
-import           Api.Talks      (getRandomTalkH, getTalkH, getTalksH)
 import           Lucid
 import           RIO                hiding (Handler)
 import           Servant
 import           Servant.HTML.Lucid (HTML)
 import           Types              (AppM)
 import           Types
+import           View.Home          (getHomeH)
+import           View.Talk          (getTalkH)
 import           Web.TED            (FileType (..))
 
 
@@ -29,54 +31,69 @@ instance FromHttpApiData FileType where
   parseUrlPiece _     = Left "Unsupported"
 
 type TedApi =
-  "api" :>
-    (    "talks"
-      :> QueryParam "tid" Int          -- ^ getTalksH
-      :> QueryParam "limit" Int
-      :> Get '[JSON] [Talk]
-    :<|> "talks" :> "random"
-      :> Get '[JSON] Talk
-    :<|> "talks"
-      :> Capture "slug" Text           -- ^ getTalkH
-      :> Get '[JSON] Talk
-    :<|> "talks"
-      :> Capture "tid" Int             -- ^ getTalkSubtitleH
-      :> "transcripts"
-      :> Capture "format" FileType
-      :> QueryParams "lang" Text
-      :> Raw
-    :<|> "talks"
-      :> Capture "tid" Int             -- ^ downloadTalkSubtitleH
-      :> "transcripts"
-      :> "download"
-      :> Capture "format" FileType
-      :> QueryParams "lang" Text
-      :> Raw
-    :<|> "search"
-      :> QueryParam "q" Text :> Get '[JSON] [Talk]
-    )
-  :<|> Get '[HTML] (Html ())
+       "talks"
+    :> QueryParam "tid" Int          -- ^ getTalksH
+    :> QueryParam "limit" Int
+    :> Get '[JSON] [Talk]
+  :<|> "talks" :> "random"
+    :> Get '[JSON] Talk
+  :<|> "talks"
+    :> Capture "slug" Text           -- ^ getTalkH
+    :> Get '[JSON] Talk
+  :<|> "talks"
+    :> Capture "tid" Int             -- ^ getTalkSubtitleH
+    :> "transcripts"
+    :> Capture "format" FileType
+    :> QueryParams "lang" Text
+    :> Raw
+  :<|> "talks"
+    :> Capture "tid" Int             -- ^ downloadTalkSubtitleH
+    :> "transcripts"
+    :> "download"
+    :> Capture "format" FileType
+    :> QueryParams "lang" Text
+    :> Raw
+  :<|> "search"
+    :> QueryParam "q" Text :> Get '[JSON] [Talk]
+
+type TedView =
+       Get '[HTML] (Html ())
+  :<|> "talks" :> Capture "slug" Text :> Get '[HTML] (Html ())
+
+type TedApiView =
+      "api" :> TedApi
+  :<|> TedView
 
 type AllApi =
-    TedApi
-  :<|>
-    "dist" :> Raw
+       TedApiView
+  :<|> "dist" :> Raw
 
 getBundleH :: Server Raw
 getBundleH = serveDirectoryWebApp "dist"
 
-tedApi :: Proxy TedApi
-tedApi = Proxy
+tedApiView :: Proxy TedApiView
+tedApiView = Proxy
 
 allApi :: Proxy AllApi
 allApi = Proxy
 
-tedServer :: Config -> ServerT TedApi AppM
-tedServer config =
-   (     getTalksH
-  :<|> getRandomTalkH
-  :<|> getTalkH
+tedApiServer :: Config -> ServerT TedApi AppM
+tedApiServer config =
+       getTalksApiH
+  :<|> getRandomTalkApiH
+  :<|> getTalkApiH
   :<|> (\tid format lang -> Tagged (getSubtitleH config tid format lang))
   :<|> (\tid format lang -> Tagged (downloadSubtitleH config tid format lang))
   :<|> getSearchH
-  ):<|> getHomeH
+
+
+tedViewServer :: ServerT TedView AppM
+tedViewServer =
+       getHomeH
+  :<|> getTalkH
+
+tedServer :: Config -> ServerT TedApiView AppM
+tedServer config =
+    tedApiServer config
+  :<|>
+    tedViewServer

@@ -7,10 +7,12 @@ import           Types
 
 data Bundle
   = HomeBundle
+  | TalkBundle
 
 instance Show Bundle where
   show = \case
     HomeBundle -> "Home"
+    TalkBundle -> "Talk"
 
 includeBundle :: Bundle -> AppM (Html ())
 includeBundle bundle = do
