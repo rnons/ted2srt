@@ -1,1 +1,2 @@
-console.log("hello ts");
+import * as Main from "Home";
+Main.main();

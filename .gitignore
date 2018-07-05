@@ -10,3 +10,6 @@ ted2srt.cabal
 
 dist/
 static/tmp/
+.psc-package
+.psc-ide-port
+frontend/output/
