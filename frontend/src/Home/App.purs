@@ -3,7 +3,7 @@ module Home.App
   , app
   ) where
 
-import Prelude
+import Core.Prelude
 
 import Core.Api as Api
 import Core.Model (Talk)
@@ -40,8 +40,9 @@ renderTalk talk =
 
 render :: State -> HTML
 render state =
-  HH.div_
-  [ HH.text "hello world"
+  HH.div
+  [ class_ "container" ]
+  [ HH.text "TED2srt"
   , HH.ul_ $
     state.talks <#> renderTalk
   ]

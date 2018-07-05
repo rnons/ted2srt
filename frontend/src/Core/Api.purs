@@ -33,4 +33,4 @@ get :: forall a. ReadForeign a => String -> Response a
 get url = AX.get Response.string url >>= handleResponse
 
 getTalks :: Response (Array Talk)
-getTalks = get "/api/talks"
+getTalks = get "/api/talks?limit=5"
