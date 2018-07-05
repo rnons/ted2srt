@@ -1,4 +1,4 @@
-module Handler.Search
+module Api.Search
   ( getSearchH
   ) where
 

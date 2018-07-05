@@ -8,10 +8,10 @@ module Server
   ) where
 
 import           Config             (Config (..))
-import           Handler.Home       (getHomeH)
-import           Handler.Search     (getSearchH)
-import           Handler.Subtitles  (downloadSubtitleH, getSubtitleH)
-import           Handler.Talks      (getRandomTalkH, getTalkH, getTalksH)
+import           View.Home       (getHomeH)
+import           Api.Search     (getSearchH)
+import           Api.Subtitles  (downloadSubtitleH, getSubtitleH)
+import           Api.Talks      (getRandomTalkH, getTalkH, getTalksH)
 import           Lucid
 import           RIO                hiding (Handler)
 import           Servant

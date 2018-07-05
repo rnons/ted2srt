@@ -1,4 +1,4 @@
-module Handler.Subtitles
+module Api.Subtitles
   ( getSubtitleH
   , downloadSubtitleH
   ) where

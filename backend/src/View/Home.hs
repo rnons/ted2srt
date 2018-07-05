@@ -1,9 +1,9 @@
-module Handler.Home where
+module View.Home where
 
-import           Handler.Bundle
 import           Lucid
 import           RIO
 import           Types
+import           View.Bundle
 
 getHomeH :: AppM (Html ())
 getHomeH = do

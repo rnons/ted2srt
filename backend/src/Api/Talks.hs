@@ -1,4 +1,4 @@
-module Handler.Talks
+module Api.Talks
   ( getRandomTalkH
   , getTalkH
   , getTalksH

@@ -1,4 +1,4 @@
-module Handler.Bundle where
+module View.Bundle where
 
 import qualified Data.Text as T
 import           Lucid
