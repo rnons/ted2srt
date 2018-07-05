@@ -1,65 +1,53 @@
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-
+const webpack = require("webpack");
 
 module.exports = {
   context: __dirname,
-  devtool: 'source-map',
-  target: 'web',
-  entry: './src/main.js',
+  devtool: "source-map",
+  target: "web",
+  entry: {
+    Home: ["./src/HomePage.ts"]
+  },
   output: {
-    path: __dirname + '/dist',
-    filename: 'main.[hash:5].js',
-    publicPath: '/'
+    path: __dirname + "/../backend/assets",
+    filename: "[name].js",
+    publicPath: "/"
   },
   resolve: {
-    extensions: ['.js']
+    extensions: [".js"]
   },
   module: {
     rules: [
       {
+        test: /\.ts$/,
+        use: ["ts-loader"]
+      },
+      {
         test: /\.css$/,
         use: [
-          'style-loader',
+          "style-loader",
           {
-            loader: 'css-loader',
+            loader: "css-loader",
             options: {
               importLoaders: 1,
               modules: true,
-              localIdentName: '[name]_[local]_[hash:base64:5]',
+              localIdentName: "[name]_[local]_[hash:base64:5]"
             }
           },
-          'postcss-loader',
-        ]
-      }, {
-        test: /\.elm$/,
-        exclude: [/elm-stuff/, /node_modules/],
-        use: [
-          'elm-css-modules-loader',
-          'elm-webpack-loader',
+          "postcss-loader"
         ]
       }
     ]
   },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: 'src/index.html',
-      filename: 'index.html',
-      favicon: 'assets/favicon.ico',
-      minify: {
-        collapseWhitespace: true
-      }
-    }),
-  ],
+  plugins: [],
   devServer: {
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     historyApiFallback: true,
     proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
+      "/api": {
+        target: "http://localhost:3001",
         secure: false,
         pathRewrite: {
-          '^/api' : ''
+          "^/api": ""
         }
       }
     }

@@ -2,20 +2,16 @@
   "private": true,
   "scripts": {
     "build": "webpack -p --progress",
-    "start": "webpack-dev-server --progress"
+    "start": "webpack-dev-server --mode development --progress --port 7000"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "css-loader": "0.25.0",
-    "elm": "^0.18.0",
-    "elm-css-modules-loader": "^2.0.0",
-    "elm-webpack-loader": "^4.3.1",
-    "html-webpack-plugin": "^2.29.0",
-    "postcss-cssnext": "2.8.0",
-    "postcss-for": "2.1.1",
-    "postcss-loader": "1.1.0",
-    "style-loader": "0.13.1",
-    "webpack": "2",
-    "webpack-dev-server": "^2.5.0"
+    "css-loader": "^0.28.11",
+    "postcss-loader": "^2.1.5",
+    "style-loader": "^0.21.0",
+    "ts-loader": "^4.4.2",
+    "typescript": "^2.9.2",
+    "webpack": "^4.14.0",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.4"
   }
 }
