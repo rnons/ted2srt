@@ -5,7 +5,8 @@ module.exports = {
   devtool: "source-map",
   target: "web",
   entry: {
-    Home: ["./src/common.ts", "./src/HomePage.ts"]
+    Home: ["./src/common.ts", "./src/HomePage.ts"],
+    Talk: ["./src/common.ts", "./src/TalkPage.ts"]
   },
   output: {
     path: __dirname + "/../backend/dist",

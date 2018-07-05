@@ -34,8 +34,12 @@ renderTalk :: Talk -> HTML
 renderTalk talk =
   HH.li
   []
-  [ HH.img
-    [ HP.src talk.image ]
+  [ HH.a
+    [ HP.href $ "/talks/" <> talk.slug
+    ]
+    [ HH.img
+      [ HP.src talk.image ]
+    ]
   ]
 
 render :: State -> HTML

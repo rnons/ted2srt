@@ -1,11 +1,13 @@
 module Core.Prelude
   ( module Prelude
+  , module Data.Maybe
   , class_
   , style
   ) where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
