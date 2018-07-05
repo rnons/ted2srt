@@ -1,0 +1,4 @@
+- patterns:
+  - \.stack-work/install/.*/bin/ted2srt
+  commands:
+  - stack exec ted2srt
