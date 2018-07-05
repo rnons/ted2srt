@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "build": "webpack -p --progress",
+    "pscid:build": "pulp build",
     "start": "webpack-dev-server --mode development --progress --port 7000"
   },
   "devDependencies": {

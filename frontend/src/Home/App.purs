@@ -5,15 +5,20 @@ module Home.App
 
 import Prelude
 
+import Core.Api as Api
+import Core.Model (Talk)
+import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
+import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Properties as HP
 
 data Query a
   = Init a
 
 type State =
-  { value :: String
+  { talks :: Array Talk
   }
 
 type HTML = H.ComponentHTML Query
@@ -22,21 +27,36 @@ type DSL m = H.ComponentDSL State Query Void m
 
 initialState :: State
 initialState =
-  { value: ""
+  { talks: []
   }
+
+renderTalk :: Talk -> HTML
+renderTalk talk =
+  HH.li
+  []
+  [ HH.img
+    [ HP.src talk.image ]
+  ]
 
 render :: State -> HTML
 render state =
   HH.div_
-  [ HH.text "hello world" ]
+  [ HH.text "hello world"
+  , HH.ul_ $
+    state.talks <#> renderTalk
+  ]
 
-app :: forall m. H.Component HH.HTML Query Unit Void m
-app = H.component
+app :: forall m. MonadAff m => H.Component HH.HTML Query Unit Void m
+app = H.lifecycleComponent
   { initialState: const initialState
   , render
   , eval
   , receiver: const Nothing
+  , initializer: Just $ H.action Init
+  , finalizer: Nothing
   }
   where
   eval :: Query ~> DSL m
-  eval (Init next) = pure next
+  eval (Init n) = n <$ do
+    H.liftAff Api.getTalks >>= traverse_ \talks ->
+      H.modify_ $ _ { talks = talks }
