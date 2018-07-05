@@ -1,56 +1,63 @@
-const webpack = require('webpack')
+const webpack = require("webpack");
 
 module.exports = {
   context: __dirname,
-  devtool: 'source-map',
-  target: 'web',
+  devtool: "source-map",
+  target: "web",
   entry: {
-    Home: ['./src/HomePage.ts'],
+    Home: ["./src/common.ts", "./src/HomePage.ts"]
   },
   output: {
-    path: __dirname + '/../backend/dist',
-    filename: '[name].js',
-    publicPath: '/',
+    path: __dirname + "/../backend/dist",
+    filename: "[name].js",
+    publicPath: "/"
   },
   resolve: {
-    modules: ['node_modules', 'output', 'src'],
-    extensions: ['.js', '.ts'],
+    modules: ["node_modules", "output", "src"],
+    extensions: [".js", ".ts"]
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
-        use: ['ts-loader'],
+        use: ["ts-loader"]
       },
       {
         test: /\.css$/,
         use: [
-          'style-loader',
+          "style-loader",
           {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 1,
-              modules: true,
-              localIdentName: '[name]_[local]_[hash:base64:5]',
-            },
+            loader: "css-loader",
+            options: { importLoaders: 1 }
           },
-          'postcss-loader',
-        ],
-      },
-    ],
+          "postcss-loader"
+        ]
+      }
+    ]
   },
   plugins: [],
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        common: {
+          name: "common",
+          chunks: "initial",
+          minChunks: 3
+        }
+      }
+    }
+  },
   devServer: {
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     historyApiFallback: true,
     proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
+      "/api": {
+        target: "http://localhost:3001",
         secure: false,
         pathRewrite: {
-          '^/api': '',
-        },
-      },
-    },
-  },
-}
+          "^/api": ""
+        }
+      }
+    }
+  }
+};
