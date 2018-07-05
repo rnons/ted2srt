@@ -8,6 +8,7 @@ dependencies:
 - base >=4.8.2.0 && <4.9 || >=4.9.1.0 && <5
 
 - aeson
+- base64-bytestring
 - beam-core
 - beam-migrate
 - beam-postgres
@@ -15,6 +16,8 @@ dependencies:
 - conduit
 - conduit-extra
 - containers
+- cryptonite
+- cryptonite-conduit
 - directory
 - either
 - hedis
@@ -22,11 +25,14 @@ dependencies:
 - http-conduit
 - http-types
 - load-env
+- lucid
+- memory
 - network
 - postgresql-simple
 - random
 - regex-posix
 - rio
+- servant-lucid
 - servant-server
 - system-filepath
 - text
@@ -43,8 +49,10 @@ dependencies:
 library:
   source-dirs: src
   default-extensions:
+  - DataKinds
   - DeriveGeneric
   - FlexibleInstances
+  - LambdaCase
   - NamedFieldPuns
   - NoImplicitPrelude
   - OverloadedStrings

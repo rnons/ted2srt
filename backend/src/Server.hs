@@ -1,22 +1,24 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE TypeOperators #-}
 module Server
   ( tedApi
   , tedServer
+  , allApi
+  , getBundleH
   ) where
 
-import           RIO               hiding (Handler)
+import           Config             (Config (..))
+import           Handler.Home       (getHomeH)
+import           Handler.Search     (getSearchH)
+import           Handler.Subtitles  (downloadSubtitleH, getSubtitleH)
+import           Handler.Talks      (getRandomTalkH, getTalkH, getTalksH)
+import           Lucid
+import           RIO                hiding (Handler)
 import           Servant
-import           Types             (AppM)
-
-import           Config            (Config (..))
-import           Handler.Search    (getSearchH)
-import           Handler.Subtitles (downloadSubtitleH, getSubtitleH)
-import           Handler.Talks     (getRandomTalkH, getTalkH, getTalksH)
+import           Servant.HTML.Lucid (HTML)
+import           Types              (AppM)
 import           Types
-import           Web.TED           (FileType (..))
+import           Web.TED            (FileType (..))
 
 
 instance FromHttpApiData FileType where
@@ -46,9 +48,18 @@ type TedApi =
                :> QueryParams "lang" Text
                :> Raw
   :<|> "search" :> QueryParam "q" Text :> Get '[JSON] [Talk]
+  :<|> Get '[HTML] (Html ())
+
+type AllApi = TedApi :<|> "dist" :> Raw
+
+getBundleH :: Server Raw
+getBundleH = serveDirectoryWebApp "dist"
 
 tedApi :: Proxy TedApi
 tedApi = Proxy
+
+allApi :: Proxy AllApi
+allApi = Proxy
 
 tedServer :: Config -> ServerT TedApi AppM
 tedServer config =
@@ -58,3 +69,4 @@ tedServer config =
   :<|> (\tid format lang -> Tagged (getSubtitleH config tid format lang))
   :<|> (\tid format lang -> Tagged (downloadSubtitleH config tid format lang))
   :<|> getSearchH
+  :<|> getHomeH

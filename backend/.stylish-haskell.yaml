@@ -221,6 +221,7 @@ newline: native
 #
 # No language extensions are enabled by default.
 language_extensions:
+  - LambdaCase
   - NamedFieldPuns
   - QuasiQuotes
   - RecordWildCards
