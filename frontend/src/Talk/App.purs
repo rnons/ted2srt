@@ -35,7 +35,7 @@ renderTalkInfo talk =
       [ style "width: 16rem; height: 9rem;"
       , HP.src talk.image
       ]
-    , HH.p [ class_ "mx-3 leading-normal"]
+    , HH.p [ class_ "mx-3 leading-normal text-grey500"]
       [ HH.text talk.description ]
     ]
   ]
