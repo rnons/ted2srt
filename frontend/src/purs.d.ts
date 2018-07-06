@@ -3,5 +3,9 @@ declare module "Home" {
 }
 
 declare module "Talk" {
-  export function main(): any;
+  export function main(args: any): any;
+}
+
+interface Window {
+  TALK: any;
 }

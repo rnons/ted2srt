@@ -5,33 +5,39 @@ module Talk.App
 
 import Core.Prelude
 
+import Core.Model (Talk)
 import Halogen as H
 import Halogen.HTML as HH
+
+type PageData =
+  { talk :: Talk
+  }
 
 data Query a
   = Init a
 
 type State =
-  { value :: String
+  { talk :: Talk
   }
 
 type HTML = H.ComponentHTML Query
 
 type DSL m = H.ComponentDSL State Query Void m
 
-initialState :: State
-initialState =
-  { value: ""
+initialState :: PageData -> State
+initialState pageData =
+  { talk: pageData.talk
   }
 
 render :: State -> HTML
-render state =
+render { talk } =
   HH.div_
-  [ HH.text "hello world" ]
+  [ HH.text talk.name
+  ]
 
-app :: forall m. H.Component HH.HTML Query Unit Void m
-app = H.component
-  { initialState: const initialState
+app :: forall m. PageData -> H.Component HH.HTML Query Unit Void m
+app pageData = H.component
+  { initialState: const $ initialState pageData
   , render
   , eval
   , receiver: const Nothing

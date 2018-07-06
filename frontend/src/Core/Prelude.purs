@@ -1,5 +1,6 @@
 module Core.Prelude
   ( module Prelude
+  , module Data.Either
   , module Data.Maybe
   , class_
   , style
@@ -7,6 +8,7 @@ module Core.Prelude
 
 import Prelude
 
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
