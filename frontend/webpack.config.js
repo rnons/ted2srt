@@ -6,7 +6,8 @@ module.exports = {
   target: "web",
   entry: {
     Home: ["./src/common.ts", "./src/HomePage.ts"],
-    Talk: ["./src/common.ts", "./src/TalkPage.ts"]
+    Talk: ["./src/common.ts", "./src/TalkPage.ts"],
+    Search: ["./src/common.ts", "./src/SearchPage.ts"]
   },
   output: {
     path: __dirname + "/../backend/dist",

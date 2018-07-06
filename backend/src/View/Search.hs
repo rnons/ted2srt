@@ -1,5 +1,6 @@
 module View.Search where
 
+import qualified Data.Text   as T
 import           Lucid
 import           RIO
 import           Types
@@ -18,6 +19,6 @@ getSearchH mq =
           meta_ [name_ "viewport"
                 ,content_ "width=device-width, initial-scale=1"]
           script_ $
-            "window.q = " <> q
+            "window.Q = " <> T.pack (show q)
         body_ $ do
           bundle

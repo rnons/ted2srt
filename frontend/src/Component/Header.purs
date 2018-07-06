@@ -2,14 +2,15 @@ module Component.Header where
 
 import Core.Prelude
 
-import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
 renderForm :: forall p i. HH.HTML p i
 renderForm =
   HH.form
-  [ class_ "flex-1 ml-8"]
+  [ class_ "flex-1 ml-8"
+  , HP.action "/search"
+  ]
   [ HH.input
     [ class_ "border w-full py-2 px-2 focus:border-red500 outline-none"
     , HP.type_ HP.InputSearch

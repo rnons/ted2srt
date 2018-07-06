@@ -4,7 +4,7 @@ module Core.Prelude
   , module Data.Foldable
   , module Data.Maybe
   , module Data.Tuple
-  , moduel Debug.Trace
+  , module Debug.Trace
   , class_
   , style
   ) where
