@@ -1,8 +1,10 @@
 module Core.Prelude
   ( module Prelude
   , module Data.Either
+  , module Data.Foldable
   , module Data.Maybe
   , module Data.Tuple
+  , moduel Debug.Trace
   , class_
   , style
   ) where
@@ -12,6 +14,8 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
+import Data.Foldable (traverse_)
+import Debug.Trace (traceM)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 

@@ -1,5 +1,6 @@
 module Core.Api
   ( getTalks
+  , getTalkTranscript
   ) where
 
 import Prelude
@@ -34,3 +35,14 @@ get url = AX.get Response.string url >>= handleResponse
 
 getTalks :: Response (Array Talk)
 getTalks = get "/api/talks?limit=5"
+
+getTalkTranscript :: Talk -> Response String
+getTalkTranscript talk = do
+  -- get $ "/api/talks/" <> show talk.id <> "/transcripts/txt?lang=en"
+  { status, response } <- AX.get Response.string url
+  if status == StatusCode 200
+    then pure $ Right response
+    else
+      pure $ Left $ NonEmpty.singleton $ ForeignError "status code is not 200"
+  where
+  url = "/api/talks/" <> show talk.id <> "/transcripts/txt?lang=en"

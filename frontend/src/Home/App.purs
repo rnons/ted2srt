@@ -8,7 +8,6 @@ import Core.Prelude
 import Core.Api as Api
 import Core.Model (Talk, getTitleSpeaker)
 import Component.Header as Header
-import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H

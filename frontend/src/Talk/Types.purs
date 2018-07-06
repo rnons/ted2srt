@@ -9,6 +9,7 @@ data Query a
 
 type State =
   { talk :: Talk
+  , transcript :: Array String
   }
 
 type HTML = H.ComponentHTML Query

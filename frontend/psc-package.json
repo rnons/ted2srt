@@ -4,6 +4,7 @@
   "source": "https://github.com/purescript/package-sets.git",
   "depends": [
     "affjax",
+    "debug",
     "halogen",
     "prelude",
     "simple-json"
