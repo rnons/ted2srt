@@ -1,3 +1,7 @@
 @import "tailwindcss/preflight";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+
+ul {
+  @apply list-reset;
+}

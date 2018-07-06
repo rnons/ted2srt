@@ -2,6 +2,7 @@ module Core.Prelude
   ( module Prelude
   , module Data.Either
   , module Data.Maybe
+  , module Data.Tuple
   , class_
   , style
   ) where
@@ -10,6 +11,7 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 

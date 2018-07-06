@@ -6,6 +6,7 @@ module Talk.App
 import Core.Prelude
 
 import Core.Model (Talk)
+import Data.Newtype (unwrap)
 import Halogen as H
 import Halogen.HTML as HH
 

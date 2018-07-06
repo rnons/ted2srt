@@ -6,7 +6,7 @@ module Home.App
 import Core.Prelude
 
 import Core.Api as Api
-import Core.Model (Talk)
+import Core.Model (Talk, getTitleSpeaker)
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
@@ -39,19 +39,28 @@ renderTalk talk =
   HH.li
   []
   [ HH.a
-    [ HP.href $ "/talks/" <> talk.slug
+    [ class_ "no-underline"
+    , HP.href $ "/talks/" <> talk.slug
     ]
     [ HH.img
       [ HP.src talk.image ]
+    , HH.div []
+      [ HH.h3 []
+        [ HH.text title ]
+      , HH.div []
+        [ HH.text speaker ]
+      ]
     ]
   ]
+  where
+  Tuple title speaker = getTitleSpeaker talk
 
 render :: State -> HTML
 render state =
   HH.div
   [ class_ "container" ]
   [ HH.text "TED2srt"
-  , HH.ul_ $
+  , HH.ul [ class_ "HomeGrid"] $
     state.talks <#> renderTalk
   ]
 
