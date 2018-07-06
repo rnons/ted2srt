@@ -8,11 +8,13 @@ import           Types
 data Bundle
   = HomeBundle
   | TalkBundle
+  | SearchBundle
 
 instance Show Bundle where
   show = \case
     HomeBundle -> "Home"
     TalkBundle -> "Talk"
+    SearchBundle -> "Search"
 
 includeBundle :: Bundle -> AppM (Html ())
 includeBundle bundle = lift $ do

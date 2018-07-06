@@ -1,5 +1,5 @@
 module Api.Search
-  ( getSearchH
+  ( getSearchApiH
   ) where
 
 import           Config
@@ -11,7 +11,7 @@ import           Model
 import           Models.Talk
 import           Network.HTTP.Conduit             (HttpException)
 import           RIO
-import           Servant                          (err400)
+import           Servant                          (err400, throwError)
 import           Types                            (AppM)
 import           Web.TED                          (SearchTalk (..))
 import qualified Web.TED                          as TED
@@ -39,6 +39,6 @@ searchTalk q = do
       logErrorS "searchTalk" (displayShow e) >> searchTalkFromDb q
     )
 
-getSearchH :: Maybe Text -> AppM [Talk]
-getSearchH (Just q) = searchTalk q
-getSearchH Nothing  = throwM err400
+getSearchApiH :: Maybe Text -> AppM [Talk]
+getSearchApiH (Just q) = searchTalk q
+getSearchApiH Nothing  = throwError err400

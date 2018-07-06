@@ -7,7 +7,7 @@ module Server
   , getBundleH
   ) where
 
-import           Api.Search         (getSearchH)
+import           Api.Search         (getSearchApiH)
 import           Api.Subtitles      (downloadSubtitleH, getSubtitleH)
 import           Api.Talks          (getRandomTalkApiH, getTalkApiH,
                                      getTalksApiH)
@@ -19,6 +19,7 @@ import           Servant.HTML.Lucid (HTML)
 import           Types              (AppM)
 import           Types
 import           View.Home          (getHomeH)
+import           View.Search        (getSearchH)
 import           View.Talk          (getTalkH)
 import           Web.TED            (FileType (..))
 
@@ -59,6 +60,7 @@ type TedApi =
 type TedView =
        Get '[HTML] (Html ())
   :<|> "talks" :> Capture "slug" Text :> Get '[HTML] (Html ())
+  :<|> "search" :> QueryParam "q" Text :> Get '[HTML] (Html ())
 
 type TedApiView =
       "api" :> TedApi
@@ -84,13 +86,14 @@ tedApiServer config =
   :<|> getTalkApiH
   :<|> (\tid format lang -> Tagged (getSubtitleH config tid format lang))
   :<|> (\tid format lang -> Tagged (downloadSubtitleH config tid format lang))
-  :<|> getSearchH
+  :<|> getSearchApiH
 
 
 tedViewServer :: ServerT TedView AppM
 tedViewServer =
        getHomeH
   :<|> getTalkH
+  :<|> getSearchH
 
 tedServer :: Config -> ServerT TedApiView AppM
 tedServer config =
