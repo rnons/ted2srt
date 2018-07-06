@@ -24,8 +24,10 @@ render =
   [ class_ "bg-white border-b border-grey300 py-4 shadow"]
   [ HH.div
     [ class_ "container flex items-center"]
-    [ HH.span
-      [ class_ "font-mono text-xl text-red500"]
+    [ HH.a
+      [ class_ "font-mono text-xl text-red500 no-underline"
+      , HP.href "/"
+      ]
       [ HH.text "∷ TED → [SRT]" ]
     , renderForm
     ]
