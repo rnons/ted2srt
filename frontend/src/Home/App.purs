@@ -7,6 +7,7 @@ import Core.Prelude
 
 import Core.Api as Api
 import Core.Model (Talk, getTitleSpeaker)
+import Component.Header as Header
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
@@ -57,11 +58,13 @@ renderTalk talk =
 
 render :: State -> HTML
 render state =
-  HH.div
-  [ class_ "container" ]
-  [ HH.text "TED2srt"
-  , HH.ul [ class_ "HomeGrid"] $
-    state.talks <#> renderTalk
+  HH.div_
+  [ Header.render
+  , HH.div
+    [ class_ "container py-6" ]
+    [ HH.ul [ class_ "HomeGrid"] $
+      state.talks <#> renderTalk
+    ]
   ]
 
 app :: forall m. MonadAff m => PageData -> H.Component HH.HTML Query Unit Void m
