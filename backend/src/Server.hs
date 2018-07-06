@@ -94,6 +94,5 @@ tedViewServer =
 
 tedServer :: Config -> ServerT TedApiView AppM
 tedServer config =
-    tedApiServer config
-  :<|>
-    tedViewServer
+       tedApiServer config
+  :<|> tedViewServer

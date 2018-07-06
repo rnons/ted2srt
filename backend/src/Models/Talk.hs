@@ -21,7 +21,7 @@ import           Network.HTTP.Client.Conduit      (HttpException, httpLbs,
 import           RIO                              hiding (id)
 import           Text.HTML.DOM                    (parseLBS)
 import           Text.XML.Cursor                  (fromDocument)
-import           Types                            (AppM)
+import           Types                            (AppRIO)
 
 import           Config                           (Config (..))
 import           Model
@@ -60,7 +60,7 @@ instance FromJSON TalkObj where
   parseJSON _          = mzero
 
 
-getTalks :: Int -> AppM [Talk]
+getTalks :: Int -> AppRIO [Talk]
 getTalks limit = do
   Config { dbConn } <- ask
   liftIO $ runBeamPostgres dbConn $ do
@@ -70,7 +70,7 @@ getTalks limit = do
       $ all_ (_talk talkDb)
       )
 
-getTalk :: Int -> Text -> AppM (Maybe Talk)
+getTalk :: Int -> Text -> AppRIO (Maybe Talk)
 getTalk tid url = do
   Config { kvConn } <- ask
   cached <- liftIO $ KV.runRedis kvConn $
@@ -80,7 +80,7 @@ getTalk tid url = do
     Right Nothing  -> saveToDB url
     Left _         -> saveToDB url
 
-getTalkById :: Int -> Maybe Text -> AppM (Maybe Talk)
+getTalkById :: Int -> Maybe Text -> AppRIO (Maybe Talk)
 getTalkById tid mUrl = do
   Config { dbConn } <- ask
   xs <- liftIO $ runBeamPostgres dbConn $ runSelectReturningOne $ select
@@ -95,7 +95,7 @@ hush :: Either a b -> Maybe b
 hush (Left _)  = Nothing
 hush (Right v) = Just v
 
-getTalkBySlug :: Text -> AppM (Maybe Talk)
+getTalkBySlug :: Text -> AppRIO (Maybe Talk)
 getTalkBySlug slug = do
   Config { kvConn } <- ask
   mtid <- liftIO $ fmap (join . hush) <$> KV.runRedis kvConn $ KV.get $ Keys.slug slug
@@ -109,7 +109,7 @@ getTalkBySlug slug = do
   where
     url = mkTalkUrl slug
 
-saveToDB :: Text -> AppM (Maybe Talk)
+saveToDB :: Text -> AppRIO (Maybe Talk)
 saveToDB url = do
   Config{..} <- ask
   mTalk <- fetchTalk url
@@ -131,7 +131,7 @@ saveToDB url = do
       return $ Just talk
     Nothing -> return Nothing
 
-saveTranscriptIfNotAlready :: Talk -> AppM ()
+saveTranscriptIfNotAlready :: Talk -> AppRIO ()
 saveTranscriptIfNotAlready Talk {..} = do
   Config { dbConn } <- ask
   xs <- liftIO $ runBeamPostgres dbConn $ runSelectReturningOne $ select
@@ -158,7 +158,7 @@ saveTranscriptIfNotAlready Talk {..} = do
           |] (_talkId, _talkName, transcript)
         Nothing -> return ()
 
-fetchTalk :: Text -> AppM (Maybe Talk)
+fetchTalk :: Text -> AppRIO (Maybe Talk)
 fetchTalk url = do
   handle (\(_::HttpException) -> return Nothing) $ do
     req <- parseUrlThrow $ T.unpack url

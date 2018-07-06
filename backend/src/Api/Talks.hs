@@ -8,13 +8,13 @@ import qualified Database.PostgreSQL.Simple       as Pg
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import           Models.Talk                      (getTalkBySlug, getTalks)
 import           RIO
-import           Servant                          (err404)
+import           Servant                          (err404, throwError)
 import           Types
 
 
 getTalksApiH :: Maybe Int -> Maybe Int -> AppM [Talk]
 getTalksApiH _ mLimit = do
-  talks <- getTalks limit
+  talks <- lift $ getTalks limit
   pure talks
   where
     defaultLimit = 10
@@ -36,7 +36,7 @@ getRandomTalkApiH = do
 
 getTalkApiH :: Text -> AppM Talk
 getTalkApiH slug = do
-  mTalk <- getTalkBySlug slug
+  mTalk <- lift $ getTalkBySlug slug
   case mTalk of
     Just talk -> pure talk
-    Nothing   -> throwM err404
+    Nothing   -> throwError err404

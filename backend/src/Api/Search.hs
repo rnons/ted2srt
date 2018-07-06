@@ -3,6 +3,7 @@ module Api.Search
   ) where
 
 import           Config
+import           Control.Monad.Except             (catchError)
 import qualified Data.Text                        as T
 import qualified Database.PostgreSQL.Simple       as Pg
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
@@ -29,13 +30,14 @@ searchTalkFromDb q = do
 
 searchTalk :: Text -> AppM [Talk]
 searchTalk q = do
-  handle
-    (\(e::HttpException) ->
-       logErrorS "searchTalk" (displayShow e) >> searchTalkFromDb q
-    ) $ do
+  (do
     searchResults <- liftIO $ TED.searchTalk q
     liftM catMaybes $ forM searchResults $ \SearchTalk{slug} -> do
-      getTalkBySlug slug
+      lift $ getTalkBySlug slug
+    ) `catchError`
+    (\e ->
+      logErrorS "searchTalk" (displayShow e) >> searchTalkFromDb q
+    )
 
 getSearchH :: Maybe Text -> AppM [Talk]
 getSearchH (Just q) = searchTalk q

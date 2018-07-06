@@ -14,7 +14,7 @@ import           Types
 import           Web.TED                   (FileType (..), Subtitle (..), toSub)
 
 
-getSubtitlePath :: Int -> FileType -> [Text] -> AppM (Maybe FilePath)
+getSubtitlePath :: Int -> FileType -> [Text] -> RIO Config (Maybe FilePath)
 getSubtitlePath tid format lang = do
   mTalk <- getTalkById tid Nothing
   case mTalk of
@@ -35,6 +35,7 @@ getSubtitleH config tid format lang _ respond = do
 
 downloadSubtitleH :: Config -> Int -> FileType -> [Text] -> Application
 downloadSubtitleH config tid format lang _ respond = do
+  -- path <- lift $ runRIO config $ getSubtitlePath tid format lang
   path <- runRIO config $ getSubtitlePath tid format lang
   case path of
     Just p  -> do

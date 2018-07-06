@@ -27,6 +27,7 @@ dependencies:
 - load-env
 - lucid
 - memory
+- mtl
 - network
 - postgresql-simple
 - random
