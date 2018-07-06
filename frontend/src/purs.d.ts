@@ -1,5 +1,5 @@
 declare module "Home" {
-  export function main(): any;
+  export function main(args: any): any;
 }
 
 declare module "Talk" {
@@ -7,5 +7,6 @@ declare module "Talk" {
 }
 
 interface Window {
+  TALKS: any;
   TALK: any;
 }

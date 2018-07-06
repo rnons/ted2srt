@@ -1,2 +1,7 @@
 import * as Main from "Home";
-Main.main();
+
+const data = {
+  talks: window.TALKS
+};
+
+Main.main(data)();
