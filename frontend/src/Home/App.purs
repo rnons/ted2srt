@@ -62,7 +62,7 @@ render state =
   [ Header.render
   , HH.div
     [ class_ "container py-6" ]
-    [ HH.ul [ class_ "HomeGrid"] $
+    [ HH.ul [ class_ "HomeApp"] $
       state.talks <#> renderTalk
     ]
   ]

@@ -1,39 +1,51 @@
 module Talk.App
-  ( Query
-  , app
+  ( app
   ) where
 
 import Core.Prelude
 
+import Component.Header as Header
 import Core.Model (Talk)
-import Data.Newtype (unwrap)
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Properties as HP
+import Talk.Sidebar as Sidebar
+import Talk.Types
 
 type PageData =
   { talk :: Talk
   }
-
-data Query a
-  = Init a
-
-type State =
-  { talk :: Talk
-  }
-
-type HTML = H.ComponentHTML Query
-
-type DSL m = H.ComponentDSL State Query Void m
 
 initialState :: PageData -> State
 initialState pageData =
   { talk: pageData.talk
   }
 
+renderTalkInfo :: Talk -> HTML
+renderTalkInfo talk =
+  HH.div_
+  [ HH.h1 [ class_ "text-lg mb-3"]
+    [ HH.text talk.name ]
+  , HH.div [ class_ "flex"]
+    [ HH.img
+      [ style "width: 16rem; height: 9rem;"
+      , HP.src talk.image
+      ]
+    , HH.p [ class_ "mx-3 leading-normal"]
+      [ HH.text talk.description ]
+    ]
+  ]
+
 render :: State -> HTML
 render { talk } =
   HH.div_
-  [ HH.text talk.name
+  [ Header.render
+  , HH.div
+    [ class_ "TalkApp container py-6"]
+    [ HH.div_
+      [ renderTalkInfo talk ]
+    , Sidebar.render talk
+    ]
   ]
 
 app :: forall m. PageData -> H.Component HH.HTML Query Unit Void m
