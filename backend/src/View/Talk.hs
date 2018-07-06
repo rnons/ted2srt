@@ -1,6 +1,5 @@
 module View.Talk where
 
-import           Data.Aeson      (encode)
 import           Data.Aeson.Text (encodeToLazyText)
 import qualified Data.Text.Lazy  as LT
 import           Lucid
