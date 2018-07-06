@@ -1,5 +1,8 @@
 @import "tailwindcss/preflight";
 @import "tailwindcss/components";
+
+@import "./styles/Link.css";
+
 @import "tailwindcss/utilities";
 
 ul {

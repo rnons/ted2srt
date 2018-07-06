@@ -39,15 +39,15 @@ renderTalk talk =
   HH.li
   []
   [ HH.a
-    [ class_ "no-underline"
+    [ class_ "Link"
     , HP.href $ "/talks/" <> talk.slug
     ]
     [ HH.img
       [ HP.src talk.image ]
-    , HH.div []
-      [ HH.h3 []
+    , HH.div [ class_ "py-2"]
+      [ HH.h3_
         [ HH.text title ]
-      , HH.div []
+      , HH.div [ class_ "mt-1 text-grey500"]
         [ HH.text speaker ]
       ]
     ]

@@ -1,0 +1,7 @@
+.Link {
+  @apply text-black no-underline;
+}
+
+.Link:hover {
+  @apply text-red500;
+}
