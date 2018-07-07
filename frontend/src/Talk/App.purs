@@ -101,7 +101,7 @@ renderTwoTranscripts state@{ transcripts } lang1 lang2 =
         ]
 
 renderTranscript :: State -> HTML
-renderTranscript state = trace state.transcripts $ \_ ->
+renderTranscript state =
   HH.article
   [ class_ "mt-6 leading-normal"]
   [ case state.selectedLang of

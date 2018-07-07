@@ -388,23 +388,7 @@ module.exports = {
     "6": "1.5rem",
     "8": "2rem",
     "10": "2.5rem",
-    "12": "3rem",
-    "16": "4rem",
-    "24": "6rem",
-    "32": "8rem",
-    "48": "12rem",
-    "64": "16rem",
     "1/2": "50%",
-    "1/3": "33.33333%",
-    "2/3": "66.66667%",
-    "1/4": "25%",
-    "3/4": "75%",
-    "1/5": "20%",
-    "2/5": "40%",
-    "3/5": "60%",
-    "4/5": "80%",
-    "1/6": "16.66667%",
-    "5/6": "83.33333%",
     full: "100%",
     screen: "100vw"
   },
@@ -435,12 +419,6 @@ module.exports = {
     "6": "1.5rem",
     "8": "2rem",
     "10": "2.5rem",
-    "12": "3rem",
-    "16": "4rem",
-    "24": "6rem",
-    "32": "8rem",
-    "48": "12rem",
-    "64": "16rem",
     full: "100%",
     screen: "100vh"
   },
@@ -500,16 +478,8 @@ module.exports = {
   */
 
   maxWidth: {
-    xs: "20rem",
-    sm: "30rem",
-    md: "40rem",
-    lg: "50rem",
-    xl: "60rem",
-    "2xl": "70rem",
-    "3xl": "80rem",
-    "4xl": "90rem",
-    "5xl": "100rem",
-    full: "100%"
+    full: "100%",
+    screen: "100vw"
   },
 
   /*
@@ -556,12 +526,7 @@ module.exports = {
     "5": "1.25rem",
     "6": "1.5rem",
     "8": "2rem",
-    "10": "2.5rem",
-    "12": "3rem",
-    "16": "4rem",
-    "20": "5rem",
-    "24": "6rem",
-    "32": "8rem"
+    "10": "2.5rem"
   },
 
   /*
@@ -590,12 +555,7 @@ module.exports = {
     "5": "1.25rem",
     "6": "1.5rem",
     "8": "2rem",
-    "10": "2.5rem",
-    "12": "3rem",
-    "16": "4rem",
-    "20": "5rem",
-    "24": "6rem",
-    "32": "8rem"
+    "10": "2.5rem"
   },
 
   /*
@@ -649,10 +609,6 @@ module.exports = {
 
   shadows: {
     default: "0 2px 4px 0 rgba(0,0,0,0.10)",
-    md: "0 4px 8px 0 rgba(0,0,0,0.12), 0 2px 4px 0 rgba(0,0,0,0.08)",
-    lg: "0 15px 30px 0 rgba(0,0,0,0.11), 0 5px 15px 0 rgba(0,0,0,0.08)",
-    inner: "inset 0 2px 4px 0 rgba(0,0,0,0.06)",
-    outline: "0 0 0 3px rgba(52,144,220,0.5)",
     none: "none"
   },
 
@@ -669,15 +625,7 @@ module.exports = {
   |
   */
 
-  zIndex: {
-    auto: "auto",
-    "0": 0,
-    "10": 10,
-    "20": 20,
-    "30": 30,
-    "40": 40,
-    "50": 50
-  },
+  zIndex: {},
 
   /*
   |-----------------------------------------------------------------------------
@@ -756,53 +704,53 @@ module.exports = {
   */
 
   modules: {
-    appearance: ["responsive"],
-    backgroundAttachment: ["responsive"],
-    backgroundColors: ["responsive", "hover", "focus"],
-    backgroundPosition: ["responsive"],
-    backgroundRepeat: ["responsive"],
-    backgroundSize: ["responsive"],
+    appearance: false,
+    backgroundAttachment: false,
+    backgroundColors: [],
+    backgroundPosition: [],
+    backgroundRepeat: false,
+    backgroundSize: false,
     borderCollapse: [],
-    borderColors: ["responsive", "hover", "focus"],
-    borderRadius: ["responsive"],
-    borderStyle: ["responsive"],
-    borderWidths: ["responsive"],
-    cursor: ["responsive"],
+    borderColors: [],
+    borderRadius: [],
+    borderStyle: [],
+    borderWidths: [],
+    cursor: [],
     display: ["responsive"],
     flexbox: ["responsive"],
-    float: ["responsive"],
-    fonts: ["responsive"],
-    fontWeights: ["responsive", "hover", "focus"],
+    float: false,
+    fonts: [],
+    fontWeights: [],
     height: ["responsive"],
     leading: ["responsive"],
-    lists: ["responsive"],
+    lists: [],
     margin: ["responsive"],
-    maxHeight: ["responsive"],
-    maxWidth: ["responsive"],
-    minHeight: ["responsive"],
-    minWidth: ["responsive"],
-    negativeMargin: ["responsive"],
-    opacity: ["responsive"],
-    outline: ["focus"],
-    overflow: ["responsive"],
+    maxHeight: [],
+    maxWidth: [],
+    minHeight: [],
+    minWidth: [],
+    negativeMargin: false,
+    opacity: false,
+    outline: [],
+    overflow: [],
     padding: ["responsive"],
-    pointerEvents: ["responsive"],
+    pointerEvents: [],
     position: ["responsive"],
-    resize: ["responsive"],
-    shadows: ["responsive", "hover", "focus"],
-    svgFill: [],
-    svgStroke: [],
-    textAlign: ["responsive"],
-    textColors: ["responsive", "hover", "focus"],
-    textSizes: ["responsive"],
-    textStyle: ["responsive", "hover", "focus"],
-    tracking: ["responsive"],
-    userSelect: ["responsive"],
-    verticalAlign: ["responsive"],
-    visibility: ["responsive"],
-    whitespace: ["responsive"],
+    resize: false,
+    shadows: [],
+    svgFill: false,
+    svgStroke: false,
+    textAlign: [],
+    textColors: ["hover"],
+    textSizes: [],
+    textStyle: ["hover"],
+    tracking: [],
+    userSelect: [],
+    verticalAlign: false,
+    visibility: false,
+    whitespace: [],
     width: ["responsive"],
-    zIndex: ["responsive"]
+    zIndex: []
   },
 
   /*
