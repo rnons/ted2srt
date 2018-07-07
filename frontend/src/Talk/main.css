@@ -7,3 +7,13 @@
 article p {
   margin-bottom: 0.75rem;
 }
+
+.PlayButton {
+  opacity: 0.5;
+  transition: all 0.5s;
+}
+
+.Image:hover .PlayButton {
+  opacity: 1;
+  transform: scale(1.8);
+}

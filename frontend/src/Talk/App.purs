@@ -38,9 +38,21 @@ renderTalkInfo talk =
   [ HH.h1 [ class_ "text-lg mb-3"]
     [ HH.text talk.name ]
   , HH.div [ class_ "flex"]
-    [ HH.img
-      [ style "width: 16rem; height: 9rem;"
-      , HP.src talk.image
+    [ HH.div
+      [ class_ "relative flex-no-shrink cursor-pointer Image"
+      , style "width: 16rem; height: 9rem;"
+      ]
+      [ HH.img
+        [ class_ "w-full h-full"
+        , HP.src talk.image
+        ]
+      , HH.div
+        [ class_ "absolute pin text-white hover:bg-grey300 flex items-center justify-center"]
+        [ HH.button
+          [ class_ "w-8 h-8 text-white text-xl PlayButton"
+          ]
+          [ HH.text "▶" ]
+        ]
       ]
     , HH.p [ class_ "mx-3 leading-normal text-grey500"]
       [ HH.text talk.description ]
