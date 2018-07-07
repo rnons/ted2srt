@@ -46,7 +46,10 @@ renderLanguages talk =
     [ HH.text "Select Languages"]
   , HH.ul [ class_ "py-1 mb-4"] $
     talk.languages <#> \language ->
-      HH.li [ class_ "py-1"]
+      HH.li
+      [ class_ "py-1"
+      , HE.onClick $ HE.input_ $ OnClickLang language.languageCode
+      ]
       [ HH.text language.languageName]
   ]
 

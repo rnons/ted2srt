@@ -1,5 +1,5 @@
 .TalkApp {
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-gap: 2rem;
+  grid-gap: 3rem;
 }

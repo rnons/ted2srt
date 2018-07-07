@@ -15,7 +15,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Foldable (traverse_)
-import Debug.Trace (traceM)
+import Debug.Trace (trace, traceM)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 

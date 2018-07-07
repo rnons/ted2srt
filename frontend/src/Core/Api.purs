@@ -37,15 +37,15 @@ get url = AX.get Response.string url >>= handleResponse
 getTalks :: Response (Array Talk)
 getTalks = get "/api/talks?limit=5"
 
-getTalkTranscript :: Talk -> Response String
-getTalkTranscript talk = do
+getTalkTranscript :: Talk -> String -> Response String
+getTalkTranscript talk lang = do
   { status, response } <- AX.get Response.string url
   if status == StatusCode 200
     then pure $ Right response
     else
       pure $ Left $ NonEmpty.singleton $ ForeignError "status code is not 200"
   where
-  url = "/api/talks/" <> show talk.id <> "/transcripts/txt?lang=en"
+  url = "/api/talks/" <> show talk.id <> "/transcripts/txt?lang=" <> lang
 
 searchTalks :: String -> Response (Array Talk)
 searchTalks q = get $ "/api/search?q=" <> q

@@ -10,10 +10,15 @@ import Core.Api as Api
 import Core.Model (Talk)
 import Data.String as String
 import Effect.Aff.Class (class MonadAff)
+import Foreign.Object as FO
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
+import Simple.JSON (read, readJSON)
 import Talk.Sidebar as Sidebar
+import Web.HTML (window)
+import Web.HTML.Window as Window
+import Web.Storage.Storage as Storage
 
 type PageData =
   { talk :: Talk
@@ -22,7 +27,8 @@ type PageData =
 initialState :: PageData -> State
 initialState pageData =
   { talk: pageData.talk
-  , transcript: []
+  , selectedLang: NoLang
+  , transcripts: FO.empty
   }
 
 renderTalkInfo :: Talk -> HTML
@@ -40,15 +46,31 @@ renderTalkInfo talk =
     ]
   ]
 
-renderTranscript :: State -> HTML
-renderTranscript state =
-  HH.article
-  [ class_ "mt-4 leading-normal"] $
-  state.transcript <#> \paragraph ->
-    HH.p
-    [ class_ "mb-3"]
-    [ HH.text paragraph]
+renderTranscriptLang :: State -> String -> HTML
+renderTranscriptLang state lang =
+  case FO.lookup lang state.transcripts of
+    Nothing -> HH.text ""
+    Just transcript -> HH.div_ $
+      transcript <#> \paragraph ->
+        HH.p
+        [ class_ "mb-3"]
+        [ HH.text paragraph]
 
+renderTranscript :: State -> HTML
+renderTranscript state = trace state.transcripts $ \_ ->
+  HH.article
+  [ class_ "mt-4 leading-normal"]
+  [ case state.selectedLang of
+      NoLang -> HH.text "Select language from sidebar."
+      OneLang lang ->
+        renderTranscriptLang state lang
+      TwoLang lang1 lang2 ->
+        HH.div
+        [ style "display: grid; grid-template-columns: 1fr 1fr; grid-gap: 2rem;"]
+        [ renderTranscriptLang state lang1
+        , renderTranscriptLang state lang2
+        ]
+  ]
 
 render :: State -> HTML
 render state@{ talk } =
@@ -74,7 +96,51 @@ app pageData = H.lifecycleComponent
   , finalizer: Nothing
   }
   where
+  fetchTranscript :: String -> DSL m Unit
+  fetchTranscript lang = do
+    state <- H.get
+    when (not $ FO.member lang state.transcripts) $
+      H.liftAff (Api.getTalkTranscript pageData.talk lang) >>= traverse_ \txt ->
+        let
+          transcript = String.split (String.Pattern "\n") txt
+        in
+          H.modify_ $ _
+            { transcripts = FO.insert lang transcript state.transcripts
+            }
+
   eval :: Query ~> DSL m
   eval (Init n) = n <$ do
-    H.liftAff (Api.getTalkTranscript pageData.talk) >>= traverse_ \txt ->
-      H.modify_ $ _ { transcript = String.split (String.Pattern "\n") txt }
+    selectedLang <- H.liftEffect $ window >>= Window.localStorage >>=
+      Storage.getItem "languages" >>= \ml -> pure $ case ml of
+        Nothing -> OneLang "en"
+        Just languages -> case readJSON languages of
+          Right [lang] -> OneLang lang
+          Right [lang1, lang2] -> TwoLang lang1 lang2
+          _ -> OneLang "en"
+    H.modify_ $ _ { selectedLang = selectedLang }
+
+    case selectedLang of
+      NoLang -> pure unit
+      OneLang lang -> fetchTranscript lang
+      TwoLang lang1 lang2 ->
+        H.fork (fetchTranscript lang1) *> fetchTranscript lang2
+
+  eval (OnClickLang language n) = n <$ do
+    fetchTranscript language
+    state <- H.get
+    let
+      selectedLang = case state.selectedLang of
+        NoLang -> OneLang language
+        OneLang lang ->
+          if lang == language
+          then NoLang
+          else TwoLang lang language
+        TwoLang lang1 lang2 ->
+          if lang1 == language
+          then OneLang lang2
+          else
+            if lang2 == language
+            then OneLang lang1
+            else TwoLang lang1 lang2
+    traceM selectedLang
+    H.modify_ $ _ { selectedLang = selectedLang }
