@@ -13,11 +13,13 @@ data SelectedLang
 data Query a
   = Init a
   | OnClickLang String a
+  | OnClickPlay a
 
 type State =
   { talk :: Talk
   , selectedLang :: SelectedLang
   , transcripts :: FO.Object (Array String)
+  , playing :: Boolean
   }
 
 type HTML = H.ComponentHTML Query

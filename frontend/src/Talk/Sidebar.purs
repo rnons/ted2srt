@@ -10,6 +10,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Talk.Util as Util
 
 type Video =
   { name :: String
@@ -20,14 +21,6 @@ type Video =
 mkVideo :: String -> String -> String -> Video
 mkVideo = { name: _, bitrate: _, resolution: _}
 
-mkVideoUrl :: Talk -> Video -> String
-mkVideoUrl talk video =
-  "https://download.ted.com/talks/"
-    <> talk.mediaSlug
-    <> "-"
-    <> video.bitrate
-    <> ".mp4"
-
 videos :: Array Video
 videos =
   [ mkVideo "720p" "1500k" "1280x720"
@@ -35,15 +28,6 @@ videos =
   , mkVideo "360p" "600k" "640x360"
   , mkVideo "280p" "320k" "512x288"
   ]
-
-mkTranscriptUrl :: Talk -> SelectedLang -> String -> String
-mkTranscriptUrl talk selectedLang format =
-  "/api/talks/" <> show talk.id <> "/transcripts/download/" <> format <> query
-  where
-  query = case selectedLang of
-    NoLang -> "?lang=en"
-    OneLang lang -> "?lang=" <> lang
-    TwoLang lang1 lang2 -> "?lang=" <> lang1 <> "&lang=" <> lang2
 
 titleCls :: String
 titleCls = "text-sm font-normal text-grey500"
@@ -61,7 +45,7 @@ renderVideo talk =
       HH.li_
       [ HH.a
         [ class_ $ itemCls <> " Link block"
-        , HP.href $ mkVideoUrl talk video
+        , HP.href $ Util.mkVideoUrl talk video.bitrate
         , HP.title $ "Resolution: " <> video.resolution
         ]
         [ HH.text video.name ]
@@ -78,7 +62,7 @@ renderTranscript { talk, selectedLang } =
       HH.li_
       [ HH.a
         [ class_ $ itemCls <> " Link block uppercase"
-        , HP.href $ mkTranscriptUrl talk selectedLang format
+        , HP.href $ Util.mkTranscriptDownloadUrl talk selectedLang format
         ]
         [ HH.text format]
       ]

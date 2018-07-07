@@ -9,11 +9,11 @@ article p {
 }
 
 .PlayButton {
-  opacity: 0.5;
+  opacity: 0.8;
   transition: all 0.5s;
 }
 
 .Image:hover .PlayButton {
   opacity: 1;
-  transform: scale(1.8);
+  transform: scale(1.5);
 }

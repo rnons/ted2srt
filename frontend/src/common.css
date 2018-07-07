@@ -13,3 +13,7 @@ html {
 ul {
   @apply list-reset;
 }
+
+video::-webkit-media-text-track-display {
+  font-size: 1.5rem;
+}

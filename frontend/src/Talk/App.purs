@@ -9,14 +9,17 @@ import Component.Header as Header
 import Core.Api as Api
 import Core.Model (Talk)
 import Data.Array as Array
+import Data.MediaType (MediaType(..))
 import Data.String as String
 import Effect.Aff.Class (class MonadAff)
 import Foreign.Object as FO
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Simple.JSON (read, readJSON, writeJSON)
 import Talk.Sidebar as Sidebar
+import Talk.Util as Util
 import Web.HTML (window)
 import Web.HTML.Window as Window
 import Web.Storage.Storage as Storage
@@ -30,32 +33,45 @@ initialState pageData =
   { talk: pageData.talk
   , selectedLang: NoLang
   , transcripts: FO.empty
+  , playing: false
   }
 
-renderTalkInfo :: Talk -> HTML
-renderTalkInfo talk =
-  HH.div_
-  [ HH.h1 [ class_ "text-lg mb-3"]
+renderTalkInfo :: State -> HTML
+renderTalkInfo { talk, selectedLang, playing } =
+  HH.div_ $ join
+  [ pure $ HH.h1 [ class_ "text-lg mb-3"]
     [ HH.text talk.name ]
-  , HH.div [ class_ "flex"]
+  , guard (not playing) $> HH.div [ class_ "flex"]
     [ HH.div
-      [ class_ "relative flex-no-shrink cursor-pointer Image"
-      , style "width: 16rem; height: 9rem;"
+      [ class_ "flex-no-shrink cursor-pointer bg-cover bg-center Image"
+      , style $ "width: 16rem; height: 9rem; background-image: url(" <> talk.image <> ")"
+      , HE.onClick $ HE.input_ OnClickPlay
       ]
-      [ HH.img
-        [ class_ "w-full h-full"
-        , HP.src talk.image
-        ]
-      , HH.div
-        [ class_ "absolute pin text-white hover:bg-grey300 flex items-center justify-center"]
+      [ HH.div
+        [ class_ "h-full text-white hover:bg-grey300 flex items-center justify-center"]
         [ HH.button
-          [ class_ "w-8 h-8 text-white text-xl PlayButton"
+          [ class_ "w-8 h-8 text-white text-3xl PlayButton"
           ]
           [ HH.text "▶" ]
         ]
       ]
     , HH.p [ class_ "mx-3 leading-normal text-grey500"]
       [ HH.text talk.description ]
+    ]
+  , guard playing $>
+    HH.video
+    [ class_ "w-full"
+    , HP.controls true
+    , HP.autoplay true
+    ]
+    [ HH.source
+      [ HP.type_ $ MediaType "video/mp4"
+      , HP.src $ Util.mkVideoUrl talk "950k" ]
+    , HH.track
+      [ HP.src $ Util.mkTranscriptUrl talk selectedLang "vtt"
+      , HP.attr (HH.AttrName "kind") "captions"
+      , HP.attr (HH.AttrName "default") ""
+      ]
     ]
   ]
 
@@ -97,13 +113,13 @@ renderTranscript state = trace state.transcripts $ \_ ->
   ]
 
 render :: State -> HTML
-render state@{ talk } =
+render state =
   HH.div_
   [ Header.render
   , HH.div
     [ class_ "TalkApp container py-6"]
     [ HH.div_
-      [ renderTalkInfo talk
+      [ renderTalkInfo state
       , renderTranscript state
       ]
     , Sidebar.render state
@@ -175,3 +191,6 @@ app pageData = H.lifecycleComponent
     for_ mLangs $ \langs ->
       H.liftEffect $ window >>= Window.localStorage >>=
         Storage.setItem "languages" (writeJSON langs)
+
+  eval (OnClickPlay n) = n <$ do
+    H.modify_ $ _ { playing = true }
