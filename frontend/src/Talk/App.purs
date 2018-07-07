@@ -94,7 +94,7 @@ render state@{ talk } =
       [ renderTalkInfo talk
       , renderTranscript state
       ]
-    , Sidebar.render talk
+    , Sidebar.render state
     ]
   ]
 

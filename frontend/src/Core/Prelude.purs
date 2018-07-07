@@ -1,5 +1,6 @@
 module Core.Prelude
   ( module Prelude
+  , module Control.MonadPlus
   , module Data.Either
   , module Data.Foldable
   , module Data.Maybe
@@ -11,6 +12,7 @@ module Core.Prelude
 
 import Prelude
 
+import Control.MonadPlus (guard)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
