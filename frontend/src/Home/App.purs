@@ -47,7 +47,7 @@ renderTalk talk =
     , HH.div [ class_ "py-2"]
       [ HH.h3_
         [ HH.text title ]
-      , HH.div [ class_ "mt-1 text-grey500"]
+      , HH.div [ class_ "mt-1 text-grey500 text-sm"]
         [ HH.text speaker ]
       ]
     ]

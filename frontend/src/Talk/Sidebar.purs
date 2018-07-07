@@ -5,6 +5,7 @@ module Talk.Sidebar
 import Core.Prelude
 import Talk.Types
 
+import Core.Model (Talk)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -12,17 +13,37 @@ import Halogen.HTML.Properties as HP
 
 type Video =
   { name :: String
-  , rate :: String
+  , bitrate :: String
   , resolution :: String
   }
 
 mkVideo :: String -> String -> String -> Video
-mkVideo = { name: _, rate: _, resolution: _}
+mkVideo = { name: _, bitrate: _, resolution: _}
+
+mkVideoUrl :: Talk -> Video -> String
+mkVideoUrl talk video =
+  "https://download.ted.com/talks/"
+    <> talk.mediaSlug
+    <> "-"
+    <> video.bitrate
+    <> ".mp4"
 
 videos :: Array Video
 videos =
   [ mkVideo "720p" "1500k" "1280x720"
+  , mkVideo "480p" "950k" "854x480"
+  , mkVideo "360p" "600k" "640x360"
+  , mkVideo "280p" "320k" "512x288"
   ]
+
+mkTranscriptUrl :: Talk -> SelectedLang -> String -> String
+mkTranscriptUrl talk selectedLang format =
+  "/api/talks/" <> show talk.id <> "/transcripts/download/" <> format <> query
+  where
+  query = case selectedLang of
+    NoLang -> "?lang=en"
+    OneLang lang -> "?lang=" <> lang
+    TwoLang lang1 lang2 -> "?lang=" <> lang1 <> "&lang=" <> lang2
 
 titleCls :: String
 titleCls = "text-sm font-normal text-grey500"
@@ -30,15 +51,37 @@ titleCls = "text-sm font-normal text-grey500"
 itemCls :: String
 itemCls = "py-1 px-3 text-sm cursor-pointer"
 
-renderVideo :: HTML
-renderVideo =
+renderVideo :: Talk -> HTML
+renderVideo talk =
   HH.div_
   [ HH.h4 [ class_ titleCls]
     [ HH.text "Download Video"]
   , HH.ul [ class_ "py-1 mb-4"] $
     videos <#> \video ->
-      HH.li [ class_ itemCls]
-      [ HH.text video.name ]
+      HH.li_
+      [ HH.a
+        [ class_ $ itemCls <> " Link block"
+        , HP.href $ mkVideoUrl talk video
+        , HP.title $ "Resolution: " <> video.resolution
+        ]
+        [ HH.text video.name ]
+      ]
+  ]
+
+renderTranscript :: State -> HTML
+renderTranscript { talk, selectedLang } =
+  HH.div_
+  [ HH.h4 [ class_ titleCls]
+    [ HH.text "Download Transcript"]
+  , HH.ul [ class_ "py-1 mb-4"] $
+    ["txt", "srt"] <#> \format ->
+      HH.li_
+      [ HH.a
+        [ class_ $ itemCls <> " Link block uppercase"
+        , HP.href $ mkTranscriptUrl talk selectedLang format
+        ]
+        [ HH.text format]
+      ]
   ]
 
 isLangSelected :: SelectedLang -> String -> Boolean
@@ -75,6 +118,7 @@ render :: State -> HTML
 render state =
   HH.div
   [ style "width: 14rem;"]
-  [ renderVideo
+  [ renderVideo state.talk
+  , renderTranscript state
   , renderLanguages state
   ]
