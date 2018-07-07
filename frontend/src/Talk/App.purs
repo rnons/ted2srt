@@ -8,6 +8,7 @@ import Talk.Types
 import Component.Header as Header
 import Core.Api as Api
 import Core.Model (Talk)
+import Data.Array as Array
 import Data.String as String
 import Effect.Aff.Class (class MonadAff)
 import Foreign.Object as FO
@@ -46,30 +47,41 @@ renderTalkInfo talk =
     ]
   ]
 
-renderTranscriptLang :: State -> String -> HTML
-renderTranscriptLang state lang =
+renderOneTranscript :: State -> String -> HTML
+renderOneTranscript state lang =
   case FO.lookup lang state.transcripts of
     Nothing -> HH.text ""
     Just transcript -> HH.div_ $
       transcript <#> \paragraph ->
-        HH.p
-        [ class_ "mb-3"]
+        HH.p_
         [ HH.text paragraph]
+
+renderTwoTranscripts :: State -> String -> String -> HTML
+renderTwoTranscripts state@{ transcripts } lang1 lang2 =
+  case FO.lookup lang1 transcripts, FO.lookup lang2 transcripts of
+    Nothing, Nothing -> HH.text ""
+    Just _, Nothing -> renderOneTranscript state lang1
+    Nothing, Just _ -> renderOneTranscript state lang2
+    Just transcript1, Just transcript2 -> HH.div_ $
+      Array.zip transcript1 transcript2 <#> \(Tuple p1 p2) ->
+        HH.div
+        [ style "display: grid; grid-template-columns: 1fr 1fr; grid-gap: 2rem;"]
+        [ HH.p_
+          [ HH.text p1]
+        , HH.p_
+          [ HH.text p2]
+        ]
 
 renderTranscript :: State -> HTML
 renderTranscript state = trace state.transcripts $ \_ ->
   HH.article
-  [ class_ "mt-4 leading-normal"]
+  [ class_ "mt-6 leading-normal"]
   [ case state.selectedLang of
       NoLang -> HH.text "Select language from sidebar."
       OneLang lang ->
-        renderTranscriptLang state lang
+        renderOneTranscript state lang
       TwoLang lang1 lang2 ->
-        HH.div
-        [ style "display: grid; grid-template-columns: 1fr 1fr; grid-gap: 2rem;"]
-        [ renderTranscriptLang state lang1
-        , renderTranscriptLang state lang2
-        ]
+        renderTwoTranscripts state lang1 lang2
   ]
 
 render :: State -> HTML

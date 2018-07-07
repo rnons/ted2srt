@@ -5,6 +5,11 @@
 
 @import "tailwindcss/utilities";
 
+html {
+  @apply text-black;
+  -webkit-font-smoothing: antialiased;
+}
+
 ul {
   @apply list-reset;
 }
