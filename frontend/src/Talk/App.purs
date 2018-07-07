@@ -14,7 +14,7 @@ import Foreign.Object as FO
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-import Simple.JSON (read, readJSON)
+import Simple.JSON (read, readJSON, writeJSON)
 import Talk.Sidebar as Sidebar
 import Web.HTML (window)
 import Web.HTML.Window as Window
@@ -104,8 +104,8 @@ app pageData = H.lifecycleComponent
         let
           transcript = String.split (String.Pattern "\n") txt
         in
-          H.modify_ $ _
-            { transcripts = FO.insert lang transcript state.transcripts
+          H.modify_ $ \s -> s
+            { transcripts = FO.insert lang transcript s.transcripts
             }
 
   eval :: Query ~> DSL m
@@ -142,5 +142,12 @@ app pageData = H.lifecycleComponent
             if lang2 == language
             then OneLang lang1
             else TwoLang lang1 lang2
-    traceM selectedLang
     H.modify_ $ _ { selectedLang = selectedLang }
+    let
+      mLangs = case selectedLang of
+        NoLang -> Nothing
+        OneLang lang -> Just [lang]
+        TwoLang lang1 lang2 -> Just [lang1, lang2]
+    for_ mLangs $ \langs ->
+      H.liftEffect $ window >>= Window.localStorage >>=
+        Storage.setItem "languages" (writeJSON langs)

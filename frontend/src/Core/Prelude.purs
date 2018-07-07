@@ -14,7 +14,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
-import Data.Foldable (traverse_)
+import Data.Foldable (for_, traverse_)
 import Debug.Trace (trace, traceM)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
