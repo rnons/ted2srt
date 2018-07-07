@@ -8,7 +8,7 @@ import Halogen.HTML.Properties as HP
 renderForm :: forall p i. HH.HTML p i
 renderForm =
   HH.form
-  [ class_ "flex-1 ml-8"
+  [ class_ "flex-1 ml-4 lg:ml-8"
   , HP.action "/search"
   ]
   [ HH.input
@@ -22,11 +22,11 @@ renderForm =
 render :: forall p i. HH.HTML p i
 render =
   HH.div
-  [ class_ "bg-white border-b border-grey300 py-4 shadow"]
+  [ class_ "px-4 lg:px-0 bg-white border-b border-grey300 py-4 shadow"]
   [ HH.div
     [ class_ "container flex items-center"]
     [ HH.a
-      [ class_ "font-mono text-xl text-red500 no-underline"
+      [ class_ "font-mono text-xl text-red500 no-underline tracking-tight"
       , HP.href "/"
       ]
       [ HH.text "∷ TED → [SRT]" ]

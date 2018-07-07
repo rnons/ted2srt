@@ -1,5 +1,10 @@
 .HomeApp {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
   grid-gap: 1rem;
+  padding: 0 1rem;
+}
+
+@screen lg {
+  padding: 0;
+  grid-template-columns: 1fr 1fr 1fr;
 }

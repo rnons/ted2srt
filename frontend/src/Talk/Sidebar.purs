@@ -37,7 +37,8 @@ itemCls = "py-1 px-3 text-sm cursor-pointer"
 
 renderVideo :: Talk -> HTML
 renderVideo talk =
-  HH.div_
+  HH.div
+  [ class_ "w-1/2 lg:w-full"]
   [ HH.h4 [ class_ titleCls]
     [ HH.text "Download Video"]
   , HH.ul [ class_ "py-1 mb-4"] $
@@ -80,7 +81,7 @@ renderLanguages { talk, selectedLang } =
   HH.div_
   [ HH.h4 [ class_ titleCls]
     [ HH.text "Select Languages"]
-  , HH.ul [ class_ "py-1 mb-4"] $
+  , HH.ul [ class_ "py-1 mb-4 flex flex-wrap lg:flex-nowrap lg:flex-col"] $
     talk.languages <#> \language ->
       HH.li
       [ class_ $ getCls language.languageCode
@@ -89,7 +90,7 @@ renderLanguages { talk, selectedLang } =
       ] $ join
       [ pure $ HH.text language.languageName
       , guard (isLangSelected selectedLang language.languageCode) $>
-        HH.span [ class_ "text-lg"]
+        HH.span [ class_ "text-lg ml-3"]
         [ HH.text "×" ]
       ]
   ]
@@ -101,7 +102,7 @@ renderLanguages { talk, selectedLang } =
 render :: State -> HTML
 render state =
   HH.div
-  [ style "width: 14rem;"]
+  [ class_ "Sidebar" ]
   [ renderVideo state.talk
   , renderTranscript state
   , renderLanguages state

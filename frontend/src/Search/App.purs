@@ -33,10 +33,9 @@ initialState pageData =
 renderTalk :: Talk -> HTML
 renderTalk talk =
   HH.li
-  [ class_ "flex mb-6"]
+  [ class_ "flex flex-col lg:flex-row mb-6"]
   [ HH.a
-    [ class_ "mr-4 flex-no-shrink"
-    , style "width: 16rem; height: 9rem"
+    [ class_ "mr-4 flex-no-shrink Image"
     , HP.href $ "/talks/" <> talk.slug
     ]
     [ HH.img
@@ -46,7 +45,7 @@ renderTalk talk =
     ]
   , HH.div_
     [ HH.h3
-      [ class_ "mb-3" ]
+      [ class_ "mb-1 lg:mb-3" ]
       [ HH.a
         [ class_ "Link"
         , HP.href $ "/talks/" <> talk.slug
@@ -64,7 +63,7 @@ render state =
   HH.div_
   [ Header.render
   , HH.div
-    [ class_ "container py-6"]
+    [ class_ "container py-6 px-4 lg:px-0"]
     [ HH.ul_ $
       state.talks <#> renderTalk
     ]

@@ -1,7 +1,5 @@
 .TalkApp {
   display: grid;
-  grid-template-columns: 1fr auto;
-  grid-gap: 4rem;
 }
 
 article p {
@@ -13,7 +11,41 @@ article p {
   transition: all 0.5s;
 }
 
+.Image {
+  width: 100%;
+  height: 11rem;
+}
+
 .Image:hover .PlayButton {
   opacity: 1;
   transform: scale(1.5);
+}
+
+.Sidebar {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+@screen lg {
+  .TalkApp {
+    grid-template-columns: 1fr auto;
+    grid-gap: 4rem;
+  }
+
+  .Image {
+    width: 16rem;
+    height: 9rem;
+  }
+
+  .Row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 2rem;
+  }
+
+  .Sidebar {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    width: 14rem;
+  }
 }

@@ -41,10 +41,10 @@ renderTalkInfo { talk, selectedLang, playing } =
   HH.div_ $ join
   [ pure $ HH.h1 [ class_ "text-lg mb-3"]
     [ HH.text talk.name ]
-  , guard (not playing) $> HH.div [ class_ "flex"]
+  , guard (not playing) $> HH.div [ class_ "flex flex-col lg:flex-row"]
     [ HH.div
       [ class_ "flex-no-shrink cursor-pointer bg-cover bg-center Image"
-      , style $ "width: 16rem; height: 9rem; background-image: url(" <> talk.image <> ")"
+      , style $ "background-image: url(" <> talk.image <> ")"
       , HE.onClick $ HE.input_ OnClickPlay
       ]
       [ HH.div
@@ -55,7 +55,7 @@ renderTalkInfo { talk, selectedLang, playing } =
           [ HH.text "▶" ]
         ]
       ]
-    , HH.p [ class_ "mx-3 leading-normal text-grey500"]
+    , HH.p [ class_ "mt-2 lg:mt-0 lg:ml-3 leading-normal text-grey500"]
       [ HH.text talk.description ]
     ]
   , guard playing $>
@@ -93,7 +93,7 @@ renderTwoTranscripts state@{ transcripts } lang1 lang2 =
     Just transcript1, Just transcript2 -> HH.div_ $
       Array.zip transcript1 transcript2 <#> \(Tuple p1 p2) ->
         HH.div
-        [ style "display: grid; grid-template-columns: 1fr 1fr; grid-gap: 2rem;"]
+        [ class_ "Row pb-4 lg:pb-0" ]
         [ HH.p_
           [ HH.text p1]
         , HH.p_
@@ -117,7 +117,7 @@ render state =
   HH.div_
   [ Header.render
   , HH.div
-    [ class_ "TalkApp container py-6"]
+    [ class_ "TalkApp container py-6 px-4 lg:px-0"]
     [ HH.div_
       [ renderTalkInfo state
       , renderTranscript state
