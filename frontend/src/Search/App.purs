@@ -64,7 +64,7 @@ render state =
   HH.div_
   [ Header.render
   , HH.div
-    [ class_ "container py-6 px-4 lg:px-0"]
+    [ class_ "container py-6 px-4 xl:px-0"]
     [ HH.ul_ $
       state.talks <#> renderTalk
     ]

@@ -118,7 +118,7 @@ render state =
   HH.div_
   [ Header.render
   , HH.div
-    [ class_ "TalkApp container py-6 px-4 lg:px-0"]
+    [ class_ "TalkApp container py-6 px-4 xl:px-0"]
     [ HH.div_
       [ renderTalkInfo state
       , renderTranscript state

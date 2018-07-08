@@ -17,3 +17,7 @@ ul {
 video::-webkit-media-text-track-display {
   font-size: 1.5rem;
 }
+
+.container {
+  max-width: 1024px;
+}

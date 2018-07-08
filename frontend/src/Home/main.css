@@ -4,9 +4,18 @@
   padding: 0 1rem;
 }
 
+@screen md {
+  .HomeApp {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @screen lg {
   .HomeApp {
-    padding: 0;
     grid-template-columns: 1fr 1fr 1fr;
   }
+}
+
+@screen xl {
+  padding: 0;
 }
