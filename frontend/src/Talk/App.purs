@@ -106,7 +106,10 @@ renderTranscript state =
   HH.article
   [ class_ "mt-6 leading-normal"]
   [ case state.selectedLang of
-      NoLang -> HH.text "Select language from sidebar."
+      NoLang ->
+        HH.div
+        [ class_ "text-center text-lg mt-8 italic"]
+        [ HH.text "Select language from sidebar." ]
       OneLang lang ->
         renderOneTranscript state lang
       TwoLang lang1 lang2 ->
@@ -190,8 +193,10 @@ app pageData = H.lifecycleComponent
         NoLang -> Nothing
         OneLang lang -> Just [lang]
         TwoLang lang1 lang2 -> Just [lang1, lang2]
-    for_ mLangs $ \langs ->
-      H.liftEffect $ window >>= Window.localStorage >>=
+    case mLangs of
+      Nothing -> H.liftEffect $ window >>= Window.localStorage >>=
+        Storage.removeItem "languages"
+      Just langs -> H.liftEffect $ window >>= Window.localStorage >>=
         Storage.setItem "languages" (writeJSON langs)
 
   eval (OnClickPlay n) = n <$ do
