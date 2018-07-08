@@ -7,17 +7,16 @@ import           Models.Talk     (getTalks)
 import           RIO
 import           Types
 import           View.Bundle
+import           View.Layout     (layout)
 
 getHomeH :: AppM (Html ())
 getHomeH = do
   talks <- lift $ getTalks 0 20
   bundle <- includeBundle HomeBundle
-  pure $ doctypehtml_ $ do
-    head_ $ do
-      meta_ [charset_ "utf-8"]
-      meta_ [name_ "viewport"
-            ,content_ "width=device-width, initial-scale=1"]
+  pure $ layout
+    ( do
+      title_ "TED2srt: Download bilingual subtitles of TED talks"
       script_ $ LT.toStrict $
         "window.TALKS = " <> encodeToLazyText talks
-    body_ $ do
-      bundle
+    )
+    bundle

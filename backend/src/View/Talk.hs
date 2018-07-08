@@ -8,6 +8,7 @@ import           RIO
 import           Types
 import           View.Bundle
 import           View.Error
+import           View.Layout     (layout)
 
 getTalkH :: Text -> AppM (Html ())
 getTalkH slug = do
@@ -16,12 +17,10 @@ getTalkH slug = do
     Nothing   -> get404H
     Just talk -> do
       bundle <- includeBundle TalkBundle
-      pure $ doctypehtml_ $ do
-        head_ $ do
-          meta_ [charset_ "utf-8"]
-          meta_ [name_ "viewport"
-                ,content_ "width=device-width, initial-scale=1"]
+      pure $ layout
+        ( do
+          title_ $ toHtml $ _talkName talk
           script_ $ LT.toStrict $
             "window.TALK = " <> encodeToLazyText talk
-        body_ $ do
-          bundle
+        )
+        bundle
