@@ -33,7 +33,7 @@ instance FromHttpApiData FileType where
 
 type TedApi =
        "talks"
-    :> QueryParam "tid" Int          -- ^ getTalksH
+    :> QueryParam "offset" Int          -- ^ getTalksH
     :> QueryParam "limit" Int
     :> Get '[JSON] [Talk]
   :<|> "talks" :> "random"

@@ -10,7 +10,7 @@ import           View.Bundle
 
 getHomeH :: AppM (Html ())
 getHomeH = do
-  talks <- lift $ getTalks 20
+  talks <- lift $ getTalks 0 20
   bundle <- includeBundle HomeBundle
   pure $ doctypehtml_ $ do
     head_ $ do

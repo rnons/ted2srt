@@ -64,7 +64,7 @@ talkToFeedEntry Talk {..} = do
 
 saveAsFeed :: Config -> IO [FeedEntry]
 saveAsFeed config = do
-    talks <- runRIO config $ getTalks 5
+    talks <- runRIO config $ getTalks 0 5
     return . catMaybes =<< mapM talkToFeedEntry talks
 
 mkFeed :: [FeedEntry] -> IO Feed

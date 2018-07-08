@@ -35,7 +35,6 @@ getSubtitleH config tid format lang _ respond = do
 
 downloadSubtitleH :: Config -> Int -> FileType -> [Text] -> Application
 downloadSubtitleH config tid format lang _ respond = do
-  -- path <- lift $ runRIO config $ getSubtitlePath tid format lang
   path <- runRIO config $ getSubtitlePath tid format lang
   case path of
     Just p  -> do

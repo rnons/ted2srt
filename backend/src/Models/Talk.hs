@@ -60,12 +60,13 @@ instance FromJSON TalkObj where
   parseJSON _          = mzero
 
 
-getTalks :: Int -> AppRIO [Talk]
-getTalks limit = do
+getTalks :: Int -> Int -> AppRIO [Talk]
+getTalks offset limit = do
   Config { dbConn } <- ask
   liftIO $ runBeamPostgres dbConn $ do
     runSelectReturningList $ select
-      ( limit_ (fromIntegral limit)
+      ( offset_ (fromIntegral offset)
+      $ limit_ (fromIntegral limit)
       $ orderBy_ (\t -> desc_ (_talkId t))
       $ all_ (_talk talkDb)
       )

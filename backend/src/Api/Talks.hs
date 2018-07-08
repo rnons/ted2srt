@@ -13,14 +13,14 @@ import           Types
 
 
 getTalksApiH :: Maybe Int -> Maybe Int -> AppM [Talk]
-getTalksApiH _ mLimit = do
-  talks <- lift $ getTalks limit
+getTalksApiH mOffset mLimit = do
+  talks <- lift $ getTalks offset limit
   pure talks
   where
-    defaultLimit = 10
-    -- startTid = fromMaybe 0 mStartTid
-    limit' = fromMaybe defaultLimit mLimit
-    limit = if limit' > defaultLimit then defaultLimit else limit'
+  defaultLimit = 20
+  maxLimit = 20
+  offset = fromMaybe 0 mOffset
+  limit = maybe defaultLimit (\i -> if i > maxLimit then maxLimit else i) mLimit
 
 getRandomTalkApiH :: AppM Talk
 getRandomTalkApiH = do
