@@ -26,3 +26,10 @@ getTitleSpeaker talk =
   case String.split (String.Pattern ":") talk.name of
     [speaker, title] -> Tuple title speaker
     _ -> Tuple "" talk.name
+
+unescape :: String -> String
+unescape =
+  String.replaceAll (String.Pattern "&lt;") (String.Replacement "<") >>>
+  String.replaceAll (String.Pattern "&gt;") (String.Replacement ">") >>>
+  String.replaceAll (String.Pattern "&quot;") (String.Replacement "\"") >>>
+  String.replaceAll (String.Pattern "&amp;") (String.Replacement "&")

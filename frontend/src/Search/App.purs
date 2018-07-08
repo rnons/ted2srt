@@ -2,10 +2,10 @@ module Search.App where
 
 import Core.Prelude
 
-import Component.Header as Header
 import Component.Footer as Footer
+import Component.Header as Header
 import Core.Api as Api
-import Core.Model (Talk)
+import Core.Model (Talk, unescape)
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
@@ -43,7 +43,7 @@ renderTalk talk =
     ]
     [ HH.img
       [ class_ "w-full h-full"
-      , HP.src talk.image
+      , HP.src $ unescape talk.image
       ]
     ]
   , HH.div_
@@ -57,7 +57,7 @@ renderTalk talk =
       ]
     , HH.p
       [ class_ "leading-normal text-grey500"]
-      [ HH.text talk.description]
+      [ HH.text $ unescape talk.description]
     ]
   ]
 

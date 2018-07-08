@@ -8,7 +8,7 @@ import Core.Prelude
 import Component.Footer as Footer
 import Component.Header as Header
 import Core.Api as Api
-import Core.Model (Talk, getTitleSpeaker)
+import Core.Model (Talk, getTitleSpeaker, unescape)
 import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
@@ -49,7 +49,7 @@ renderTalk talk =
     , HP.href $ "/talks/" <> talk.slug
     ]
     [ HH.img
-      [ HP.src talk.image ]
+      [ HP.src $ unescape talk.image ]
     , HH.div [ class_ "py-2"]
       [ HH.h3_
         [ HH.text title ]
