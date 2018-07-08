@@ -31,6 +31,7 @@ dependencies:
 - network
 - postgresql-simple
 - random
+- raw-strings-qq
 - regex-posix
 - rio
 - servant-lucid

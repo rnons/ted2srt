@@ -17,7 +17,7 @@ getTalkH slug = do
     Nothing   -> get404H
     Just talk -> do
       bundle <- includeBundle TalkBundle
-      pure $ layout
+      layout
         ( do
           title_ $ toHtml $ _talkName talk
           script_ $ LT.toStrict $

@@ -17,7 +17,7 @@ instance Show Bundle where
     SearchBundle -> "Search"
 
 includeBundle :: Bundle -> AppM (Html ())
-includeBundle bundle = lift $ do
+includeBundle bundle = do
   Config { devMode, lookupStatic } <- ask
   let
     (commonJs, bundleJs) = if devMode

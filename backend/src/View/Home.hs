@@ -13,7 +13,7 @@ getHomeH :: AppM (Html ())
 getHomeH = do
   talks <- lift $ getTalks 0 20
   bundle <- includeBundle HomeBundle
-  pure $ layout
+  layout
     ( do
       title_ "TED2srt: Download bilingual subtitles of TED talks"
       script_ $ LT.toStrict $

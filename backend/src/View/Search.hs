@@ -14,7 +14,7 @@ getSearchH mq =
     Nothing -> get404H
     Just q -> do
       bundle <- includeBundle SearchBundle
-      pure $ layout
+      layout
         ( do
           title_ $ toHtml $ q <> " - TED2srt search"
           script_ $ "window.Q = " <> T.pack (show q)
