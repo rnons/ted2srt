@@ -5,14 +5,16 @@ module Home.App
 
 import Core.Prelude
 
+import Component.Footer as Footer
+import Component.Header as Header
 import Core.Api as Api
 import Core.Model (Talk, getTitleSpeaker)
-import Component.Header as Header
-import Component.Footer as Footer
+import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
 type PageData =
@@ -20,10 +22,12 @@ type PageData =
   }
 
 data Query a
-  = Init a
+  = LoadMore a
 
 type State =
   { talks :: Array Talk
+  , loading :: Boolean
+  , hasMore :: Boolean
   }
 
 type HTML = H.ComponentHTML Query
@@ -33,12 +37,13 @@ type DSL m = H.ComponentDSL State Query Void m
 initialState :: PageData -> State
 initialState pageData =
   { talks: pageData.talks
+  , loading: false
+  , hasMore: true
   }
 
 renderTalk :: Talk -> HTML
 renderTalk talk =
-  HH.li
-  []
+  HH.li_
   [ HH.a
     [ class_ "Link"
     , HP.href $ "/talks/" <> talk.slug
@@ -61,9 +66,18 @@ render state =
   HH.div_
   [ Header.render
   , HH.div
-    [ class_ "container py-6" ]
-    [ HH.ul [ class_ "HomeApp"] $
+    [ class_ "container py-6" ] $ join
+    [ pure $ HH.ul [ class_ "HomeApp"] $
       state.talks <#> renderTalk
+    , guard state.hasMore $> HH.div [ class_ "mt-8 text-center"] (join
+      [ guard (not state.loading) $> HH.button
+        [ class_ "border py-2 px-6 outline-none hover:text-red500 hover:border-red500"
+        , HE.onClick $ HE.input_ LoadMore
+        ]
+        [ HH.text "LOAD MORE"]
+      , guard state.loading $>
+        HH.text "loading..."
+      ])
     ]
   , Footer.render
   ]
@@ -77,5 +91,11 @@ app pageData = H.component
   }
   where
   eval :: Query ~> DSL m
-  eval (Init n) = n <$ do
-    pure unit
+  eval (LoadMore n) = n <$ do
+    state <- H.modify $ _ { loading = true }
+    H.liftAff (Api.getTalks $ Array.length state.talks) >>= traverse_ \talks ->
+      H.modify $ \s -> s
+        { talks = Array.union s.talks talks
+        , loading = false
+        , hasMore = Array.length talks == 20
+        }

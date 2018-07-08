@@ -712,7 +712,7 @@ module.exports = {
     backgroundRepeat: false,
     backgroundSize: false,
     borderCollapse: [],
-    borderColors: [],
+    borderColors: ["hover"],
     borderRadius: [],
     borderStyle: [],
     borderWidths: [],
