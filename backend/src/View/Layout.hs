@@ -15,7 +15,12 @@ layout headPartial bodyPartial = do
       meta_ [charset_ "utf-8"]
       meta_ [name_ "viewport"
             ,content_ "width=device-width, initial-scale=1"]
+      link_ [title_ "TED2srt"
+            ,href_ "/dist/search.xml"
+            ,type_ "application/opensearchdescription+xml"
+            ,rel_"search"]
       headPartial
+
     body_ $ do
       bodyPartial
       when (not devMode) $ do

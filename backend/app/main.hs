@@ -1,4 +1,5 @@
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators     #-}
 
 import           LoadEnv                              (loadEnv)
 import           Network.Wai                          (Application)
@@ -36,4 +37,5 @@ main = do
   config <- getConfig
   -- runBeamPostgresDebug putStrLn (dbConn config) $
   --   autoMigrate migrationBackend talkDbMigration
+  putStrLn $ "Server started at " <> show port
   run port $ app config
