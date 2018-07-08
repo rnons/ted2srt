@@ -5,6 +5,8 @@
 }
 
 @screen lg {
-  padding: 0;
-  grid-template-columns: 1fr 1fr 1fr;
+  .HomeApp {
+    padding: 0;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
 }

@@ -6,6 +6,7 @@ import Core.Prelude
 import Talk.Types
 
 import Component.Header as Header
+import Component.Footer as Footer
 import Core.Api as Api
 import Core.Model (Talk)
 import Data.Array as Array
@@ -124,6 +125,7 @@ render state =
       ]
     , Sidebar.render state
     ]
+  , Footer.render
   ]
 
 app :: forall m. MonadAff m => PageData -> H.Component HH.HTML Query Unit Void m

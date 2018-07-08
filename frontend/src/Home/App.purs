@@ -8,6 +8,7 @@ import Core.Prelude
 import Core.Api as Api
 import Core.Model (Talk, getTitleSpeaker)
 import Component.Header as Header
+import Component.Footer as Footer
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
@@ -64,6 +65,7 @@ render state =
     [ HH.ul [ class_ "HomeApp"] $
       state.talks <#> renderTalk
     ]
+  , Footer.render
   ]
 
 app :: forall m. MonadAff m => PageData -> H.Component HH.HTML Query Unit Void m

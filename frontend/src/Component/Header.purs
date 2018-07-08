@@ -1,4 +1,6 @@
-module Component.Header where
+module Component.Header
+  ( render
+  ) where
 
 import Core.Prelude
 
@@ -22,7 +24,7 @@ renderForm =
 render :: forall p i. HH.HTML p i
 render =
   HH.div
-  [ class_ "px-4 lg:px-0 bg-white border-b border-grey300 py-4 shadow"]
+  [ class_ "px-4 lg:px-0 bg-white border-b border-grey300 py-4"]
   [ HH.div
     [ class_ "container flex items-center"]
     [ HH.a

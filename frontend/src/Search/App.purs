@@ -3,6 +3,7 @@ module Search.App where
 import Core.Prelude
 
 import Component.Header as Header
+import Component.Footer as Footer
 import Core.Api as Api
 import Core.Model (Talk)
 import Data.Maybe (Maybe(..))
@@ -67,6 +68,7 @@ render state =
     [ HH.ul_ $
       state.talks <#> renderTalk
     ]
+  , Footer.render
   ]
 
 app :: forall m. MonadAff m => PageData -> H.Component HH.HTML Query Unit Void m
