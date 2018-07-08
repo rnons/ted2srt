@@ -21,7 +21,7 @@ itemCls = ""
 renderSeparator :: forall p i. HH.HTML p i
 renderSeparator =
   HH.li
-  [ class_ "border-l h-4 mx-5"]
+  [ class_ "border-l h-4 mx-2"]
   []
 
 renderLink :: forall p i. Link -> HH.HTML p i

@@ -71,7 +71,7 @@ render state =
       state.talks <#> renderTalk
     , guard state.hasMore $> HH.div [ class_ "mt-8 text-center"] (join
       [ guard (not state.loading) $> HH.button
-        [ class_ "border py-2 px-6 outline-none hover:text-red500 hover:border-red500"
+        [ class_ "border py-2 px-6 outline-none text-grey500 hover:text-red500 hover:border-red500"
         , HE.onClick $ HE.input_ LoadMore
         ]
         [ HH.text "LOAD MORE"]
