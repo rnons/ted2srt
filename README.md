@@ -1,8 +1,21 @@
 # ted2srt
 
-This is the source code of [ted2srt.org](https://ted2srt.org), a website to download bilingual subtitles of TED talks. The backend is written in Haskell, while the frontend is in Elm. I might rewrite the frontend in PureScript some day.
+This is the source code of [ted2srt.org](https://ted2srt.org), a website to download bilingual subtitles of TED talks. The backend is written in Haskell, while the frontend is in PureScript.
 
 ## Set up development environment
+
+### Frontend
+
+Setup [purescript](https://github.com/purescript/purescript) and [pulp](https://github.com/purescript-contrib/pulp), then
+
+```
+cd frontend
+yarn
+pulp -w build
+yarn start
+```
+
+You need to run `yarn build` once, so that backend can start correctly.
 
 ### Backend
 
@@ -43,15 +56,5 @@ stack exec ted2srt
 ```
 
 to start the server.
-
-### Frontend
-
-Frontend part is much easier, just run
-
-```
-cd frontend
-yarn
-yarn start
-```
 
 Then navigate to http://localhost:8080, try searching some keywords, cheers.
