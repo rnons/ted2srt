@@ -31,5 +31,6 @@ unescape :: String -> String
 unescape =
   String.replaceAll (String.Pattern "&lt;") (String.Replacement "<") >>>
   String.replaceAll (String.Pattern "&gt;") (String.Replacement ">") >>>
+  String.replaceAll (String.Pattern "&#39;") (String.Replacement "\'") >>>
   String.replaceAll (String.Pattern "&quot;") (String.Replacement "\"") >>>
   String.replaceAll (String.Pattern "&amp;") (String.Replacement "&")

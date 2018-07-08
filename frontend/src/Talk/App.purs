@@ -10,6 +10,7 @@ import Component.Header as Header
 import Core.Api as Api
 import Core.Model (Talk, unescape)
 import Data.Array as Array
+import Data.Foldable (sequence_)
 import Data.MediaType (MediaType(..))
 import Data.String as String
 import Effect.Aff.Class (class MonadAff)
@@ -168,10 +169,11 @@ app pageData = H.lifecycleComponent
       NoLang -> pure unit
       OneLang lang -> fetchTranscript lang
       TwoLang lang1 lang2 ->
-        H.fork (fetchTranscript lang1) *> fetchTranscript lang2
+        -- Cannot use H.fork here, seems postgresql-simple cannot handle
+        -- concurrent requests well
+        fetchTranscript lang1 *> fetchTranscript lang2
 
   eval (OnClickLang language n) = n <$ do
-    fetchTranscript language
     state <- H.get
     let
       selectedLang = case state.selectedLang of
@@ -196,8 +198,10 @@ app pageData = H.lifecycleComponent
     case mLangs of
       Nothing -> H.liftEffect $ window >>= Window.localStorage >>=
         Storage.removeItem "languages"
-      Just langs -> H.liftEffect $ window >>= Window.localStorage >>=
-        Storage.setItem "languages" (writeJSON langs)
+      Just langs -> do
+        sequence_ $ fetchTranscript <$> langs
+        H.liftEffect $ window >>= Window.localStorage >>=
+          Storage.setItem "languages" (writeJSON langs)
 
   eval (OnClickPlay n) = n <$ do
     H.modify_ $ _ { playing = true }
