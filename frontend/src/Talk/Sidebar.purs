@@ -88,7 +88,7 @@ renderLanguages { talk, selectedLang } =
       , style "margin-bottom: 2px;"
       , HE.onClick $ HE.input_ $ OnClickLang language.languageCode
       ] $ join
-      [ pure $ HH.text language.languageName
+      [ pure $ HH.text language.endonym
       , guard (isLangSelected selectedLang language.languageCode) $>
         HH.span [ class_ "text-lg ml-3"]
         [ HH.text "×" ]
