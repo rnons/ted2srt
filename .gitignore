@@ -8,7 +8,9 @@ ted2srt.cabal
 
 .DS_Store
 
-dist/
+backend/dist/*.js
+backend/dist/*.map
+backend/dist/*.css
 static/tmp/
 .psc-package
 .psc-ide-port
