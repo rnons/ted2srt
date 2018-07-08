@@ -21,6 +21,7 @@ data Query a = Init a
 type State =
   { q :: String
   , talks :: Array Talk
+  , loading :: Boolean
   }
 
 type HTML = H.ComponentHTML Query
@@ -29,6 +30,7 @@ initialState :: PageData -> State
 initialState pageData =
   { q: pageData.q
   , talks: []
+  , loading: false
   }
 
 renderTalk :: Talk -> HTML
@@ -64,9 +66,13 @@ render state =
   HH.div_
   [ Header.render
   , HH.div
-    [ class_ "container py-6 px-4 xl:px-0"]
-    [ HH.ul_ $
+    [ class_ "container py-6 px-4 xl:px-0"] $ join
+    [ pure $ HH.ul_ $
       state.talks <#> renderTalk
+    , guard state.loading $>
+      HH.div
+      [ class_ "text-center"]
+      [ HH.text "loading..."]
     ]
   , Footer.render
   ]
@@ -83,5 +89,9 @@ app pageData = H.lifecycleComponent
   where
   eval :: Query ~> H.ComponentDSL State Query Void m
   eval (Init n) = n <$ do
+    H.modify_ $ _ { loading = true }
     H.fork $ H.liftAff (Api.searchTalks pageData.q) >>= traverse_ \talks ->
-      H.modify_ $ _ { talks = talks }
+      H.modify_ $ _
+        { talks = talks
+        , loading = false
+        }
