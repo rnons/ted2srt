@@ -1,6 +1,6 @@
 #!/bin/sh
 rm -rf dist
-NODE_ENV=production yarn build
+yarn build
 cp src/search.xml dist
 tar czf dist.tar.gz dist
 scp dist.tar.gz ted2srt:/tmp/

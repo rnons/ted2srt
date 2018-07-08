@@ -1,12 +1,13 @@
 {
   "private": true,
   "scripts": {
-    "build": "webpack -p --progress",
+    "build": "rm -rf ../backend/dist/*.{css,js} && pulp build && NODE_ENV=production webpack -p --progress",
     "pscid:build": "pulp build",
-    "start": "webpack-dev-server --mode development --progress --port 7000"
+    "start": "webpack-dev-server --progress --port 7000"
   },
   "devDependencies": {
     "css-loader": "^0.28.11",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "postcss-import": "^11.1.0",
     "postcss-loader": "^2.1.5",
     "style-loader": "^0.21.0",

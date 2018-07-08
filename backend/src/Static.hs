@@ -14,7 +14,14 @@ staticDir = "dist"
 
 bundles :: [String]
 bundles =
-  [ "Home.js"
+  [ "common.js"
+  , "common.css"
+  , "Home.js"
+  , "Home.css"
+  , "Talk.js"
+  , "Talk.css"
+  , "Search.js"
+  , "Search.css"
   ]
 
 type LookupStatic = String -> String

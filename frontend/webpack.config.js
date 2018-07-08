@@ -1,8 +1,63 @@
 const webpack = require("webpack");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+
+const rules = [
+  {
+    test: /\.ts$/,
+    use: ["ts-loader"]
+  }
+];
+
+const plugins = [];
+
+let mode;
+
+if (process.env.NODE_ENV === "production") {
+  mode = "production";
+
+  rules.push({
+    test: /\.css$/,
+    use: ExtractTextPlugin.extract({
+      fallback: "style-loader",
+      use: [
+        {
+          loader: "css-loader",
+          options: { importLoaders: 1 }
+        },
+        "postcss-loader"
+      ]
+    })
+  });
+
+  plugins.push(
+    new ExtractTextPlugin({
+      filename: "[name].css",
+      allChunks: true
+    })
+  );
+} else {
+  mode = "development";
+
+  rules.push({
+    test: /\.css$/,
+    use: [
+      "style-loader",
+      {
+        loader: "css-loader",
+        options: { importLoaders: 1 }
+      },
+      "postcss-loader"
+    ]
+  });
+}
+
+console.warn("------------------------------------------");
+console.warn("webpack running in mode: ", mode);
+console.warn("------------------------------------------");
 
 module.exports = {
   context: __dirname,
-  devtool: "source-map",
+  mode,
   target: "web",
   entry: {
     Home: ["./src/common.ts", "./src/HomePage.ts"],
@@ -19,25 +74,9 @@ module.exports = {
     extensions: [".js", ".ts"]
   },
   module: {
-    rules: [
-      {
-        test: /\.ts$/,
-        use: ["ts-loader"]
-      },
-      {
-        test: /\.css$/,
-        use: [
-          "style-loader",
-          {
-            loader: "css-loader",
-            options: { importLoaders: 1 }
-          },
-          "postcss-loader"
-        ]
-      }
-    ]
+    rules
   },
-  plugins: [],
+  plugins,
   optimization: {
     splitChunks: {
       cacheGroups: {

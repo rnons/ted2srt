@@ -20,14 +20,19 @@ includeBundle :: Bundle -> AppM (Html ())
 includeBundle bundle = do
   Config { devMode, lookupStatic } <- ask
   let
-    (commonJs, bundleJs) = if devMode
+    prefix = if devMode then "http://localhost:7000/" else "/dist/"
+    [commonJs, commonCss, bundleJs, bundleCss] = (prefix <>) <$> if devMode
       then
-        (devPrefix <> "common.js", devPrefix <> show bundle <> ".js")
+        ["common.js", "", show bundle <> ".js", ""]
       else
-        (distPrefix <> "common.js", distPrefix <> lookupStatic (show bundle) <> ".js")
+        [ "common.js"
+        , "common.css"
+        , lookupStatic $ show bundle <> ".js"
+        , lookupStatic $ show bundle <> ".css"
+        ]
   pure $ do
-    script_ [src_ $ T.pack commonJs] ("" :: Text)
-    script_ [src_ $ T.pack bundleJs] ("" :: Text)
-  where
-  devPrefix = "http://localhost:7000/"
-  distPrefix = "/dist/"
+    when (not devMode) $ do
+      link_ [ href_ $ T.pack commonCss, rel_ "stylesheet" ]
+      link_ [ href_ $ T.pack bundleCss, rel_ "stylesheet" ]
+    script_ [ src_ $ T.pack commonJs ] ("" :: Text)
+    script_ [ src_ $ T.pack bundleJs ] ("" :: Text)
