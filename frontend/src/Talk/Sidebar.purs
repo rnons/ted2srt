@@ -106,4 +106,13 @@ render state =
   [ renderVideo state.talk
   , renderTranscript state
   , renderLanguages state
+  , HH.div
+    [ class_ "mt-8"]
+    [ HH.a
+      [ class_ "Link text-grey500"
+      , HP.href $ "https://www.ted.com/talks/" <> state.talk.slug
+      , HP.rel "nofollow"
+      ]
+      [ HH.text "🔗 Go to www.ted.com"]
+    ]
   ]
