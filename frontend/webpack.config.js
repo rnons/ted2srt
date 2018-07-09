@@ -1,19 +1,21 @@
 const webpack = require("webpack");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
+let mode;
+let resolveModules;
+
 const rules = [
   {
     test: /\.ts$/,
     use: ["ts-loader"]
   }
 ];
-
 const plugins = [];
-
-let mode;
 
 if (process.env.NODE_ENV === "production") {
   mode = "production";
+
+  resolveModules = ["node_modules", "dce-output", "src"];
 
   rules.push({
     test: /\.css$/,
@@ -37,6 +39,8 @@ if (process.env.NODE_ENV === "production") {
   );
 } else {
   mode = "development";
+
+  resolveModules = ["node_modules", "output", "src"];
 
   rules.push({
     test: /\.css$/,
@@ -70,7 +74,7 @@ module.exports = {
     publicPath: "/"
   },
   resolve: {
-    modules: ["node_modules", "output", "src"],
+    modules: resolveModules,
     extensions: [".js", ".ts"]
   },
   module: {

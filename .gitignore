@@ -11,7 +11,10 @@ ted2srt.cabal
 backend/dist/*.js
 backend/dist/*.map
 backend/dist/*.css
+
 static/tmp/
 .psc-package
 .psc-ide-port
-frontend/output/
+output/
+dce-output/
+node_modules
