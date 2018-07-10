@@ -48,5 +48,7 @@ render =
     , renderLink $ mkLink "source code" "https://github.com/rnons/ted2srt"
     , renderSeparator
     , renderLink $ mkLink "feed" "/atom.xml"
+    , renderSeparator
+    , renderLink $ mkLink "donate" "https://liberapay.com/rnons/"
     ]
   ]

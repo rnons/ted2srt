@@ -1,5 +1,7 @@
 # ted2srt
 
+[Donate](https://liberapay.com/rnons/)
+
 This is the source code of [ted2srt.org](https://ted2srt.org), a website to download bilingual subtitles of TED talks. The backend is written in Haskell, while the frontend is in PureScript.
 
 ## Set up development environment
