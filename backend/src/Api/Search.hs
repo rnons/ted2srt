@@ -9,7 +9,6 @@ import qualified Database.PostgreSQL.Simple       as Pg
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import           Model
 import           Models.Talk
-import           Network.HTTP.Conduit             (HttpException)
 import           RIO
 import           Servant                          (err400, throwError)
 import           Types                            (AppM)

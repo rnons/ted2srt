@@ -65,10 +65,10 @@ getTalks offset limit = do
   Config { dbConn } <- ask
   liftIO $ runBeamPostgres dbConn $ do
     runSelectReturningList $ select
-      ( offset_ (fromIntegral offset)
-
-      -- beam's understanding of limit is strange
-      $ limit_ (fromIntegral (offset + limit))
+      -- offset_ needs to come after limit_
+      -- https://github.com/tathougies/beam/issues/276#issuecomment-405041277
+      ( limit_ (fromIntegral limit)
+      $ offset_ (fromIntegral offset)
       $ orderBy_ (\t -> desc_ (_talkId t))
       $ all_ (_talk talkDb)
       )
