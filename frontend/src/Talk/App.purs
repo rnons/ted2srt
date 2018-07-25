@@ -3,7 +3,6 @@ module Talk.App
   ) where
 
 import Core.Prelude
-import Talk.Types
 
 import Component.Footer as Footer
 import Component.Header as Header
@@ -19,8 +18,9 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Simple.JSON (read, readJSON, writeJSON)
+import Simple.JSON (readJSON, writeJSON)
 import Talk.Sidebar as Sidebar
+import Talk.Types (Query(..), State, HTML, DSL, SelectedLang(..))
 import Talk.Util as Util
 import Web.HTML (window)
 import Web.HTML.Window as Window
@@ -133,7 +133,7 @@ render state =
   ]
 
 app :: forall m. MonadAff m => PageData -> H.Component HH.HTML Query Unit Void m
-app pageData = H.lifecycleComponent
+app pageData@{ talk } = H.lifecycleComponent
   { initialState: const $ initialState pageData
   , render
   , eval
@@ -146,7 +146,7 @@ app pageData = H.lifecycleComponent
   fetchTranscript lang = do
     state <- H.get
     when (not $ FO.member lang state.transcripts) $
-      H.liftAff (Api.getTalkTranscript pageData.talk lang) >>= traverse_ \txt ->
+      H.liftAff (Api.getTalkTranscript talk lang) >>= traverse_ \txt ->
         let
           transcript = String.split (String.Pattern "\n") txt
         in
@@ -154,14 +154,26 @@ app pageData = H.lifecycleComponent
             { transcripts = FO.insert lang transcript s.transcripts
             }
 
+  isLangAvailable :: String -> Boolean
+  isLangAvailable langCode =
+    isJust $ Array.findIndex (\lang -> lang.languageCode == langCode) talk.languages
+
   eval :: Query ~> DSL m
   eval (Init n) = n <$ do
     selectedLang <- H.liftEffect $ window >>= Window.localStorage >>=
       Storage.getItem "languages" >>= \ml -> pure $ case ml of
         Nothing -> OneLang "en"
         Just languages -> case readJSON languages of
-          Right [lang] -> OneLang lang
-          Right [lang1, lang2] -> TwoLang lang1 lang2
+          Right [lang] ->
+            if isLangAvailable lang
+            then OneLang lang
+            else OneLang "en"
+          Right [lang1, lang2] ->
+            case isLangAvailable lang1, isLangAvailable lang2 of
+              true, true -> TwoLang lang1 lang2
+              true, false -> OneLang lang1
+              false, true -> OneLang lang2
+              false, false -> OneLang "en"
           _ -> OneLang "en"
     H.modify_ $ _ { selectedLang = selectedLang }
 

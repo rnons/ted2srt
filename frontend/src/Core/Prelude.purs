@@ -14,7 +14,7 @@ import Prelude
 
 import Control.MonadPlus (guard)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), isJust)
 import Data.Tuple (Tuple(..))
 import Data.Foldable (for_, traverse_)
 import Debug.Trace (trace, traceM)
