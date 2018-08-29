@@ -47,4 +47,7 @@ layout headPartial bodyPartial = do
 
             gtag('config', 'UA-109501213-1');
             |]
+        script_
+          [src_ "https://load.fomo.com/ads/load.js?id=XgTyE48BTxPWOg2xANJv3Q"]
+          ("" :: Text)
     )
