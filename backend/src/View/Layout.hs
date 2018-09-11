@@ -48,6 +48,10 @@ layout headPartial bodyPartial = do
             gtag('config', 'UA-109501213-1');
             |]
         script_
-          [src_ "https://load.fomo.com/ads/load.js?id=XgTyE48BTxPWOg2xANJv3Q"]
+          [r|
+            var infolinks_pid = 3128511; var infolinks_wsid = 0;
+            |]
+        script_
+          [src_ "https://resources.infolinks.com/js/infolinks_main.js"]
           ("" :: Text)
     )
