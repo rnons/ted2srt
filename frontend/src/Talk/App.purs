@@ -7,7 +7,7 @@ import Core.Prelude
 import Component.Footer as Footer
 import Component.Header as Header
 import Core.Api as Api
-import Core.Model (Talk, unescape)
+import Core.Model (unescape)
 import Data.Array as Array
 import Data.Foldable (sequence_)
 import Data.MediaType (MediaType(..))
@@ -20,23 +20,12 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Simple.JSON (readJSON, writeJSON)
 import Talk.Sidebar as Sidebar
-import Talk.Types (Query(..), State, HTML, DSL, SelectedLang(..))
+import Talk.Types (DSL, HTML, PageData, Query(..), SelectedLang(..), State, initialState)
 import Talk.Util as Util
 import Web.HTML (window)
+import Web.HTML.HTMLMediaElement as Media
 import Web.HTML.Window as Window
 import Web.Storage.Storage as Storage
-
-type PageData =
-  { talk :: Talk
-  }
-
-initialState :: PageData -> State
-initialState pageData =
-  { talk: pageData.talk
-  , selectedLang: NoLang
-  , transcripts: FO.empty
-  , playing: false
-  }
 
 renderTalkInfo :: State -> HTML
 renderTalkInfo { talk, selectedLang, playing } =
@@ -117,6 +106,36 @@ renderTranscript state =
         renderTwoTranscripts state lang1 lang2
   ]
 
+audioRef :: H.RefLabel
+audioRef = H.RefLabel "audio"
+
+renderAudio :: State -> HTML
+renderAudio state@{ talk } =
+  HH.div
+  [ class_ "fixed flex items-center"
+  , style "bottom: 2rem; right: 2rem;"
+  ] $ join
+  [ guard state.audioPlaying $>
+    HH.div
+    [ class_ $ btnCls <> " w-8 h-8 mr-3"
+    , HE.onClick $ HE.input_ StopAudioPlay
+    ]
+    [ HH.text "⏹"]
+  , pure $ HH.div
+    [ class_ $ btnCls <> " w-10 h-10"
+    , HE.onClick $ HE.input_ ToggleAudioPlay
+    ]
+    [ HH.text "🎵"]
+  , pure $ HH.audio
+    [ class_ "hidden"
+    , HP.src url
+    , HP.ref audioRef
+    ] []
+  ]
+  where
+  btnCls = "flex items-center justify-center border rounded-full bg-white"
+  url = "https://download.ted.com/talks/" <> talk.mediaSlug <> ".mp3"
+
 render :: State -> HTML
 render state =
   HH.div_
@@ -128,6 +147,7 @@ render state =
       , renderTranscript state
       ]
     , Sidebar.render state
+    , renderAudio state
     ]
   , Footer.render
   ]
@@ -217,3 +237,15 @@ app pageData@{ talk } = H.lifecycleComponent
 
   eval (OnClickPlay n) = n <$ do
     H.modify_ $ _ { playing = true }
+
+  eval (ToggleAudioPlay n) = n <$ do
+    state <- H.modify $ \s -> s { audioPlaying = not s.audioPlaying }
+    H.getHTMLElementRef audioRef >>= traverse_ \el -> do
+      for_ (Media.fromHTMLElement el) $ \audio ->
+        H.liftEffect $ Media.play audio
+
+  eval (StopAudioPlay n) = n <$ do
+    H.modify_ $ \s -> s { audioPlaying = false }
+    H.getHTMLElementRef audioRef >>= traverse_ \el -> do
+      for_ (Media.fromHTMLElement el) $ \audio ->
+        H.liftEffect $ Media.play audio
