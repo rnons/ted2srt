@@ -8,6 +8,7 @@ module Core.Prelude
   , module Debug.Trace
   , module Effect.Aff
   , class_
+  , svgClass_
   , style
   ) where
 
@@ -25,6 +26,9 @@ import Halogen.HTML.Properties as HP
 
 class_ :: forall r i. String -> HP.IProp ("class" :: String | r) i
 class_ = HP.class_ <<< HH.ClassName
+
+svgClass_ :: forall r i. String -> HP.IProp ("class" :: String | r) i
+svgClass_ = HP.attr (HH.AttrName "class")
 
 style :: forall r i. String -> HP.IProp ("style" :: String | r) i
 style = HP.attr (HH.AttrName "style")

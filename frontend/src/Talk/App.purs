@@ -14,6 +14,7 @@ import Data.MediaType (MediaType(..))
 import Data.Monoid as Monoid
 import Data.String as String
 import Foreign.Object as FO
+import Halogen (Namespace(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -24,8 +25,7 @@ import Talk.Sidebar as Sidebar
 import Talk.Types (DSL, HTML, PageData, Query(..), SelectedLang(..), State, initialState)
 import Talk.Util as Util
 import Web.Event.Event (EventType(..))
-import Web.HTML (window)
-import Web.HTML.Event.EventTypes as ET
+import Web.HTML (HTMLMediaElement, window)
 import Web.HTML.HTMLElement as HTML
 import Web.HTML.HTMLMediaElement as Media
 import Web.HTML.Window as Window
@@ -120,22 +120,63 @@ renderAudio state@{ talk } =
   , style "bottom: 2rem; right: 2rem;"
   ]
   [ HH.div
-    [ class_ $ Monoid.guard (not state.audioPlaying) " hidden"
+    [ class_ $ "flex" <> Monoid.guard (not state.audioPlaying) " hidden"
     ]
     [ HH.button
       [ class_ $ btnCls <> " w-8 h-8 mr-3"
-      , HE.onClick $ HE.input_ StopAudioPlay
+      , HE.onClick $ HE.input_ OnAudioBackward
+      ]
+      [ HH.text "⏪"]
+    , HH.button
+      [ class_ $ btnCls <> " w-8 h-8 mr-3"
+      , HE.onClick $ HE.input_ OnAudioForward
+      ]
+      [ HH.text "⏩"]
+    , HH.button
+      [ class_ $ btnCls <> " w-8 h-8 mr-3"
+      , HE.onClick $ HE.input_ OnStopAudioPlay
       ]
       [ HH.text "⏹"]
     ]
   , HH.div
-    [ class_ $ btnCls <> " w-10 h-10"
-    , HE.onClick $ HE.input_ ToggleAudioPlay
+    [ class_ "relative select-none"
+    , HE.onClick $ HE.input_ OnToggleAudioPlay
     ]
-    [ HH.text "🎵"]
+    [ HH.div
+      [ class_ $ btnCls <> " w-12 h-12 border-none"]
+      [ HH.text "🎵" ]
+    , HH.elementNS svgNS (H.ElemName "svg")
+      [ svgClass_ "absolute pin"
+      , HH.attr (HH.AttrName "viewBox") "0 0 48 48"]
+      [ HH.elementNS svgNS (H.ElemName "circle")
+        [ svgAttr "cx" "24"
+        , svgAttr "cy" "24"
+        , svgAttr "r" "23"
+        , svgAttr "fill" "none"
+        , svgAttr "stroke" "rgba(0,0,0,0.12)"
+        , svgAttr "stroke-width" "2"
+        ]
+        []
+      ]
+    , HH.elementNS svgNS (H.ElemName "svg")
+      [ svgClass_ "absolute pin"
+      , style "transform: rotate(-90deg)"
+      , HH.attr (HH.AttrName "viewBox") "0 0 48 48"]
+      [ HH.elementNS svgNS (H.ElemName "circle")
+        [ svgAttr "cx" "24"
+        , svgAttr "cy" "24"
+        , svgAttr "r" "23"
+        , svgAttr "fill" "none"
+        , svgAttr "stroke" "#70c542"
+        , svgAttr "stroke-width" "2"
+        , svgAttr "stroke-dasharray" $
+            show (state.audioProgress * perimeter) <> " " <> show perimeter
+        ]
+        []
+      ]
+    ]
   , HH.audio
     [ class_ ""
-    , HP.controls true
     , HP.src url
     , HP.ref audioRef
     ] []
@@ -143,6 +184,10 @@ renderAudio state@{ talk } =
   where
   btnCls = "flex items-center justify-center border rounded-full bg-white cursor-pointer"
   url = "https://download.ted.com/talks/" <> talk.mediaSlug <> ".mp3"
+  svgNS :: Namespace
+  svgNS = Namespace "http://www.w3.org/2000/svg"
+  svgAttr name value = HH.attr (HH.AttrName name) value
+  perimeter = 3.14 * 48.0
 
 render :: State -> HTML
 render state =
@@ -186,6 +231,11 @@ app pageData@{ talk } = H.component
   isLangAvailable langCode =
     isJust $ Array.findIndex (\lang -> lang.languageCode == langCode) talk.languages
 
+  withAudioPlayer :: (HTMLMediaElement -> DSL Unit) -> DSL Unit
+  withAudioPlayer actions =
+    H.getHTMLElementRef audioRef >>= traverse_ \el -> do
+      for_ (Media.fromHTMLElement el) actions
+
   eval :: Query ~> DSL
   eval (Init n) = n <$ do
     selectedLang <- H.liftEffect $ window >>= Window.localStorage >>=
@@ -214,10 +264,9 @@ app pageData@{ talk } = H.component
         fetchTranscript lang1 *> fetchTranscript lang2
 
     H.getHTMLElementRef audioRef >>= traverse_ \el -> do
-      traceM el
       H.subscribe $
         ES.eventListenerEventSource (EventType "timeupdate") (HTML.toEventTarget el)
-          (Just <<< H.action <<< OnAudioProgress)
+          (Just <<< H.action <<< HandleAudioProgress)
 
   eval (OnClickLang language n) = n <$ do
     state <- H.get
@@ -252,33 +301,34 @@ app pageData@{ talk } = H.component
   eval (OnClickPlay n) = n <$ do
     H.modify_ $ _ { playing = true }
 
-  eval (ToggleAudioPlay n) = n <$ do
+  eval (HandleAudioProgress event n) = n <$ do
+    withAudioPlayer \audio -> do
+      percentage <- H.liftEffect $ do
+        currentTime <- Media.currentTime audio
+        duration <- Media.duration audio
+        pure $ currentTime / duration
+      H.modify_ $ _ { audioProgress = percentage }
+
+  eval (OnToggleAudioPlay n) = n <$ do
     state <- H.modify $ \s -> s { audioPlaying = not s.audioPlaying }
-    H.getHTMLElementRef audioRef >>= traverse_ \el -> do
-      for_ (Media.fromHTMLElement el) $ \audio -> do
-        H.liftEffect $ do
-          paused <- Media.paused audio
-          (if paused then Media.play else Media.pause) audio
-        -- then
-        --   H.liftEffect $ Media.play audio
-        -- else
-        --   H.liftEffect $ Media.pause audio
+    withAudioPlayer \audio -> H.liftEffect $ do
+      paused <- Media.paused audio
+      (if paused then Media.play else Media.pause) audio
 
-  eval (StopAudioPlay n) = n <$ do
+  eval (OnStopAudioPlay n) = n <$ do
     H.modify_ $ \s -> s { audioPlaying = false }
-    H.getHTMLElementRef audioRef >>= traverse_ \el -> do
-      for_ (Media.fromHTMLElement el) $ \audio ->
-        H.liftEffect $ do
-          Media.setCurrentTime 0.0 audio
-          Media.pause audio
+    withAudioPlayer \audio -> H.liftEffect $ do
+      Media.setCurrentTime 0.0 audio
+      Media.pause audio
 
-  eval (OnAudioProgress event n) = n <$ do
-    traceM event
-    H.getHTMLElementRef audioRef >>= traverse_ \el -> do
-      for_ (Media.fromHTMLElement el) $ \audio -> do
-        percentage <- H.liftEffect $ do
-          currentTime <- Media.currentTime audio
-          duration <- Media.duration audio
-          pure $ currentTime / duration
-        H.modify_ $ _ { audioProgress = percentage }
-        traceM percentage
+  eval (OnAudioBackward n) = n <$ do
+    withAudioPlayer \audio -> H.liftEffect $ do
+      currentTime <- Media.currentTime audio
+      duration <- Media.duration audio
+      Media.setCurrentTime (max (currentTime - 10.0) 0.0) audio
+
+  eval (OnAudioForward n) = n <$ do
+    withAudioPlayer \audio -> H.liftEffect $ do
+      currentTime <- Media.currentTime audio
+      duration <- Media.duration audio
+      Media.setCurrentTime (min (currentTime + 10.0) duration) audio

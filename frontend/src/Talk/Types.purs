@@ -20,9 +20,11 @@ data Query a
   = Init a
   | OnClickLang String a
   | OnClickPlay a
-  | ToggleAudioPlay a
-  | StopAudioPlay a
-  | OnAudioProgress Web.Event a
+  | HandleAudioProgress Web.Event a
+  | OnToggleAudioPlay a
+  | OnStopAudioPlay a
+  | OnAudioBackward a
+  | OnAudioForward a
 
 type State =
   { talk :: Talk

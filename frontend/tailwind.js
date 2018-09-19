@@ -389,6 +389,7 @@ module.exports = {
     "6": "1.5rem",
     "8": "2rem",
     "10": "2.5rem",
+    "12": "3rem",
     "1/2": "50%",
     full: "100%",
     screen: "100vw"
@@ -420,6 +421,7 @@ module.exports = {
     "6": "1.5rem",
     "8": "2rem",
     "10": "2.5rem",
+    "12": "3rem",
     full: "100%",
     screen: "100vh"
   },
