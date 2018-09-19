@@ -11,7 +11,6 @@ import Core.Model (unescape)
 import Data.Array as Array
 import Data.Foldable (sequence_)
 import Data.MediaType (MediaType(..))
-import Data.Monoid as Monoid
 import Data.String as String
 import Foreign.Object as FO
 import Halogen (Namespace(..))
@@ -116,34 +115,34 @@ audioRef = H.RefLabel "audio"
 renderAudio :: State -> HTML
 renderAudio state@{ talk } =
   HH.div
-  [ class_ "fixed pin-b pin-r flex items-center mb-4 mr-4 md:mb-8 md:mr-8"
+  [ class_ "fixed pin-b pin-r flex items-center mb-5 mr-5 md:mb-8 md:mr-8"
   ]
   [ HH.div
     [ class_ $ if state.audioPlayerExpanded then "flex" else "hidden"
     , style "font-family: emoji;"
     ]
     [ HH.button
-      [ class_ $ btnCls <> " w-8 h-8 mr-3"
+      [ class_ ctrlBtnCls
       , HE.onClick $ HE.input_ OnAudioBackward
       ]
       [ HH.text "⏪"]
     , HH.button
-      [ class_ $ btnCls <> " w-8 h-8 mr-3"
+      [ class_ ctrlBtnCls
       , HE.onClick $ HE.input_ OnAudioForward
       ]
       [ HH.text "⏩"]
     , HH.button
-      [ class_ $ btnCls <> " w-8 h-8 mr-3"
+      [ class_ ctrlBtnCls
       , HE.onClick $ HE.input_ OnStopAudioPlay
       ]
       [ HH.text "⏹"]
     , HH.button
-      [ class_ $ btnCls <> " w-8 h-8 mr-3"
+      [ class_ ctrlBtnCls
       , HE.onClick $ HE.input_ OnToggleAudioPlay
       ]
       [ HH.text $ if state.audioPlaying then "⏸" else "▶️"]
     ]
-  , HH.div
+  , HH.button
     [ class_ "relative select-none cursor-pointer"
     , HE.onClick $ HE.input_ OnToggleAudioControls
     ]
@@ -172,7 +171,7 @@ renderAudio state@{ talk } =
         , svgAttr "cy" "24"
         , svgAttr "r" "23"
         , svgAttr "fill" "none"
-        , svgAttr "stroke" "#70c542"
+        , svgAttr "stroke" "#ff5722"
         , svgAttr "stroke-width" "2"
         , svgAttr "stroke-dasharray" $
             show (state.audioProgress * perimeter) <> " " <> show perimeter
@@ -187,7 +186,8 @@ renderAudio state@{ talk } =
     ] []
   ]
   where
-  btnCls = "flex items-center justify-center border border-grey400 rounded-full bg-white cursor-pointer"
+  btnCls = "flex items-center justify-center border border-grey300 rounded-full bg-white cursor-pointer"
+  ctrlBtnCls = btnCls <> " w-10 h-10 mr-2"
   url = "https://download.ted.com/talks/" <> talk.mediaSlug <> ".mp3"
   svgNS :: Namespace
   svgNS = Namespace "http://www.w3.org/2000/svg"
@@ -269,9 +269,15 @@ app pageData@{ talk } = H.component
         fetchTranscript lang1 *> fetchTranscript lang2
 
     H.getHTMLElementRef audioRef >>= traverse_ \el -> do
-      H.subscribe $
+      void $ H.subscribe $
         ES.eventListenerEventSource (EventType "timeupdate") (HTML.toEventTarget el)
           (Just <<< H.action <<< HandleAudioProgress)
+      void $ H.subscribe $
+        ES.eventListenerEventSource (EventType "play") (HTML.toEventTarget el)
+          (Just <<< H.action <<< HandleAudioPlay)
+      H.subscribe $
+        ES.eventListenerEventSource (EventType "pause") (HTML.toEventTarget el)
+          (Just <<< H.action <<< HandleAudioPause)
 
   eval (OnClickLang language n) = n <$ do
     state <- H.get
@@ -314,12 +320,17 @@ app pageData@{ talk } = H.component
         pure $ currentTime / duration
       H.modify_ $ _ { audioProgress = percentage }
 
+  eval (HandleAudioPlay event n) = n <$ do
+    H.modify_ $ _ { audioPlaying = true }
+
+  eval (HandleAudioPause event n) = n <$ do
+    H.modify_ $ _ { audioPlaying = false }
+
   eval (OnToggleAudioControls n) = n <$ do
     H.modify_ $ \s -> s
       { audioPlayerExpanded = not s.audioPlayerExpanded }
 
   eval (OnToggleAudioPlay n) = n <$ do
-    state <- H.modify $ \s -> s { audioPlaying = not s.audioPlaying }
     withAudioPlayer \audio -> H.liftEffect $ do
       paused <- Media.paused audio
       (if paused then Media.play else Media.pause) audio

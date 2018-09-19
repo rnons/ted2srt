@@ -21,6 +21,8 @@ data Query a
   | OnClickLang String a
   | OnClickPlay a
   | HandleAudioProgress Web.Event a
+  | HandleAudioPlay Web.Event a
+  | HandleAudioPause Web.Event a
   | OnToggleAudioControls a
   | OnToggleAudioPlay a
   | OnStopAudioPlay a
