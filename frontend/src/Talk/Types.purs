@@ -1,9 +1,11 @@
 module Talk.Types where
 
 import Core.Prelude
+
 import Core.Model (Talk)
-import Halogen as H
 import Foreign.Object as FO
+import Halogen as H
+import Web.Event.Event as Web
 
 type PageData =
   { talk :: Talk
@@ -20,6 +22,7 @@ data Query a
   | OnClickPlay a
   | ToggleAudioPlay a
   | StopAudioPlay a
+  | OnAudioProgress Web.Event a
 
 type State =
   { talk :: Talk
@@ -27,6 +30,7 @@ type State =
   , transcripts :: FO.Object (Array String)
   , playing :: Boolean
   , audioPlaying :: Boolean
+  , audioProgress :: Number
   }
 
 type HTML = H.ComponentHTML Query () Aff
@@ -40,4 +44,5 @@ initialState pageData =
   , transcripts: FO.empty
   , playing: false
   , audioPlaying: false
+  , audioProgress: 0.0
   }

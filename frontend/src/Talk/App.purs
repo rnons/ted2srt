@@ -11,17 +11,22 @@ import Core.Model (unescape)
 import Data.Array as Array
 import Data.Foldable (sequence_)
 import Data.MediaType (MediaType(..))
+import Data.Monoid as Monoid
 import Data.String as String
 import Foreign.Object as FO
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.Query.EventSource as ES
 import Simple.JSON (readJSON, writeJSON)
 import Talk.Sidebar as Sidebar
 import Talk.Types (DSL, HTML, PageData, Query(..), SelectedLang(..), State, initialState)
 import Talk.Util as Util
+import Web.Event.Event (EventType(..))
 import Web.HTML (window)
+import Web.HTML.Event.EventTypes as ET
+import Web.HTML.HTMLElement as HTML
 import Web.HTML.HTMLMediaElement as Media
 import Web.HTML.Window as Window
 import Web.Storage.Storage as Storage
@@ -113,26 +118,30 @@ renderAudio state@{ talk } =
   HH.div
   [ class_ "fixed flex items-center"
   , style "bottom: 2rem; right: 2rem;"
-  ] $ join
-  [ guard state.audioPlaying $>
-    HH.div
-    [ class_ $ btnCls <> " w-8 h-8 mr-3"
-    , HE.onClick $ HE.input_ StopAudioPlay
+  ]
+  [ HH.div
+    [ class_ $ Monoid.guard (not state.audioPlaying) " hidden"
     ]
-    [ HH.text "⏹"]
-  , pure $ HH.div
+    [ HH.button
+      [ class_ $ btnCls <> " w-8 h-8 mr-3"
+      , HE.onClick $ HE.input_ StopAudioPlay
+      ]
+      [ HH.text "⏹"]
+    ]
+  , HH.div
     [ class_ $ btnCls <> " w-10 h-10"
     , HE.onClick $ HE.input_ ToggleAudioPlay
     ]
     [ HH.text "🎵"]
-  , pure $ HH.audio
-    [ class_ "hidden"
+  , HH.audio
+    [ class_ ""
+    , HP.controls true
     , HP.src url
     , HP.ref audioRef
     ] []
   ]
   where
-  btnCls = "flex items-center justify-center border rounded-full bg-white"
+  btnCls = "flex items-center justify-center border rounded-full bg-white cursor-pointer"
   url = "https://download.ted.com/talks/" <> talk.mediaSlug <> ".mp3"
 
 render :: State -> HTML
@@ -204,6 +213,12 @@ app pageData@{ talk } = H.component
         -- concurrent requests well
         fetchTranscript lang1 *> fetchTranscript lang2
 
+    H.getHTMLElementRef audioRef >>= traverse_ \el -> do
+      traceM el
+      H.subscribe $
+        ES.eventListenerEventSource (EventType "timeupdate") (HTML.toEventTarget el)
+          (Just <<< H.action <<< OnAudioProgress)
+
   eval (OnClickLang language n) = n <$ do
     state <- H.get
     let
@@ -240,11 +255,30 @@ app pageData@{ talk } = H.component
   eval (ToggleAudioPlay n) = n <$ do
     state <- H.modify $ \s -> s { audioPlaying = not s.audioPlaying }
     H.getHTMLElementRef audioRef >>= traverse_ \el -> do
-      for_ (Media.fromHTMLElement el) $ \audio ->
-        H.liftEffect $ Media.play audio
+      for_ (Media.fromHTMLElement el) $ \audio -> do
+        H.liftEffect $ do
+          paused <- Media.paused audio
+          (if paused then Media.play else Media.pause) audio
+        -- then
+        --   H.liftEffect $ Media.play audio
+        -- else
+        --   H.liftEffect $ Media.pause audio
 
   eval (StopAudioPlay n) = n <$ do
     H.modify_ $ \s -> s { audioPlaying = false }
     H.getHTMLElementRef audioRef >>= traverse_ \el -> do
       for_ (Media.fromHTMLElement el) $ \audio ->
-        H.liftEffect $ Media.play audio
+        H.liftEffect $ do
+          Media.setCurrentTime 0.0 audio
+          Media.pause audio
+
+  eval (OnAudioProgress event n) = n <$ do
+    traceM event
+    H.getHTMLElementRef audioRef >>= traverse_ \el -> do
+      for_ (Media.fromHTMLElement el) $ \audio -> do
+        percentage <- H.liftEffect $ do
+          currentTime <- Media.currentTime audio
+          duration <- Media.duration audio
+          pure $ currentTime / duration
+        H.modify_ $ _ { audioProgress = percentage }
+        traceM percentage
