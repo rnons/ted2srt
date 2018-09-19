@@ -116,11 +116,11 @@ audioRef = H.RefLabel "audio"
 renderAudio :: State -> HTML
 renderAudio state@{ talk } =
   HH.div
-  [ class_ "fixed flex items-center"
-  , style "bottom: 2rem; right: 2rem;"
+  [ class_ "fixed pin-b pin-r flex items-center mb-4 mr-4 md:mb-8 md:mr-8"
   ]
   [ HH.div
-    [ class_ $ "flex" <> Monoid.guard (not state.audioPlaying) " hidden"
+    [ class_ $ if state.audioPlayerExpanded then "flex" else "hidden"
+    , style "font-family: emoji;"
     ]
     [ HH.button
       [ class_ $ btnCls <> " w-8 h-8 mr-3"
@@ -137,10 +137,15 @@ renderAudio state@{ talk } =
       , HE.onClick $ HE.input_ OnStopAudioPlay
       ]
       [ HH.text "⏹"]
+    , HH.button
+      [ class_ $ btnCls <> " w-8 h-8 mr-3"
+      , HE.onClick $ HE.input_ OnToggleAudioPlay
+      ]
+      [ HH.text $ if state.audioPlaying then "⏸" else "▶️"]
     ]
   , HH.div
-    [ class_ "relative select-none"
-    , HE.onClick $ HE.input_ OnToggleAudioPlay
+    [ class_ "relative select-none cursor-pointer"
+    , HE.onClick $ HE.input_ OnToggleAudioControls
     ]
     [ HH.div
       [ class_ $ btnCls <> " w-12 h-12 border-none"]
@@ -182,7 +187,7 @@ renderAudio state@{ talk } =
     ] []
   ]
   where
-  btnCls = "flex items-center justify-center border rounded-full bg-white cursor-pointer"
+  btnCls = "flex items-center justify-center border border-grey400 rounded-full bg-white cursor-pointer"
   url = "https://download.ted.com/talks/" <> talk.mediaSlug <> ".mp3"
   svgNS :: Namespace
   svgNS = Namespace "http://www.w3.org/2000/svg"
@@ -308,6 +313,10 @@ app pageData@{ talk } = H.component
         duration <- Media.duration audio
         pure $ currentTime / duration
       H.modify_ $ _ { audioProgress = percentage }
+
+  eval (OnToggleAudioControls n) = n <$ do
+    H.modify_ $ \s -> s
+      { audioPlayerExpanded = not s.audioPlayerExpanded }
 
   eval (OnToggleAudioPlay n) = n <$ do
     state <- H.modify $ \s -> s { audioPlaying = not s.audioPlaying }

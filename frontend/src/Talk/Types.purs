@@ -21,6 +21,7 @@ data Query a
   | OnClickLang String a
   | OnClickPlay a
   | HandleAudioProgress Web.Event a
+  | OnToggleAudioControls a
   | OnToggleAudioPlay a
   | OnStopAudioPlay a
   | OnAudioBackward a
@@ -31,6 +32,7 @@ type State =
   , selectedLang :: SelectedLang
   , transcripts :: FO.Object (Array String)
   , playing :: Boolean
+  , audioPlayerExpanded :: Boolean
   , audioPlaying :: Boolean
   , audioProgress :: Number
   }
@@ -45,6 +47,7 @@ initialState pageData =
   , selectedLang: NoLang
   , transcripts: FO.empty
   , playing: false
+  , audioPlayerExpanded: false
   , audioPlaying: false
   , audioProgress: 0.0
   }
