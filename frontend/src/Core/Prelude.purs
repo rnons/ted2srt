@@ -6,6 +6,7 @@ module Core.Prelude
   , module Data.Maybe
   , module Data.Tuple
   , module Debug.Trace
+  , module Effect.Aff
   , class_
   , style
   ) where
@@ -18,6 +19,7 @@ import Data.Maybe (Maybe(..), isJust)
 import Data.Tuple (Tuple(..))
 import Data.Foldable (for_, traverse_)
 import Debug.Trace (trace, traceM)
+import Effect.Aff (Aff)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 

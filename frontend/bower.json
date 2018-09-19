@@ -1,0 +1,16 @@
+{
+  "name": "ted2srt",
+  "license": "BSD-3-Clause",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "purescript-halogen": "https://github.com/slamdata/purescript-halogen.git#e43096ccde699f68f1803acd23bab493a7190e2c",
+    "purescript-affjax": "^6.0.0",
+    "purescript-simple-json": "^4.2.0",
+    "purescript-debug": "^4.0.0"
+  }
+}

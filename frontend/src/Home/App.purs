@@ -11,7 +11,6 @@ import Core.Api as Api
 import Core.Model (Talk, getTitleSpeaker, unescape)
 import Data.Array as Array
 import Data.Maybe (Maybe(..))
-import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -30,9 +29,9 @@ type State =
   , hasMore :: Boolean
   }
 
-type HTML = H.ComponentHTML Query
+type HTML = H.ComponentHTML Query () Aff
 
-type DSL m = H.ComponentDSL State Query Void m
+type DSL = H.HalogenM State Query () Void Aff
 
 initialState :: PageData -> State
 initialState pageData =
@@ -82,15 +81,17 @@ render state =
   , Footer.render
   ]
 
-app :: forall m. MonadAff m => PageData -> H.Component HH.HTML Query Unit Void m
+app :: PageData -> H.Component HH.HTML Query Unit Void Aff
 app pageData = H.component
   { initialState: const $ initialState pageData
   , render
   , eval
   , receiver: const Nothing
+  , initializer: Nothing
+  , finalizer: Nothing
   }
   where
-  eval :: Query ~> DSL m
+  eval :: Query ~> DSL
   eval (LoadMore n) = n <$ do
     state <- H.modify $ _ { loading = true }
     H.liftAff (Api.getTalks $ Array.length state.talks) >>= traverse_ \talks ->

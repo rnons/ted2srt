@@ -18,3 +18,4 @@ static/tmp/
 output/
 dce-output/
 node_modules
+bower_components

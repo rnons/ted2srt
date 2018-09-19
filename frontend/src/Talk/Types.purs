@@ -29,9 +29,9 @@ type State =
   , audioPlaying :: Boolean
   }
 
-type HTML = H.ComponentHTML Query
+type HTML = H.ComponentHTML Query () Aff
 
-type DSL m = H.ComponentDSL State Query Void m
+type DSL = H.HalogenM State Query () Void Aff
 
 initialState :: PageData -> State
 initialState pageData =

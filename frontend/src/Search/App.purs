@@ -7,7 +7,6 @@ import Component.Header as Header
 import Core.Api as Api
 import Core.Model (Talk, unescape)
 import Data.Maybe (Maybe(..))
-import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -24,7 +23,7 @@ type State =
   , loading :: Boolean
   }
 
-type HTML = H.ComponentHTML Query
+type HTML = H.ComponentHTML Query () Aff
 
 initialState :: PageData -> State
 initialState pageData =
@@ -77,8 +76,8 @@ render state =
   , Footer.render
   ]
 
-app :: forall m. MonadAff m => PageData -> H.Component HH.HTML Query Unit Void m
-app pageData = H.lifecycleComponent
+app :: PageData -> H.Component HH.HTML Query Unit Void Aff
+app pageData = H.component
   { initialState: const $ initialState pageData
   , render
   , eval
@@ -87,7 +86,7 @@ app pageData = H.lifecycleComponent
   , finalizer: Nothing
   }
   where
-  eval :: Query ~> H.ComponentDSL State Query Void m
+  eval :: Query ~> H.HalogenM State Query () Void Aff
   eval (Init n) = n <$ do
     H.modify_ $ _ { loading = true }
     H.fork $ H.liftAff (Api.searchTalks pageData.q) >>= traverse_ \talks ->

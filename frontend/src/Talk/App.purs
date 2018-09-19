@@ -12,7 +12,6 @@ import Data.Array as Array
 import Data.Foldable (sequence_)
 import Data.MediaType (MediaType(..))
 import Data.String as String
-import Effect.Aff.Class (class MonadAff)
 import Foreign.Object as FO
 import Halogen as H
 import Halogen.HTML as HH
@@ -152,8 +151,8 @@ render state =
   , Footer.render
   ]
 
-app :: forall m. MonadAff m => PageData -> H.Component HH.HTML Query Unit Void m
-app pageData@{ talk } = H.lifecycleComponent
+app :: PageData -> H.Component HH.HTML Query Unit Void Aff
+app pageData@{ talk } = H.component
   { initialState: const $ initialState pageData
   , render
   , eval
@@ -162,7 +161,7 @@ app pageData@{ talk } = H.lifecycleComponent
   , finalizer: Nothing
   }
   where
-  fetchTranscript :: String -> DSL m Unit
+  fetchTranscript :: String -> DSL Unit
   fetchTranscript lang = do
     state <- H.get
     when (not $ FO.member lang state.transcripts) $
@@ -178,7 +177,7 @@ app pageData@{ talk } = H.lifecycleComponent
   isLangAvailable langCode =
     isJust $ Array.findIndex (\lang -> lang.languageCode == langCode) talk.languages
 
-  eval :: Query ~> DSL m
+  eval :: Query ~> DSL
   eval (Init n) = n <$ do
     selectedLang <- H.liftEffect $ window >>= Window.localStorage >>=
       Storage.getItem "languages" >>= \ml -> pure $ case ml of
