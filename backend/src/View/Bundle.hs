@@ -25,8 +25,8 @@ includeBundle bundle = do
       then
         ["common.js", "", show bundle <> ".js", ""]
       else
-        [ "common.js"
-        , "common.css"
+        [ lookupStatic $ "common" <> ".js"
+        , lookupStatic $ "common" <> ".css"
         , lookupStatic $ show bundle <> ".js"
         , lookupStatic $ show bundle <> ".css"
         ]
