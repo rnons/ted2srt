@@ -205,7 +205,7 @@ render state =
       , renderTranscript state
       ]
     , Sidebar.render state
-    , renderAudio state
+    , if state.hasAudio then renderAudio state else HH.text ""
     ]
   , Footer.render
   ]
@@ -275,9 +275,12 @@ app pageData@{ talk } = H.component
       void $ H.subscribe $
         ES.eventListenerEventSource (EventType "play") (HTML.toEventTarget el)
           (Just <<< H.action <<< HandleAudioPlay)
-      H.subscribe $
+      void $ H.subscribe $
         ES.eventListenerEventSource (EventType "pause") (HTML.toEventTarget el)
           (Just <<< H.action <<< HandleAudioPause)
+      H.subscribe $
+        ES.eventListenerEventSource (EventType "error") (HTML.toEventTarget el)
+          (const $ pure $ H.action HandleAudioError)
 
   eval (OnClickLang language n) = n <$ do
     state <- H.get
@@ -352,3 +355,6 @@ app pageData@{ talk } = H.component
       currentTime <- Media.currentTime audio
       duration <- Media.duration audio
       Media.setCurrentTime (min (currentTime + 10.0) duration) audio
+
+  eval (HandleAudioError n) = n <$ do
+    H.modify $ _ { hasAudio = false }

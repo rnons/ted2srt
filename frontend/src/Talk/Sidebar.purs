@@ -3,13 +3,12 @@ module Talk.Sidebar
   ) where
 
 import Core.Prelude
-import Talk.Types
 
 import Core.Model (Talk)
-import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Talk.Types (Query(..), HTML, SelectedLang(..), State)
 import Talk.Util as Util
 
 type Video =
