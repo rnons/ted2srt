@@ -3,6 +3,7 @@ module Api.Search
   ) where
 
 import           Config
+import qualified Data.Text                        as T
 import qualified Database.PostgreSQL.Simple       as Pg
 import           Database.PostgreSQL.Simple.SqlQQ (sql)
 import           Model
@@ -31,7 +32,8 @@ searchTalk q = do
           description ilike ?
     |] [query, query]
   where
-    query = "%" <> q <> "%"
+    q' = T.map (\c -> if c == '_' then ' ' else c) q
+    query = "%" <> T.intercalate "%" (T.words q') <> "%"
 
 getSearchApiH :: Maybe Text -> AppM [Talk]
 getSearchApiH (Just q) = searchTalk q
