@@ -1,5 +1,8 @@
 module Web.TED.Types
-  ( transcriptToText
+  ( Cue(..)
+  , Paragraph(..)
+  , Transcript(..)
+  , transcriptToText
   ) where
 
 
