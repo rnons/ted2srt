@@ -197,7 +197,7 @@ renderAudio state@{ talk } =
 render :: State -> HTML
 render state =
   HH.div_
-  [ Header.render
+  [ Header.render ""
   , HH.div
     [ class_ "TalkApp container py-6 px-4 xl:px-0"]
     [ HH.div_

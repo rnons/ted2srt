@@ -63,7 +63,7 @@ renderTalk talk =
 render :: State -> HTML
 render state =
   HH.div_
-  [ Header.render
+  [ Header.render ""
   , HH.div
     [ class_ "container py-6" ] $ join
     [ pure $ HH.ul [ class_ "HomeApp"] $

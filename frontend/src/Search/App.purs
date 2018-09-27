@@ -6,6 +6,7 @@ import Component.Footer as Footer
 import Component.Header as Header
 import Core.Api as Api
 import Core.Model (Talk, unescape)
+import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -63,15 +64,16 @@ renderTalk talk =
 render :: State -> HTML
 render state =
   HH.div_
-  [ Header.render
+  [ Header.render state.q
   , HH.div
     [ class_ "container py-6 px-4 xl:px-0"] $ join
-    [ pure $ HH.ul_ $
-      state.talks <#> renderTalk
-    , guard state.loading $>
-      HH.div
-      [ class_ "text-center"]
-      [ HH.text "loading..."]
+    [ pure $
+        if Array.length state.talks == 0
+        then HH.text "Nothing found"
+        else HH.ul_ $ state.talks <#> renderTalk
+    , guard state.loading $> HH.div
+        [ class_ "text-center"]
+        [ HH.text "loading..."]
     ]
   , Footer.render
   ]
