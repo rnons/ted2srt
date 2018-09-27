@@ -1,25 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 
-import qualified Data.Text                  as T
-import qualified Data.Text.IO               as T
-import           Data.Time                  (getCurrentTime)
-import qualified Database.PostgreSQL.Simple as DB
-import           LoadEnv                    (loadEnv)
-import           Network.HTTP.Conduit       (simpleHttp)
+import qualified Data.Text            as T
+import qualified Data.Text.IO         as T
+import           Data.Time            (getCurrentTime)
+import           LoadEnv              (loadEnv)
+import           Network.HTTP.Conduit (simpleHttp)
 import           RIO
-import           Text.HTML.DOM              (parseLBS)
-import qualified Text.XML                   as X
+import           Text.HTML.DOM        (parseLBS)
+import qualified Text.XML             as X
 import           Text.XML.Cursor
 
-import           Config                     (Config (..), getConfig)
-import           Models.Talk                (getTalks, saveToDB)
+import           Config               (Config (..), getConfig)
+import           Models.Talk          (getTalks, saveToDB)
 import           Types
-import           Web.TED                    (Feed (..), FeedEntry (..),
-                                             FileType (..), Subtitle (..),
-                                             template, toSub)
-
-type TalkId = Int
+import           Web.TED              (Feed (..), FeedEntry (..), FileType (..),
+                                       Subtitle (..), template, toSub)
 
 main :: IO ()
 main = do
@@ -27,19 +23,15 @@ main = do
     res <- simpleHttp rurl
     config <- getConfig
     let cursor = fromDocument $ parseLBS res
-        tids = take limit (parseTids cursor)
         urls = take limit (parseUrl cursor)
 
-    runRIO config $ mapM saveToDB urls
+    void $ runRIO config $ mapM saveToDB urls
     X.writeFile X.def "atom.xml" . template =<< mkFeed
                                             =<< saveAsFeed config
   where
     limit = 5
     rurl = "http://feeds.feedburner.com/tedtalks_video"
     -- 105 tids
-    parseTids :: Cursor -> [TalkId]
-    parseTids cur = map (read . T.unpack) $ cur $// element "jwplayer:talkId"
-                                                &// content
     parseUrl :: Cursor -> [Text]
     parseUrl cur = cur $// element "feedburner:origLink"
                        &// content
