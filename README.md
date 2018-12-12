@@ -8,12 +8,11 @@ This is the source code of [ted2srt.org](https://ted2srt.org), a website to down
 
 ### Frontend
 
-Setup [purescript](https://github.com/purescript/purescript), [psc-package](https://github.com/purescript/psc-package) and [pulp](https://github.com/purescript-contrib/pulp), then
+Setup [purescript](https://github.com/purescript/purescript) and [pulp](https://github.com/purescript-contrib/pulp), then
 
 ```
 cd frontend
 yarn
-psc-package install
 pulp -w build
 yarn start
 ```
