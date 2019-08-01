@@ -85,7 +85,7 @@ renderLanguages { talk, selectedLang } =
       HH.li
       [ class_ $ getCls language.languageCode
       , style "margin-bottom: 2px;"
-      , HE.onClick $ HE.input_ $ OnClickLang language.languageCode
+      , HE.onClick $ Just <<< const (OnClickLang language.languageCode)
       ] $ join
       [ pure $ HH.text language.endonym
       , guard (isLangSelected selectedLang language.languageCode) $>

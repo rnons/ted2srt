@@ -2,6 +2,7 @@ module Search.App where
 
 import Core.Prelude
 
+import Data.Const (Const)
 import Component.Footer as Footer
 import Component.Header as Header
 import Core.Api as Api
@@ -16,7 +17,7 @@ type PageData =
   { q :: String
   }
 
-data Query a = Init a
+data Query = Init
 
 type State =
   { q :: String
@@ -78,21 +79,22 @@ render state =
   , Footer.render
   ]
 
-app :: PageData -> H.Component HH.HTML Query Unit Void Aff
-app pageData = H.component
+app :: PageData -> H.Component HH.HTML (Const Void) Unit Void Aff
+app pageData = H.mkComponent
   { initialState: const $ initialState pageData
   , render
-  , eval
-  , receiver: const Nothing
-  , initializer: Just $ H.action Init
-  , finalizer: Nothing
+  , eval: H.mkEval $ H.defaultEval
+    { handleAction = handleAction 
+    , initialize = Just Init}
   }
   where
-  eval :: Query ~> H.HalogenM State Query () Void Aff
-  eval (Init n) = n <$ do
+  handleAction :: Query -> H.HalogenM State Query () Void Aff Unit
+  handleAction Init = do
     H.modify_ $ _ { loading = true }
-    H.fork $ H.liftAff (Api.searchTalks pageData.q) >>= traverse_ \talks ->
+    void $ H.fork $ H.liftAff (Api.searchTalks pageData.q) >>= traverse_ \talks ->
       H.modify_ $ _
         { talks = talks
         , loading = false
         }
+
+

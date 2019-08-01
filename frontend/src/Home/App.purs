@@ -5,23 +5,24 @@ module Home.App
 
 import Core.Prelude
 
+import Data.Const (Const)
 import Component.Footer as Footer
 import Component.Header as Header
 import Core.Api as Api
 import Core.Model (Talk, getTitleSpeaker, unescape)
 import Data.Array as Array
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..)) 
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Control.Monad.Trans.Class (lift)
 
 type PageData =
   { talks :: Array Talk
   }
 
-data Query a
-  = LoadMore a
+data Query = LoadMore 
 
 type State =
   { talks :: Array Talk
@@ -71,7 +72,7 @@ render state =
     , guard state.hasMore $> HH.div [ class_ "mt-8 text-center"] (join
       [ guard (not state.loading) $> HH.button
         [ class_ "border py-2 px-6 outline-none text-grey500 hover:text-red500 hover:border-red500"
-        , HE.onClick $ HE.input_ LoadMore
+        , HE.onClick $ Just <<< const LoadMore
         ]
         [ HH.text "LOAD MORE"]
       , guard state.loading $>
@@ -81,22 +82,21 @@ render state =
   , Footer.render
   ]
 
-app :: PageData -> H.Component HH.HTML Query Unit Void Aff
-app pageData = H.component
+app :: PageData -> H.Component HH.HTML (Const Query) Unit Void Aff
+app pageData = H.mkComponent
   { initialState: const $ initialState pageData
   , render
-  , eval
-  , receiver: const Nothing
-  , initializer: Nothing
-  , finalizer: Nothing
+  , eval: H.mkEval $ H.defaultEval
+    { handleAction = handleAction }
   }
   where
-  eval :: Query ~> DSL
-  eval (LoadMore n) = n <$ do
-    state <- H.modify $ _ { loading = true }
-    H.liftAff (Api.getTalks $ Array.length state.talks) >>= traverse_ \talks ->
-      H.modify $ \s -> s
-        { talks = Array.union s.talks talks
-        , loading = false
-        , hasMore = Array.length talks == 20
-        }
+    handleAction ::  Query -> H.HalogenM State Query () Void Aff Unit
+    handleAction LoadMore = do
+      state <- H.modify $ _ { loading = true }
+      lift (Api.getTalks $ Array.length state.talks) >>= traverse_ \talks ->
+        H.modify $ \s -> s
+          { talks = Array.union s.talks talks
+          , loading = false
+          , hasMore = Array.length talks == 20
+          }
+

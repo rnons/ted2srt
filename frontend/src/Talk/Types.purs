@@ -16,19 +16,19 @@ data SelectedLang
   | OneLang String
   | TwoLang String String
 
-data Query a
-  = Init a
-  | OnClickLang String a
-  | OnClickPlay a
-  | HandleAudioProgress Web.Event a
-  | HandleAudioPlay Web.Event a
-  | HandleAudioPause Web.Event a
-  | HandleAudioError a
-  | OnToggleAudioControls a
-  | OnToggleAudioPlay a
-  | OnStopAudioPlay a
-  | OnAudioBackward a
-  | OnAudioForward a
+data Query 
+  = Init 
+  | OnClickLang String 
+  | OnClickPlay 
+  | HandleAudioProgress Web.Event 
+  | HandleAudioPlay Web.Event 
+  | HandleAudioPause Web.Event 
+  | HandleAudioError 
+  | OnToggleAudioControls 
+  | OnToggleAudioPlay 
+  | OnStopAudioPlay 
+  | OnAudioBackward 
+  | OnAudioForward 
 
 type State =
   { talk :: Talk

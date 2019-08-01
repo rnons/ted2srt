@@ -8,9 +8,9 @@
     "bower_components"
   ],
   "dependencies": {
-    "purescript-halogen": "https://github.com/slamdata/purescript-halogen.git#e43096ccde699f68f1803acd23bab493a7190e2c",
-    "purescript-affjax": "^6.0.0",
-    "purescript-simple-json": "^4.2.0",
+    "purescript-halogen": "v5.0.0-rc.5",
+    "purescript-affjax": "^9.0.0",
+    "purescript-simple-json": "^7.0.0",
     "purescript-debug": "^4.0.0"
   }
 }
