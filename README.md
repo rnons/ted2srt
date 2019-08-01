@@ -59,4 +59,4 @@ stack exec ted2srt
 
 to start the server.
 
-Then navigate to http://localhost:8080, try searching some keywords, cheers.
+Then navigate to http://localhost:3001, try paste a TED talk url to the search bar, cheers.
