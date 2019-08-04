@@ -11,7 +11,7 @@ import Component.Header as Header
 import Core.Api as Api
 import Core.Model (Talk, getTitleSpeaker, unescape)
 import Data.Array as Array
-import Data.Maybe (Maybe(..)) 
+import Data.Maybe (Maybe(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -22,7 +22,8 @@ type PageData =
   { talks :: Array Talk
   }
 
-data Query = LoadMore 
+type Query = Const Void
+data Action = LoadMore
 
 type State =
   { talks :: Array Talk
@@ -30,9 +31,9 @@ type State =
   , hasMore :: Boolean
   }
 
-type HTML = H.ComponentHTML Query () Aff
+type HTML = H.ComponentHTML Action () Aff
 
-type DSL = H.HalogenM State Query () Void Aff
+type DSL = H.HalogenM State Action () Void Aff
 
 initialState :: PageData -> State
 initialState pageData =
@@ -82,7 +83,7 @@ render state =
   , Footer.render
   ]
 
-app :: PageData -> H.Component HH.HTML (Const Query) Unit Void Aff
+app :: PageData -> H.Component HH.HTML Query Unit Void Aff
 app pageData = H.mkComponent
   { initialState: const $ initialState pageData
   , render
@@ -90,7 +91,7 @@ app pageData = H.mkComponent
     { handleAction = handleAction }
   }
   where
-    handleAction ::  Query -> H.HalogenM State Query () Void Aff Unit
+    handleAction ::  Action -> H.HalogenM State Action () Void Aff Unit
     handleAction LoadMore = do
       state <- H.modify $ _ { loading = true }
       lift (Api.getTalks $ Array.length state.talks) >>= traverse_ \talks ->

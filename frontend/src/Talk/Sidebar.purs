@@ -8,7 +8,7 @@ import Core.Model (Talk)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Talk.Types (Query(..), HTML, SelectedLang(..), State)
+import Talk.Types (Action(..), HTML, SelectedLang(..), State)
 import Talk.Util as Util
 
 type Video =

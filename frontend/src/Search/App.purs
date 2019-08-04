@@ -17,7 +17,8 @@ type PageData =
   { q :: String
   }
 
-data Query = Init
+type Query = Const Void
+data Action = Init
 
 type State =
   { q :: String
@@ -25,7 +26,7 @@ type State =
   , loading :: Boolean
   }
 
-type HTML = H.ComponentHTML Query () Aff
+type HTML = H.ComponentHTML Action () Aff
 
 initialState :: PageData -> State
 initialState pageData =
@@ -79,16 +80,16 @@ render state =
   , Footer.render
   ]
 
-app :: PageData -> H.Component HH.HTML (Const Void) Unit Void Aff
+app :: PageData -> H.Component HH.HTML Query Unit Void Aff
 app pageData = H.mkComponent
   { initialState: const $ initialState pageData
   , render
   , eval: H.mkEval $ H.defaultEval
-    { handleAction = handleAction 
+    { handleAction = handleAction
     , initialize = Just Init}
   }
   where
-  handleAction :: Query -> H.HalogenM State Query () Void Aff Unit
+  handleAction :: Action -> H.HalogenM State Action () Void Aff Unit
   handleAction Init = do
     H.modify_ $ _ { loading = true }
     void $ H.fork $ H.liftAff (Api.searchTalks pageData.q) >>= traverse_ \talks ->

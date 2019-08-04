@@ -4,7 +4,6 @@ module Talk.App
 
 import Core.Prelude
 
-import Data.Const (Const)
 import Component.Footer as Footer
 import Component.Header as Header
 import Core.Api as Api
@@ -22,7 +21,7 @@ import Halogen.HTML.Properties as HP
 import Halogen.Query.EventSource as ES
 import Simple.JSON (readJSON, writeJSON)
 import Talk.Sidebar as Sidebar
-import Talk.Types (DSL, HTML, PageData, Query(..), SelectedLang(..), State, initialState)
+import Talk.Types (DSL, HTML, PageData, Action(..), Query, SelectedLang(..), State, initialState)
 import Talk.Util as Util
 import Web.Event.Event (EventType(..))
 import Web.HTML (HTMLMediaElement, window)
@@ -212,14 +211,13 @@ render state =
   , Footer.render
   ]
 
-app :: PageData -> H.Component HH.HTML (Const Void) Unit Void Aff
+app :: PageData -> H.Component HH.HTML Query Unit Void Aff
 app pageData@{ talk } = H.mkComponent
   { initialState: const $ initialState pageData
   , render
-  , eval: H.mkEval $ H.defaultEval 
-    {
-      handleAction = handleAction
-    , initialize = Just Init 
+  , eval: H.mkEval $ H.defaultEval
+    { handleAction = handleAction
+    , initialize = Just Init
     }
   }
   where
@@ -244,7 +242,7 @@ app pageData@{ talk } = H.mkComponent
     H.getHTMLElementRef audioRef >>= traverse_ \el -> do
       for_ (Media.fromHTMLElement el) actions
 
-  handleAction :: Query -> H.HalogenM State Query () Void Aff Unit
+  handleAction :: Action -> H.HalogenM State Action () Void Aff Unit
   handleAction Init = do
     selectedLang <- H.liftEffect $ window >>= Window.localStorage >>=
       Storage.getItem "languages" >>= \ml -> pure $ case ml of
@@ -273,19 +271,19 @@ app pageData@{ talk } = H.mkComponent
 
     H.getHTMLElementRef audioRef >>= traverse_ \el -> do
       void $ H.subscribe $
-          ES.eventListenerEventSource (EventType "timeupdate") (HTML.toEventTarget el)
-            (Just <<< HandleAudioProgress)
-    
+        ES.eventListenerEventSource (EventType "timeupdate") (HTML.toEventTarget el)
+          (Just <<< HandleAudioProgress)
+
       void $ H.subscribe $
-          ES.eventListenerEventSource (EventType "play") (HTML.toEventTarget el)
-            (Just <<< HandleAudioPlay)
+        ES.eventListenerEventSource (EventType "play") (HTML.toEventTarget el)
+          (Just <<< HandleAudioPlay)
       void $ H.subscribe $
-          ES.eventListenerEventSource (EventType "pause") (HTML.toEventTarget el)
-            (Just <<< HandleAudioPause)
+        ES.eventListenerEventSource (EventType "pause") (HTML.toEventTarget el)
+          (Just <<< HandleAudioPause)
       void $ H.subscribe $
-          ES.eventListenerEventSource (EventType "error") (HTML.toEventTarget el)
-            (const $ Just HandleAudioError)
-      
+        ES.eventListenerEventSource (EventType "error") (HTML.toEventTarget el)
+          (const $ Just HandleAudioError)
+
 
   handleAction (OnClickLang language) = do
     state <- H.get
