@@ -6,6 +6,10 @@ module Core.Api
 
 import Prelude
 
+import Affjax (ResponseFormatError(..))
+import Affjax as AX
+import Affjax.ResponseFormat as ResponseFormat
+import Affjax.StatusCode (StatusCode(..))
 import Control.Apply (lift2)
 import Core.Model (Talk)
 import Data.Bitraversable (lfor)
@@ -15,33 +19,34 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Class.Console (error)
 import Foreign (ForeignError(..), MultipleErrors)
-import Network.HTTP.Affjax (AffjaxResponse)
-import Network.HTTP.Affjax as AX
-import Network.HTTP.Affjax.Response as Response
-import Network.HTTP.StatusCode (StatusCode(..))
 import Simple.JSON (class ReadForeign, readJSON)
 
 type Response a = Aff (Either MultipleErrors a)
 
-handleResponse :: forall a. ReadForeign a => AffjaxResponse String -> Response a
-handleResponse { status, response } =
+handleResponse :: forall a. ReadForeign a => AX.Response (Either AX.ResponseFormatError String) -> Response a
+handleResponse { status, body } =
   if status == StatusCode 200
     then
-      lfor (readJSON response) (lift2 (*>) (liftEffect <<< error <<< show) pure)
+      case body of 
+        Left (ResponseFormatError err _) -> pure $ Left $ NonEmpty.singleton $ err
+        Right response -> lfor (readJSON response) (lift2 (*>) (liftEffect <<< error <<< show) pure)
     else
       pure $ Left $ NonEmpty.singleton $ ForeignError "status code is not 200"
 
 get :: forall a. ReadForeign a => String -> Response a
-get url = AX.get Response.string url >>= handleResponse
+get url = AX.get ResponseFormat.string url >>= handleResponse
 
 getTalks :: Int -> Response (Array Talk)
 getTalks offset = get $ "/api/talks?offset=" <> show offset
 
 getTalkTranscript :: Talk -> String -> Response String
 getTalkTranscript talk lang = do
-  { status, response } <- AX.get Response.string url
+  { status, body } <- AX.get ResponseFormat.string url
   if status == StatusCode 200
-    then pure $ Right response
+    then
+      case body of 
+        Left (ResponseFormatError err _) -> pure $ Left $ NonEmpty.singleton $ err
+        Right response -> pure $ Right response
     else
       pure $ Left $ NonEmpty.singleton $ ForeignError "status code is not 200"
   where
@@ -49,3 +54,5 @@ getTalkTranscript talk lang = do
 
 searchTalks :: String -> Response (Array Talk)
 searchTalks q = get $ "/api/search?q=" <> q
+ 
+

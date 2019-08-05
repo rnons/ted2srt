@@ -21,7 +21,7 @@ import Halogen.HTML.Properties as HP
 import Halogen.Query.EventSource as ES
 import Simple.JSON (readJSON, writeJSON)
 import Talk.Sidebar as Sidebar
-import Talk.Types (DSL, HTML, PageData, Query(..), SelectedLang(..), State, initialState)
+import Talk.Types (DSL, HTML, PageData, Action(..), Query, SelectedLang(..), State, initialState)
 import Talk.Util as Util
 import Web.Event.Event (EventType(..))
 import Web.HTML (HTMLMediaElement, window)
@@ -29,6 +29,7 @@ import Web.HTML.HTMLElement as HTML
 import Web.HTML.HTMLMediaElement as Media
 import Web.HTML.Window as Window
 import Web.Storage.Storage as Storage
+
 
 renderTalkInfo :: State -> HTML
 renderTalkInfo { talk, selectedLang, playing } =
@@ -39,7 +40,7 @@ renderTalkInfo { talk, selectedLang, playing } =
     [ HH.div
       [ class_ "flex-no-shrink cursor-pointer bg-cover bg-center Image"
       , style $ "background-image: url(" <> unescape talk.image <> ")"
-      , HE.onClick $ HE.input_ OnClickPlay
+      , HE.onClick $ Just <<< const OnClickPlay
       ]
       [ HH.div
         [ class_ "h-full text-white hover:bg-grey300 flex items-center justify-center"]
@@ -123,28 +124,28 @@ renderAudio state@{ talk } =
     ]
     [ HH.button
       [ class_ ctrlBtnCls
-      , HE.onClick $ HE.input_ OnAudioBackward
+      , HE.onClick $ Just <<< const OnAudioBackward
       ]
       [ HH.text "⏪"]
     , HH.button
       [ class_ ctrlBtnCls
-      , HE.onClick $ HE.input_ OnAudioForward
+      , HE.onClick $ Just <<< const OnAudioForward
       ]
       [ HH.text "⏩"]
     , HH.button
       [ class_ ctrlBtnCls
-      , HE.onClick $ HE.input_ OnStopAudioPlay
+      , HE.onClick $ Just <<< const OnStopAudioPlay
       ]
       [ HH.text "⏹"]
     , HH.button
       [ class_ ctrlBtnCls
-      , HE.onClick $ HE.input_ OnToggleAudioPlay
+      , HE.onClick $ Just <<< const OnToggleAudioPlay
       ]
       [ HH.text $ if state.audioPlaying then "⏸" else "▶️"]
     ]
   , HH.button
     [ class_ "relative select-none cursor-pointer"
-    , HE.onClick $ HE.input_ OnToggleAudioControls
+    , HE.onClick $ Just <<< const OnToggleAudioControls
     ]
     [ HH.div
       [ class_ $ btnCls <> " w-12 h-12 border-none"]
@@ -211,13 +212,13 @@ render state =
   ]
 
 app :: PageData -> H.Component HH.HTML Query Unit Void Aff
-app pageData@{ talk } = H.component
+app pageData@{ talk } = H.mkComponent
   { initialState: const $ initialState pageData
   , render
-  , eval
-  , receiver: const Nothing
-  , initializer: Just $ H.action Init
-  , finalizer: Nothing
+  , eval: H.mkEval $ H.defaultEval
+    { handleAction = handleAction
+    , initialize = Just Init
+    }
   }
   where
   fetchTranscript :: String -> DSL Unit
@@ -241,8 +242,8 @@ app pageData@{ talk } = H.component
     H.getHTMLElementRef audioRef >>= traverse_ \el -> do
       for_ (Media.fromHTMLElement el) actions
 
-  eval :: Query ~> DSL
-  eval (Init n) = n <$ do
+  handleAction :: Action -> H.HalogenM State Action () Void Aff Unit
+  handleAction Init = do
     selectedLang <- H.liftEffect $ window >>= Window.localStorage >>=
       Storage.getItem "languages" >>= \ml -> pure $ case ml of
         Nothing -> OneLang "en"
@@ -271,18 +272,20 @@ app pageData@{ talk } = H.component
     H.getHTMLElementRef audioRef >>= traverse_ \el -> do
       void $ H.subscribe $
         ES.eventListenerEventSource (EventType "timeupdate") (HTML.toEventTarget el)
-          (Just <<< H.action <<< HandleAudioProgress)
+          (Just <<< HandleAudioProgress)
+
       void $ H.subscribe $
         ES.eventListenerEventSource (EventType "play") (HTML.toEventTarget el)
-          (Just <<< H.action <<< HandleAudioPlay)
+          (Just <<< HandleAudioPlay)
       void $ H.subscribe $
         ES.eventListenerEventSource (EventType "pause") (HTML.toEventTarget el)
-          (Just <<< H.action <<< HandleAudioPause)
-      H.subscribe $
+          (Just <<< HandleAudioPause)
+      void $ H.subscribe $
         ES.eventListenerEventSource (EventType "error") (HTML.toEventTarget el)
-          (const $ pure $ H.action HandleAudioError)
+          (const $ Just HandleAudioError)
 
-  eval (OnClickLang language n) = n <$ do
+
+  handleAction (OnClickLang language) = do
     state <- H.get
     let
       selectedLang = case state.selectedLang of
@@ -312,10 +315,10 @@ app pageData@{ talk } = H.component
         H.liftEffect $ window >>= Window.localStorage >>=
           Storage.setItem "languages" (writeJSON langs)
 
-  eval (OnClickPlay n) = n <$ do
+  handleAction OnClickPlay =  do
     H.modify_ $ _ { playing = true }
 
-  eval (HandleAudioProgress event n) = n <$ do
+  handleAction (HandleAudioProgress event) = do
     withAudioPlayer \audio -> do
       percentage <- H.liftEffect $ do
         currentTime <- Media.currentTime audio
@@ -323,38 +326,38 @@ app pageData@{ talk } = H.component
         pure $ currentTime / duration
       H.modify_ $ _ { audioProgress = percentage }
 
-  eval (HandleAudioPlay event n) = n <$ do
+  handleAction (HandleAudioPlay event) = do
     H.modify_ $ _ { audioPlaying = true }
 
-  eval (HandleAudioPause event n) = n <$ do
+  handleAction (HandleAudioPause event) = do
     H.modify_ $ _ { audioPlaying = false }
 
-  eval (OnToggleAudioControls n) = n <$ do
+  handleAction OnToggleAudioControls = do
     H.modify_ $ \s -> s
       { audioPlayerExpanded = not s.audioPlayerExpanded }
 
-  eval (OnToggleAudioPlay n) = n <$ do
+  handleAction OnToggleAudioPlay = do
     withAudioPlayer \audio -> H.liftEffect $ do
       paused <- Media.paused audio
       (if paused then Media.play else Media.pause) audio
 
-  eval (OnStopAudioPlay n) = n <$ do
+  handleAction OnStopAudioPlay = do
     H.modify_ $ \s -> s { audioPlaying = false }
     withAudioPlayer \audio -> H.liftEffect $ do
       Media.setCurrentTime 0.0 audio
       Media.pause audio
 
-  eval (OnAudioBackward n) = n <$ do
+  handleAction OnAudioBackward = do
     withAudioPlayer \audio -> H.liftEffect $ do
       currentTime <- Media.currentTime audio
       duration <- Media.duration audio
       Media.setCurrentTime (max (currentTime - 10.0) 0.0) audio
 
-  eval (OnAudioForward n) = n <$ do
+  handleAction OnAudioForward = do
     withAudioPlayer \audio -> H.liftEffect $ do
       currentTime <- Media.currentTime audio
       duration <- Media.duration audio
       Media.setCurrentTime (min (currentTime + 10.0) duration) audio
 
-  eval (HandleAudioError n) = n <$ do
-    H.modify $ _ { hasAudio = false }
+  handleAction HandleAudioError = do
+    H.modify_ $ _ { hasAudio = false }

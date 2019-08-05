@@ -8,7 +8,7 @@ import Core.Model (Talk)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Talk.Types (Query(..), HTML, SelectedLang(..), State)
+import Talk.Types (Action(..), HTML, SelectedLang(..), State)
 import Talk.Util as Util
 
 type Video =
@@ -85,7 +85,7 @@ renderLanguages { talk, selectedLang } =
       HH.li
       [ class_ $ getCls language.languageCode
       , style "margin-bottom: 2px;"
-      , HE.onClick $ HE.input_ $ OnClickLang language.languageCode
+      , HE.onClick $ Just <<< const (OnClickLang language.languageCode)
       ] $ join
       [ pure $ HH.text language.endonym
       , guard (isLangSelected selectedLang language.languageCode) $>

@@ -2,6 +2,7 @@ module Talk.Types where
 
 import Core.Prelude
 
+import Data.Const (Const)
 import Core.Model (Talk)
 import Foreign.Object as FO
 import Halogen as H
@@ -16,19 +17,21 @@ data SelectedLang
   | OneLang String
   | TwoLang String String
 
-data Query a
-  = Init a
-  | OnClickLang String a
-  | OnClickPlay a
-  | HandleAudioProgress Web.Event a
-  | HandleAudioPlay Web.Event a
-  | HandleAudioPause Web.Event a
-  | HandleAudioError a
-  | OnToggleAudioControls a
-  | OnToggleAudioPlay a
-  | OnStopAudioPlay a
-  | OnAudioBackward a
-  | OnAudioForward a
+type Query = Const Void
+
+data Action
+  = Init
+  | OnClickLang String
+  | OnClickPlay
+  | HandleAudioProgress Web.Event
+  | HandleAudioPlay Web.Event
+  | HandleAudioPause Web.Event
+  | HandleAudioError
+  | OnToggleAudioControls
+  | OnToggleAudioPlay
+  | OnStopAudioPlay
+  | OnAudioBackward
+  | OnAudioForward
 
 type State =
   { talk :: Talk
@@ -41,9 +44,9 @@ type State =
   , audioProgress :: Number
   }
 
-type HTML = H.ComponentHTML Query () Aff
+type HTML = H.ComponentHTML Action () Aff
 
-type DSL = H.HalogenM State Query () Void Aff
+type DSL = H.HalogenM State Action () Void Aff
 
 initialState :: PageData -> State
 initialState pageData =
