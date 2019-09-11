@@ -21,11 +21,12 @@ type Talk =
     -- , publishedAt :: Maybe Date.Date
     }
 
-getTitleSpeaker :: Talk -> Tuple String String
-getTitleSpeaker talk =
-  case String.split (String.Pattern ":") talk.name of
-    [speaker, title] -> Tuple title speaker
-    _ -> Tuple "" talk.name
+getTitleSpeaker :: Talk -> { title :: String, speaker :: String }
+getTitleSpeaker { name } =
+  { title:
+      String.drop 2 $ String.dropWhile (_ /= String.codePointFromChar ':') name
+  , speaker: String.takeWhile (_ /= String.codePointFromChar ':') name
+  }
 
 unescape :: String -> String
 unescape =

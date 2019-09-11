@@ -60,7 +60,7 @@ renderTalk talk =
     ]
   ]
   where
-  Tuple title speaker = getTitleSpeaker talk
+  { title, speaker } = getTitleSpeaker talk
 
 render :: State -> HTML
 render state =
@@ -100,4 +100,3 @@ app pageData = H.mkComponent
           , loading = false
           , hasMore = Array.length talks == 20
           }
-
