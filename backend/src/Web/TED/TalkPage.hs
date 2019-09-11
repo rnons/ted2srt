@@ -51,7 +51,7 @@ parseImage cursor = head $ head $
 parseTalkObject :: ByteString -> ByteString
 parseTalkObject body = last $ last r
   where
-    pat = "player_talks\":\\[(.+)\\],\"ratings" :: ByteString
+    pat = "player_talks\":\\[(.+)\\],\"recorded_at" :: ByteString
     r = body =~ pat :: [[ByteString]]
 
 -- | Given talk url, return mediaSlug and mediaPad of talk.

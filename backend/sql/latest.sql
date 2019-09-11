@@ -66,7 +66,7 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE talk (
-    id smallint NOT NULL,
+    id int NOT NULL,
     name text,
     slug text,
     filmed_at timestamp with time zone,
@@ -86,7 +86,7 @@ ALTER TABLE talk OWNER TO postgres;
 --
 
 CREATE TABLE transcript (
-    id smallint NOT NULL,
+    id int NOT NULL,
     en_tsvector tsvector
 );
 
