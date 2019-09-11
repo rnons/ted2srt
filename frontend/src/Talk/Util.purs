@@ -5,9 +5,9 @@ module Talk.Util
   ) where
 
 import Core.Prelude
-import Talk.Types
 
 import Core.Model (Talk)
+import Talk.Types (SelectedLang(..))
 
 mkVideoUrl :: Talk -> String -> String
 mkVideoUrl talk bitrate =

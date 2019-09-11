@@ -17,7 +17,7 @@ pulp -w build
 yarn start
 ```
 
-You need to install [zephyr](https://github.com/coot/zephyr) and run `yarn build` once, so that backend can start correctly.
+Run `yarn build:dev` once, so that backend can start correctly.
 
 ### Backend
 

@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "build": "rm -rf ../backend/dist/*.{css,js} && pulp build -- -g corefn && zephyr -f Home.main Talk.main Search.main && NODE_ENV=production webpack -p --progress",
+    "build:dev": "pulp build && NODE_ENV=production webpack -p --progress",
     "postinstall": "bower install",
     "pscid:build": "pulp build",
     "start": "webpack-dev-server --progress --port 7000"
