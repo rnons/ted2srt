@@ -21,7 +21,7 @@ import Halogen.HTML.Properties as HP
 import Halogen.Query.EventSource as ES
 import Simple.JSON (readJSON, writeJSON)
 import Talk.Sidebar as Sidebar
-import Talk.Types (DSL, HTML, PageData, Action(..), Query, SelectedLang(..), State, initialState)
+import Talk.Types (Action(..), DSL, HTML, PageData, Query, SelectedLang(..), State, _header, initialState)
 import Talk.Util as Util
 import Web.Event.Event (EventType(..))
 import Web.HTML (HTMLMediaElement, window)
@@ -198,7 +198,7 @@ renderAudio state@{ talk } =
 render :: State -> HTML
 render state =
   HH.div_
-  [ Header.render ""
+  [ HH.slot _header unit (Header.component "") unit $ const Nothing
   , HH.div
     [ class_ "TalkApp container py-6 px-4 xl:px-0"]
     [ HH.div_
@@ -242,7 +242,7 @@ app pageData@{ talk } = H.mkComponent
     H.getHTMLElementRef audioRef >>= traverse_ \el -> do
       for_ (Media.fromHTMLElement el) actions
 
-  handleAction :: Action -> H.HalogenM State Action () Void Aff Unit
+  handleAction :: Action -> DSL Unit
   handleAction Init = do
     selectedLang <- H.liftEffect $ window >>= Window.localStorage >>=
       Storage.getItem "languages" >>= \ml -> pure $ case ml of

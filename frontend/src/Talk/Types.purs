@@ -2,8 +2,9 @@ module Talk.Types where
 
 import Core.Prelude
 
-import Data.Const (Const)
+import Component.Header as Header
 import Core.Model (Talk)
+import Data.Const (Const)
 import Foreign.Object as FO
 import Halogen as H
 import Web.Event.Event as Web
@@ -44,9 +45,13 @@ type State =
   , audioProgress :: Number
   }
 
-type HTML = H.ComponentHTML Action () Aff
+type Slot = ( header :: H.Slot Header.Query Header.Message Unit )
 
-type DSL = H.HalogenM State Action () Void Aff
+_header = SProxy :: SProxy "header"
+
+type HTML = H.ComponentHTML Action Slot Aff
+
+type DSL = H.HalogenM State Action Slot Void Aff
 
 initialState :: PageData -> State
 initialState pageData =

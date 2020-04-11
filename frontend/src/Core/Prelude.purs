@@ -4,6 +4,7 @@ module Core.Prelude
   , module Data.Either
   , module Data.Foldable
   , module Data.Maybe
+  , module Data.Symbol
   , module Data.Tuple
   , module Debug.Trace
   , module Effect.Aff
@@ -17,6 +18,7 @@ import Prelude
 import Control.MonadPlus (guard)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), isJust)
+import Data.Symbol (SProxy(..))
 import Data.Tuple (Tuple(..))
 import Data.Foldable (for_, traverse_)
 import Debug.Trace (trace, traceM)

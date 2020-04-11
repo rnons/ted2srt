@@ -5,24 +5,25 @@ module Home.App
 
 import Core.Prelude
 
-import Data.Const (Const)
 import Component.Footer as Footer
 import Component.Header as Header
+import Control.Monad.Trans.Class (lift)
 import Core.Api as Api
 import Core.Model (Talk, getTitleSpeaker, unescape)
 import Data.Array as Array
+import Data.Const (Const)
 import Data.Maybe (Maybe(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Control.Monad.Trans.Class (lift)
 
 type PageData =
   { talks :: Array Talk
   }
 
 type Query = Const Void
+
 data Action = LoadMore
 
 type State =
@@ -31,9 +32,13 @@ type State =
   , hasMore :: Boolean
   }
 
-type HTML = H.ComponentHTML Action () Aff
+type Slot = ( header :: H.Slot Header.Query Header.Message Unit )
 
-type DSL = H.HalogenM State Action () Void Aff
+_header = SProxy :: SProxy "header"
+
+type HTML = H.ComponentHTML Action Slot Aff
+
+type DSL = H.HalogenM State Action Slot Void Aff
 
 initialState :: PageData -> State
 initialState pageData =
@@ -65,7 +70,7 @@ renderTalk talk =
 render :: State -> HTML
 render state =
   HH.div_
-  [ Header.render ""
+  [ HH.slot _header unit (Header.component "") unit $ const Nothing
   , HH.div
     [ class_ "container py-6" ] $ join
     [ pure $ HH.ul [ class_ "HomeApp"] $
@@ -91,7 +96,7 @@ app pageData = H.mkComponent
     { handleAction = handleAction }
   }
   where
-    handleAction ::  Action -> H.HalogenM State Action () Void Aff Unit
+    handleAction ::  Action -> DSL Unit
     handleAction LoadMore = do
       state <- H.modify $ _ { loading = true }
       lift (Api.getTalks $ Array.length state.talks) >>= traverse_ \talks ->

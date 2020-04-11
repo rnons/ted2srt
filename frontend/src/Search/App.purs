@@ -2,13 +2,14 @@ module Search.App where
 
 import Core.Prelude
 
-import Data.Const (Const)
 import Component.Footer as Footer
 import Component.Header as Header
 import Core.Api as Api
 import Core.Model (Talk, unescape)
 import Data.Array as Array
+import Data.Const (Const)
 import Data.Maybe (Maybe(..))
+import Data.Symbol (SProxy(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -18,6 +19,7 @@ type PageData =
   }
 
 type Query = Const Void
+
 data Action = Init
 
 type State =
@@ -26,7 +28,11 @@ type State =
   , loading :: Boolean
   }
 
-type HTML = H.ComponentHTML Action () Aff
+type Slot = ( header :: H.Slot Header.Query Header.Message Unit )
+
+_header = SProxy :: SProxy "header"
+
+type HTML = H.ComponentHTML Action Slot Aff
 
 initialState :: PageData -> State
 initialState pageData =
@@ -66,7 +72,7 @@ renderTalk talk =
 render :: State -> HTML
 render state =
   HH.div_
-  [ Header.render state.q
+  [ HH.slot _header unit (Header.component state.q) unit $ const Nothing
   , HH.div
     [ class_ "container py-6 px-4 xl:px-0"] $ join
     [ pure $
@@ -89,7 +95,7 @@ app pageData = H.mkComponent
     , initialize = Just Init}
   }
   where
-  handleAction :: Action -> H.HalogenM State Action () Void Aff Unit
+  handleAction :: Action -> H.HalogenM State Action Slot Void Aff Unit
   handleAction Init = do
     H.modify_ $ _ { loading = true }
     void $ H.fork $ H.liftAff (Api.searchTalks pageData.q) >>= traverse_ \talks ->
@@ -97,5 +103,3 @@ app pageData = H.mkComponent
         { talks = talks
         , loading = false
         }
-
-
