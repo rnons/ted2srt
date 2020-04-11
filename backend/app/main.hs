@@ -9,8 +9,9 @@ import           Servant
 import           Servant.Server                       (Handler, hoistServer)
 import           System.Environment                   (getEnv)
 
-import           Config                               (Config (..), getConfig)
+import           Config                               (Config (..), mkConfig)
 import           Control.Monad.Except                 (ExceptT (..))
+import           Database.Persist.Sql                 (ConnectionPool)
 import           RIO                                  hiding (Handler)
 import           Server                               (allApi, getBundleH,
                                                        tedApiView, tedServer)
@@ -29,6 +30,6 @@ main :: IO ()
 main = do
   loadEnv
   port <- read <$> getEnv "PORT"
-  config <- getConfig
+  config <- mkConfig
   putStrLn $ "Server started at " <> show port
   run port $ app config

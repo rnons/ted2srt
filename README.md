@@ -27,6 +27,7 @@ Then
 
 ```
 cd backend
+nix-shell
 stack build
 ```
 

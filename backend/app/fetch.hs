@@ -12,7 +12,7 @@ import           Text.HTML.DOM        (parseLBS)
 import qualified Text.XML             as X
 import           Text.XML.Cursor
 
-import           Config               (Config (..), getConfig)
+import           Config               (Config (..), mkConfig)
 import           Models.Talk          (getTalks, saveToDB)
 import           Types
 import           Web.TED              (Feed (..), FeedEntry (..), FileType (..),
@@ -22,7 +22,7 @@ main :: IO ()
 main = do
     loadEnv
     res <- simpleHttp rurl
-    config <- getConfig
+    config <- mkConfig
     let cursor = fromDocument $ parseLBS res
         urls = take limit (parseUrl cursor)
 
