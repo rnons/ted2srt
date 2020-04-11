@@ -5,12 +5,14 @@
 .env
 .stack-work/
 ted2srt.cabal
+ted2srt.nix
 
 .DS_Store
 
 backend/dist/*.js
 backend/dist/*.map
 backend/dist/*.css
+backend/result
 
 static/tmp/
 .psc-package

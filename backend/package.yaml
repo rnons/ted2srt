@@ -90,15 +90,15 @@ executables:
     - wai-extra
 
 # Test suite
-tests:
-  test:
-    main: Main.hs
-    source-dirs: test
-    default-extensions:
-    - NoImplicitPrelude
-    - OverloadedStrings
-    ghc-options: -Wall
-    dependencies:
-    - ted2srt
-    - hspec >=2.0.0
-    - process
+# tests:
+#   test:
+#     main: Main.hs
+#     source-dirs: test
+#     default-extensions:
+#     - NoImplicitPrelude
+#     - OverloadedStrings
+#     ghc-options: -Wall
+#     dependencies:
+#     - ted2srt
+#     - hspec >=2.0.0
+#     - process
