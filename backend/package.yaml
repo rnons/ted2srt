@@ -9,9 +9,6 @@ dependencies:
 
 - aeson
 - base64-bytestring
-- beam-core
-- beam-migrate
-- beam-postgres
 - bytestring
 - conduit
 - conduit-extra
@@ -27,10 +24,12 @@ dependencies:
 - load-env
 - lucid
 - memory
+- monad-logger
 - mtl
 - network
-- postgresql-simple
-- random
+- persistent
+- persistent-postgresql
+- persistent-template
 - raw-strings-qq
 - regex-posix
 - rio
@@ -38,7 +37,6 @@ dependencies:
 - servant-server
 - system-filepath
 - text
-- th-printf
 - time
 - transformers
 - unordered-containers

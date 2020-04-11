@@ -4,18 +4,16 @@ module Api.Talks
   , getTalksApiH
   ) where
 
-import qualified Database.PostgreSQL.Simple       as Pg
-import           Database.PostgreSQL.Simple.SqlQQ (sql)
-import           Models.Talk                      (getTalkBySlug, getTalks)
+import           Database.Persist (Entity (..))
+import           Models.Talk      (getTalkBySlug, getTalks)
 import           RIO
-import           Servant                          (err404, throwError)
+import           Servant          (err404, throwError)
 import           Types
 
 
-getTalksApiH :: Maybe Int -> Maybe Int -> AppM [Talk]
+getTalksApiH :: Maybe Int -> Maybe Int -> AppM [Entity Talk]
 getTalksApiH mOffset mLimit = do
-  talks <- lift $ getTalks offset limit
-  pure talks
+  lift $ getTalks offset limit
   where
   defaultLimit = 20
   maxLimit = 20
@@ -24,19 +22,19 @@ getTalksApiH mOffset mLimit = do
 
 getRandomTalkApiH :: AppM Talk
 getRandomTalkApiH = do
-  Config { dbConn } <- ask
-  xs <- liftIO $ Pg.query_ dbConn [sql|
-      SELECT * FROM talk
-      TABLESAMPLE SYSTEM (1)
-      LIMIT 1
-      |]
+  let xs = []
+  -- xs <- liftIO $ Pg.query_ dbConn [sql|
+  --     SELECT * FROM talk
+  --     TABLESAMPLE SYSTEM (1)
+  --     LIMIT 1
+  --     |]
   case xs of
-    [talk] -> pure talk
+    [talk] -> pure $ entityVal talk
     _      -> throwM err404
 
 getTalkApiH :: Text -> AppM Talk
 getTalkApiH slug = do
   mTalk <- lift $ getTalkBySlug slug
   case mTalk of
-    Just talk -> pure talk
+    Just talk -> pure $ entityVal talk
     Nothing   -> throwError err404

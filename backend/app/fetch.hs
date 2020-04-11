@@ -4,6 +4,7 @@
 import qualified Data.Text            as T
 import qualified Data.Text.IO         as T
 import           Data.Time            (getCurrentTime)
+import           Database.Persist     (Entity (..))
 import           LoadEnv              (loadEnv)
 import           Network.HTTP.Conduit (simpleHttp)
 import           RIO
@@ -37,17 +38,17 @@ main = do
                        &// content
 
 
-talkToFeedEntry :: Talk -> IO (Maybe FeedEntry)
-talkToFeedEntry Talk {..} = do
+talkToFeedEntry :: Entity Talk -> IO (Maybe FeedEntry)
+talkToFeedEntry (Entity _ Talk {..}) = do
     path <- toSub $
-        Subtitle 0 _talkSlug ["en"] _talkMediaSlug _talkMediaPad TXT
+        Subtitle 0 talkSlug ["en"] talkMediaSlug talkMediaPad TXT
     case path of
         Just path' -> do
           transcript <- T.drop 2 <$> T.readFile path'
           return $ Just FeedEntry
-              { feedEntryTitle = _talkName
-              , feedEntryLink  = "http://ted2srt.org/talks/" <> _talkSlug
-              , feedEntryUpdated = _talkPublishedAt
+              { feedEntryTitle = talkName
+              , feedEntryLink  = "http://ted2srt.org/talks/" <> talkSlug
+              , feedEntryUpdated = talkPublishedAt
               , feedEntryContent = ppr transcript
               }
         Nothing -> return Nothing

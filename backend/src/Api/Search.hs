@@ -2,39 +2,27 @@ module Api.Search
   ( getSearchApiH
   ) where
 
-import           Config
-import qualified Data.Text                        as T
-import qualified Database.PostgreSQL.Simple       as Pg
-import           Database.PostgreSQL.Simple.SqlQQ (sql)
+import qualified Data.Text        as T
+import           Database.Persist (Entity, (||.))
+import qualified Database.Persist as P
 import           Model
 import           RIO
-import           Servant                          (err400, throwError)
-import           Types                            (AppM)
+import           Servant          (err400, throwError)
+import           Types            (AppM, AppRIO, runDB)
 
--- searchTalkFromDb :: Text -> AppM [Talk]
--- searchTalkFromDb q = do
---   Config { dbConn } <- ask
---   liftIO $ Pg.query dbConn [sql|
---       SELECT talk.* FROM talk JOIN transcript
---       ON talk.id = transcript.id
---       WHERE en_tsvector @@
---             to_tsquery('english', ?)
---       |] [query]
---   where
---     query = T.intercalate "&" $ T.words q
 
-searchTalk :: Text -> AppM [Talk]
-searchTalk q = do
-  Config { dbConn } <- ask
-  liftIO $ Pg.query dbConn [sql|
-    SELECT * FROM talk
-    WHERE name ilike ? or
-          description ilike ?
-    |] [query, query]
+-- Based on https://stackoverflow.com/a/11069667
+ilike :: EntityField record Text -> Text -> P.Filter record
+ilike field q =
+  P.Filter field (Left query) (P.BackendSpecificFilter "ilike")
   where
     q' = T.map (\c -> if c == '_' then ' ' else c) q
     query = "%" <> T.intercalate "%" (T.words q') <> "%"
 
-getSearchApiH :: Maybe Text -> AppM [Talk]
-getSearchApiH (Just q) = searchTalk q
+searchTalk :: Text -> AppRIO [Entity Talk]
+searchTalk q = do
+  runDB $ P.selectList ([TalkName `ilike` q] ||. [TalkDescription `ilike` q]) []
+
+getSearchApiH :: Maybe Text -> AppM [Entity Talk]
+getSearchApiH (Just q) = lift $ searchTalk q
 getSearchApiH Nothing  = throwError err400

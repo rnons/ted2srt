@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-11.16
+resolver: lts-13.19
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,8 +40,7 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-- beam-postgres-0.3.2.2
-- th-printf-0.5.0
+- hedis-0.12.9
 
 # Override default flag values for local packages and extra-deps
 flags: {}

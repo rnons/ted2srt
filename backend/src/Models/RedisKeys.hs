@@ -1,13 +1,12 @@
 module Models.RedisKeys where
 
 import qualified Data.ByteString.Char8 as C
-import           Data.Text             (Text, unpack)
+import qualified Data.Text             as T
 import           RIO
-import           Text.Printf.TH        (sb)
 
 
 cache :: Int -> C.ByteString
-cache = [sb|cache:%d|]
+cache  = C.pack . show
 
 slug :: Text -> C.ByteString
-slug = [sb|%s|] . unpack
+slug  = C.pack . T.unpack

@@ -11,10 +11,6 @@ import           System.Environment                   (getEnv)
 
 import           Config                               (Config (..), getConfig)
 import           Control.Monad.Except                 (ExceptT (..))
--- import           Database.Beam.Migrate.Simple         (autoMigrate)
--- import           Database.Beam.Postgres               (runBeamPostgresDebug)
--- import           Database.Beam.Postgres.Migrate       (migrationBackend)
--- import           Model                                (talkDbMigration)
 import           RIO                                  hiding (Handler)
 import           Server                               (allApi, getBundleH,
                                                        tedApiView, tedServer)
@@ -34,7 +30,5 @@ main = do
   loadEnv
   port <- read <$> getEnv "PORT"
   config <- getConfig
-  -- runBeamPostgresDebug putStrLn (dbConn config) $
-  --   autoMigrate migrationBackend talkDbMigration
   putStrLn $ "Server started at " <> show port
   run port $ app config

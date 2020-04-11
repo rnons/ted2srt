@@ -12,6 +12,7 @@ import           Api.Subtitles      (downloadSubtitleH, getSubtitleH)
 import           Api.Talks          (getRandomTalkApiH, getTalkApiH,
                                      getTalksApiH)
 import           Config             (Config (..))
+import           Database.Persist   (Entity (..))
 import           Lucid
 import           RIO                hiding (Handler)
 import           Servant
@@ -35,7 +36,7 @@ type TedApi =
        "talks"
     :> QueryParam "offset" Int          -- ^ getTalksH
     :> QueryParam "limit" Int
-    :> Get '[JSON] [Talk]
+    :> Get '[JSON] [Entity Talk]
   :<|> "talks" :> "random"
     :> Get '[JSON] Talk
   :<|> "talks"
@@ -55,7 +56,7 @@ type TedApi =
     :> QueryParams "lang" Text
     :> Raw
   :<|> "search"
-    :> QueryParam "q" Text :> Get '[JSON] [Talk]
+    :> QueryParam "q" Text :> Get '[JSON] [Entity Talk]
 
 type TedView =
        Get '[HTML] (Html ())

@@ -4,6 +4,7 @@ module Api.Subtitles
   ) where
 
 import qualified Data.ByteString.Char8     as C
+import           Database.Persist          (Entity (..))
 import qualified Filesystem.Path.CurrentOS as FS
 import           Models.Talk               (getTalkById)
 import           Network.HTTP.Types        (status200, status404)
@@ -18,8 +19,8 @@ getSubtitlePath :: Int -> FileType -> [Text] -> RIO Config (Maybe FilePath)
 getSubtitlePath tid format lang = do
   mTalk <- getTalkById tid Nothing
   case mTalk of
-    Just (Talk {..}) -> liftIO $ toSub $
-      Subtitle tid _talkSlug lang _talkMediaSlug _talkMediaPad format
+    Just (Entity _ Talk {..}) -> liftIO $ toSub $
+      Subtitle tid talkSlug lang talkMediaSlug talkMediaPad format
     Nothing -> return Nothing
 
 notFound :: (Response -> t) -> t

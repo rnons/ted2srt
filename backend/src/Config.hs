@@ -1,18 +1,22 @@
 module Config where
 
+import qualified Data.ByteString.Char8       as C
 import           Data.Maybe                  (fromMaybe)
-import qualified Database.PostgreSQL.Simple  as DB
+import           Database.Persist.Postgresql (createPostgresqlPool)
+import           Database.Persist.Sql        (ConnectionPool)
+
+import           Control.Monad.Logger        (runLoggingT)
 import qualified Database.Redis              as KV
 import           Network.HTTP.Client.Conduit (HasHttpManager (..), Manager,
                                               newManager)
-import           Network.Socket.Internal     (PortNumber)
+import           Network.Socket              (PortNumber)
 import           RIO
 import           Static
-import           System.Environment          (getEnv, lookupEnv)
+import           System.Environment          (getEnv)
 
 data Config = Config
   { devMode      :: Bool
-  , dbConn       :: DB.Connection
+  , dbPool       :: ConnectionPool
   , kvConn       :: KV.Connection
   , httpManager  :: Manager
   , logFunc      :: LogFunc
@@ -28,20 +32,17 @@ instance HasLogFunc Config where
 getConfig :: IO Config
 getConfig = do
   devMode <- (== "true") <$> getEnv "DEVELOPMENT"
-  dbName <- getEnv "DB_NAME"
-  dbUser <- getEnv "DB_USER"
-  dbPassword <- (fromMaybe "" ) <$> lookupEnv "DB_PASSWORD"
+  dbConnString <- getEnv "DB_CONN_STRING"
   (kvPort :: PortNumber) <- (fromMaybe 6369) <$> readMaybe <$> getEnv "REDIS_PORT"
-  db <- DB.connect DB.defaultConnectInfo
-      { DB.connectDatabase = dbName
-      , DB.connectUser = dbUser
-      , DB.connectPassword = dbPassword
-      }
-  kv <- KV.connect KV.defaultConnectInfo
+  let
+    logFunc = \_ _ _ _ -> pure ()
+  pool <- flip runLoggingT logFunc $
+    createPostgresqlPool (C.pack dbConnString) 10
+  kv <- KV.checkedConnect KV.defaultConnectInfo
       { KV.connectPort = KV.PortNumber $ fromIntegral kvPort }
   httpManager <- newManager
   logOptions <- logOptionsHandle stderr True
 
   lookupStatic <- static
   withLogFunc logOptions $ \lf ->
-    pure $ Config devMode db kv httpManager lf lookupStatic
+    pure $ Config devMode pool kv httpManager lf lookupStatic
