@@ -8,6 +8,10 @@ import Component.Footer as Footer
 import Component.Header as Header
 import Core.Api as Api
 import Core.Model (unescape)
+import Data.Argonaut.Core as A
+import Data.Argonaut.Decode (decodeJson)
+import Data.Argonaut.Encode (encodeJson)
+import Data.Argonaut.Parser (jsonParser)
 import Data.Array as Array
 import Data.Foldable (sequence_)
 import Data.MediaType (MediaType(..))
@@ -19,7 +23,6 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Query.EventSource as ES
-import Simple.JSON (readJSON, writeJSON)
 import Talk.Sidebar as Sidebar
 import Talk.Types (Action(..), DSL, HTML, PageData, Query, SelectedLang(..), State, _header, initialState)
 import Talk.Util as Util
@@ -247,7 +250,7 @@ app pageData@{ talk } = H.mkComponent
     selectedLang <- H.liftEffect $ window >>= Window.localStorage >>=
       Storage.getItem "languages" >>= \ml -> pure $ case ml of
         Nothing -> OneLang "en"
-        Just languages -> case readJSON languages of
+        Just languages -> case decodeJson =<< jsonParser languages of
           Right [lang] ->
             if isLangAvailable lang
             then OneLang lang
@@ -313,7 +316,7 @@ app pageData@{ talk } = H.mkComponent
       Just langs -> do
         sequence_ $ fetchTranscript <$> langs
         H.liftEffect $ window >>= Window.localStorage >>=
-          Storage.setItem "languages" (writeJSON langs)
+          Storage.setItem "languages" (A.stringify $ encodeJson langs)
 
   handleAction OnClickPlay =  do
     H.modify_ $ _ { playing = true }

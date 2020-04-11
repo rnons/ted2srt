@@ -8,6 +8,7 @@ module Core.Prelude
   , module Data.Tuple
   , module Debug.Trace
   , module Effect.Aff
+  , module Effect.Exception
   , class_
   , svgClass_
   , style
@@ -23,6 +24,7 @@ import Data.Tuple (Tuple(..))
 import Data.Foldable (for_, traverse_)
 import Debug.Trace (trace, traceM)
 import Effect.Aff (Aff)
+import Effect.Exception (throw)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 

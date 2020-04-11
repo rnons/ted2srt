@@ -4,55 +4,68 @@ module Core.Api
   , searchTalks
   ) where
 
-import Prelude
+import Core.Prelude
 
-import Affjax (ResponseFormatError(..))
 import Affjax as AX
-import Affjax.ResponseFormat as ResponseFormat
+import Affjax.ResponseFormat as Res
 import Affjax.StatusCode (StatusCode(..))
-import Control.Apply (lift2)
 import Core.Model (Talk)
-import Data.Bitraversable (lfor)
+import Data.Argonaut.Core (Json)
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
 import Data.Either (Either(..))
-import Data.List.NonEmpty as NonEmpty
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Effect.Class.Console (error)
-import Foreign (ForeignError(..), MultipleErrors)
-import Simple.JSON (class ReadForeign, readJSON)
 
-type Response a = Aff (Either MultipleErrors a)
+type Response a = Aff (Either String a)
 
-handleResponse :: forall a. ReadForeign a => AX.Response (Either AX.ResponseFormatError String) -> Response a
-handleResponse { status, body } =
-  if status == StatusCode 200
-    then
-      case body of 
-        Left (ResponseFormatError err _) -> pure $ Left $ NonEmpty.singleton $ err
-        Right response -> lfor (readJSON response) (lift2 (*>) (liftEffect <<< error <<< show) pure)
-    else
-      pure $ Left $ NonEmpty.singleton $ ForeignError "status code is not 200"
+handleResponse
+  :: forall a
+   . DecodeJson a
+  => Either AX.Error (AX.Response Json)
+  -> Response a
+handleResponse = case _ of
+  Left err -> do
+    let msg = AX.printError err
+    void $ liftEffect $ throw msg
+    pure $ Left msg
+  Right res -> do
+    if res.status == StatusCode 200
+      then case decodeJson res.body of
+        Left msg -> do
+          void $ liftEffect $ throw msg
+          pure $ Left msg
+        Right v -> pure $ Right v
+      else case decodeJson res.body of
+        Left msg -> do
+          void $ liftEffect $ throw msg
+          pure $ Left msg
+        Right (v :: { message :: String }) -> pure $ Left v.message
 
-get :: forall a. ReadForeign a => String -> Response a
-get url = AX.get ResponseFormat.string url >>= handleResponse
+get
+  :: forall a
+   . DecodeJson a
+  => AX.URL
+  -> Response a
+get url = AX.get Res.json url >>= handleResponse
 
 getTalks :: Int -> Response (Array Talk)
 getTalks offset = get $ "/api/talks?offset=" <> show offset
 
 getTalkTranscript :: Talk -> String -> Response String
 getTalkTranscript talk lang = do
-  { status, body } <- AX.get ResponseFormat.string url
-  if status == StatusCode 200
-    then
-      case body of 
-        Left (ResponseFormatError err _) -> pure $ Left $ NonEmpty.singleton $ err
-        Right response -> pure $ Right response
-    else
-      pure $ Left $ NonEmpty.singleton $ ForeignError "status code is not 200"
+  AX.get Res.string url >>= case _ of
+    Left err -> do
+      let msg = AX.printError err
+      void $ liftEffect $ throw msg
+      pure $ Left msg
+    Right res -> do
+      if res.status == StatusCode 200
+        then pure $ Right res.body
+        else do
+          void $ liftEffect $ throw res.body
+          pure $ Left res.body
   where
   url = "/api/talks/" <> show talk.id <> "/transcripts/txt?lang=" <> lang
 
 searchTalks :: String -> Response (Array Talk)
 searchTalks q = get $ "/api/search?q=" <> q
- 
-

@@ -17,6 +17,7 @@ backend/result
 static/tmp/
 .psc-package
 .psc-ide-port
+.spago
 output/
 dce-output/
 node_modules
