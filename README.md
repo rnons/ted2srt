@@ -17,7 +17,7 @@ pulp -w build
 yarn start
 ```
 
-Run `yarn build:dev` once, so that backend can start correctly.
+Run `yarn build` once, so that backend can start correctly.
 
 ### Backend
 
