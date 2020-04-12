@@ -7,7 +7,7 @@ with nixpkgs;
 let
   nativeLibs = [
     gmp
-    postgresql
+    postgresql_11
     redis
     zlib
   ] ++ lib.optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [
