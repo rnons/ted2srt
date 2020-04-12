@@ -19,6 +19,7 @@ import           RIO
 import           RIO.List.Partial     (head)
 import           System.Directory
 import           System.IO            (hPutStr, hPutStrLn, openFile, print)
+import qualified System.IO.Utf8 as Utf8
 import           Text.Printf
 
 import           Web.TED.API          as TED
@@ -141,7 +142,7 @@ oneSub sub = do
                   "%02d:%02d:%02d,%03d\n%s\n\n"
              else "%d\n%02d:%02d:%02d.%03d --> " ++
                   "%02d:%02d:%02d.%03d\n%s\n\n"
-    ppr h (c,i) = do
+    ppr h (c,i) = Utf8.withHandle h $ do
         let st = startTime c + floor (timeLag sub)
             sh = st `div` 1000 `div` 3600
             sm = st `div` 1000 `mod` 3600 `div` 60
@@ -165,9 +166,10 @@ oneTxt sub = do
       else do
           txt <- TED.getTalkTranscript (talkId sub) (head $ language sub)
           -- Prepend the UTF-8 byte order mark to do Windows user a favor.
-          withBinaryFile path WriteMode $ \h ->
+          withBinaryFile path WriteMode $ \h -> Utf8.withHandle h $
               hPutStr h "\xef\xbb\xbf"
-          T.appendFile path txt
+          Utf8.withFile path AppendMode $ \h ->
+            T.hPutStrLn h txt
           return $ Just path
 
 oneLrc :: Subtitle -> IO (Maybe FilePath)

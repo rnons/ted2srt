@@ -36,6 +36,7 @@ jobs:
           working_directory: backend
           command: |
             source ~/.profile
+            cachix use rnons
             nix-build -j2 --cores 2
             cp -r result/bin bin
 

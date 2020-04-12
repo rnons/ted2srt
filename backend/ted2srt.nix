@@ -5,7 +5,8 @@
 , persistent, persistent-postgresql, persistent-template
 , raw-strings-qq, regex-posix, rio, servant-lucid, servant-server
 , stdenv, system-filepath, text, time, transformers
-, unordered-containers, vector, wai, wai-extra, warp, xml-conduit
+, unordered-containers, vector, wai, wai-extra, warp, with-utf8
+, xml-conduit
 , postgresql_11}:
 mkDerivation {
   pname = "ted2srt";
@@ -20,7 +21,7 @@ mkDerivation {
     monad-logger mtl network persistent persistent-postgresql
     persistent-template raw-strings-qq regex-posix rio servant-lucid
     servant-server system-filepath text time transformers
-    unordered-containers vector wai xml-conduit
+    unordered-containers vector wai with-utf8 xml-conduit
   ];
   librarySystemDepends = [ postgresql_11 ];
   libraryToolDepends = [ hpack ];
@@ -31,7 +32,8 @@ mkDerivation {
     monad-logger mtl network persistent persistent-postgresql
     persistent-template raw-strings-qq regex-posix rio servant-lucid
     servant-server system-filepath text time transformers
-    unordered-containers vector wai wai-extra warp xml-conduit
+    unordered-containers vector wai wai-extra warp with-utf8
+    xml-conduit
   ];
   doHaddock = false;
   prePatch = "hpack";

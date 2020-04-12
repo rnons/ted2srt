@@ -42,6 +42,7 @@ dependencies:
 - unordered-containers
 - vector
 - wai
+- with-utf8
 - xml-conduit
 
 # The library contains all of our application code. The executable

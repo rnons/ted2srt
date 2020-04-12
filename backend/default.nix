@@ -2,4 +2,7 @@
 , compiler ? "ghc864"
 }:
 
-nixpkgs.pkgs.haskell.packages.${compiler}.callPackage ./ted2srt.nix {}
+let
+  overrides = import ../nix/all.nix { inherit nixpkgs compiler; };
+in
+nixpkgs.pkgs.haskell.packages.${compiler}.callPackage ./ted2srt.nix overrides
