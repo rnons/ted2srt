@@ -1,0 +1,72 @@
+defaults: &defaults
+  docker:
+    - image: nonbili/nix:latest
+
+version: 2.1
+jobs:
+  build:
+    <<: *defaults
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - frontend-{{ checksum "frontend/package.json" }}-{{ checksum "frontend/packages.dhall" }}
+
+      - run:
+          name: Build frontend
+          working_directory: frontend
+          command: |
+            source ~/.profile
+            yarn
+            yarn build
+
+      - save_cache:
+          key: frontend-{{ checksum "frontend/package.json" }}-{{ checksum "frontend/packages.dhall" }}
+          paths:
+            - frontend/node_modules
+            - frontend/output
+            - frontend/dce-output
+            - frontend/.spago
+            - frontend/.psa-stash
+
+      - run:
+          name: Build backend
+          working_directory: backend
+          command: |
+            source ~/.profile
+            nix-shell --run "nix-build -j2 --cores 2"
+            cp -r result/bin bin
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - backend/dist
+            - backend/bin
+
+  deploy:
+    <<: *defaults
+
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: .
+
+      - run:
+          command: |
+            rsync -q -e 'ssh -q -oStrictHostKeyChecking=no' -z -a --delete backend/dist/ ${DEPLOY_USER}@${DEPLOY_HOST}:/opt/ted2srt/dist
+            rsync -q -e 'ssh -q -oStrictHostKeyChecking=no' -z -a --delete backend/bin/ ${DEPLOY_USER}@${DEPLOY_HOST}:/opt/ted2srt/bin
+
+workflows:
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
