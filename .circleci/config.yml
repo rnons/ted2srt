@@ -36,7 +36,7 @@ jobs:
           working_directory: backend
           command: |
             source ~/.profile
-            nix-shell --run "nix-build -j2 --cores 2"
+            nix-build -j2 --cores 2
             cp -r result/bin bin
 
       - persist_to_workspace:
