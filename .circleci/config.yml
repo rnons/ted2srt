@@ -55,6 +55,7 @@ jobs:
           at: .
 
       - run:
+          name: Deploy
           command: |
             rsync -q -e 'ssh -q -oStrictHostKeyChecking=no' -z -a --delete backend/dist/ ${DEPLOY_USER}@${DEPLOY_HOST}:/opt/ted2srt/dist
             rsync -q -e 'ssh -q -oStrictHostKeyChecking=no' -z -a --delete backend/bin/ ${DEPLOY_USER}@${DEPLOY_HOST}:/opt/ted2srt/bin

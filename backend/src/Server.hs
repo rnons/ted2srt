@@ -43,7 +43,7 @@ type TedApi =
     :> Capture "slug" Text           -- ^ getTalkH
     :> Get '[JSON] Talk
   :<|> "talks"
-    :> Capture "tid" Int             -- ^ getTalkSubtitleH
+    :> Capture "tid" Int             -- ^ getSubtitleH
     :> "transcripts"
     :> Capture "format" FileType
     :> QueryParams "lang" Text
