@@ -23,8 +23,7 @@ import           Model
 import qualified Models.RedisKeys            as Keys
 import           Models.Types                (mkTalkUrl)
 import           Web.TED.TalkPage            (parseDescription, parseImage,
-                                              parseMediaPad, parseMediaSlug,
-                                              parseTalkObject)
+                                              parseMediaPad, parseTalkObject)
 
 
 data TalkObj = TalkObj
@@ -34,6 +33,7 @@ data TalkObj = TalkObj
   , filmedAt    :: UTCTime
   , publishedAt :: UTCTime
   , languages   :: [Language]
+  , mediaSlug   :: Text
   } deriving (Generic)
 
 instance FromJSON TalkObj where
@@ -49,6 +49,7 @@ instance FromJSON TalkObj where
       <*> liftM posixSecondsToUTCTime (v .: "published")
       <*> liftM posixSecondsToUTCTime (v .: "published")
       <*> v .: "languages"
+      <*> v .: "mediaIdentifier"
   parseJSON _          = mzero
 
 
@@ -119,7 +120,6 @@ fetchTalk url = do
       cursor = fromDocument $ parseLBS body
       desc = parseDescription cursor
       img = parseImage cursor
-      mdSlug = parseMediaSlug body
       mdPad = parseMediaPad body
       core = parseTalkObject body
     case eitherDecode core of
@@ -132,7 +132,7 @@ fetchTalk url = do
           , talkDescription = desc
           , talkImage = img
           , talkLanguages = toJSON languages
-          , talkMediaSlug = mdSlug
+          , talkMediaSlug = mediaSlug
           , talkMediaPad = mdPad
           })
       Left err      -> do
