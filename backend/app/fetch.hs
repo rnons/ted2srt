@@ -2,7 +2,7 @@
 {-# LANGUAGE RecordWildCards   #-}
 
 import qualified Data.Text            as T
-import qualified Data.Text.IO         as T
+import qualified Data.Text.IO.Utf8    as Utf8
 import           Data.Time            (getCurrentTime)
 import           Database.Persist     (Entity (..))
 import           LoadEnv              (loadEnv)
@@ -44,7 +44,7 @@ talkToFeedEntry (Entity _ Talk {..}) = do
         Subtitle 0 talkSlug ["en"] talkMediaSlug talkMediaPad TXT
     case path of
         Just path' -> do
-          transcript <- T.drop 2 <$> T.readFile path'
+          transcript <- T.drop 2 <$> Utf8.readFile path'
           return $ Just FeedEntry
               { feedEntryTitle = talkName
               , feedEntryLink  = "http://ted2srt.org/talks/" <> talkSlug
