@@ -13,6 +13,7 @@ import           Data.Aeson
 import           Data.Text            (Text)
 import qualified Data.Text            as T
 import qualified Data.Text.IO         as T
+import qualified Data.Text.IO.Utf8    as Utf8
 import           GHC.Generics         (Generic)
 import           Network.HTTP.Conduit hiding (path)
 import           RIO
@@ -206,10 +207,10 @@ oneLrc sub = do
 
 mergeFile :: FilePath -> FilePath -> FilePath -> IO ()
 mergeFile p1 p2 path = do
-    c1 <- T.readFile p1
-    c2 <- T.readFile p2
+    c1 <- Utf8.readFile p1
+    c2 <- Utf8.readFile p2
     let merged = T.unlines $ merge (T.lines c1) (T.lines c2)
-    T.writeFile path merged
+    Utf8.writeFile path merged
 
 -- | Merge srt files of two language line by line. However,
 -- one line in srt_1 may correspond to two lines in srt_2, or vice versa.
