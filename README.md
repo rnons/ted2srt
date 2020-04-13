@@ -6,24 +6,21 @@ This is the source code of [ted2srt.org](https://ted2srt.org), a website to down
 
 ## Set up development environment
 
-### Frontend
+[Nix](https://nixos.org/nix/) is required for development.
 
-Setup [purescript](https://github.com/purescript/purescript) and [pulp](https://github.com/purescript-contrib/pulp), then
+### Frontend
 
 ```
 cd frontend
+nix-shell
+spago build -w
 yarn
-pulp -w build
 yarn start
 ```
 
 Run `yarn build` once, so that backend can start correctly.
 
 ### Backend
-
-First, setup [nix](https://nixos.org/nix/) and [stack](https://docs.haskellstack.org/en/stable/README/) the way you like.
-
-Then
 
 ```
 cd backend
