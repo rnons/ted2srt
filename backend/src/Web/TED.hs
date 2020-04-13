@@ -19,7 +19,7 @@ import           RIO
 import           RIO.List.Partial     (head)
 import           System.Directory
 import           System.IO            (hPutStr, hPutStrLn, openFile, print)
-import qualified System.IO.Utf8 as Utf8
+import qualified System.IO.Utf8       as Utf8
 import           Text.Printf
 
 import           Web.TED.API          as TED
@@ -162,15 +162,16 @@ oneTxt sub = do
   path <- subtitlePath sub
   cached <- doesFileExist path
   if cached
-      then return $ Just path
-      else do
-          txt <- TED.getTalkTranscript (talkId sub) (head $ language sub)
-          -- Prepend the UTF-8 byte order mark to do Windows user a favor.
-          withBinaryFile path WriteMode $ \h -> Utf8.withHandle h $
-              hPutStr h "\xef\xbb\xbf"
-          Utf8.withFile path AppendMode $ \h ->
-            T.hPutStrLn h txt
-          return $ Just path
+    then return $ Just path
+    else do
+      E.handle (\(_ :: SomeException) -> pure Nothing) $ do
+        txt <- TED.getTalkTranscript (talkId sub) (head $ language sub)
+        -- Prepend the UTF-8 byte order mark to do Windows user a favor.
+        withBinaryFile path WriteMode $ \h -> Utf8.withHandle h $
+          hPutStr h "\xef\xbb\xbf"
+        Utf8.withFile path AppendMode $ \h ->
+          T.hPutStrLn h txt
+        return $ Just path
 
 oneLrc :: Subtitle -> IO (Maybe FilePath)
 oneLrc sub = do
