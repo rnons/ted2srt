@@ -35,7 +35,7 @@ getTalkId uri = E.catch
 parseId :: ByteString -> Int
 parseId body = read $ L8.unpack $ last $ last r
   where
-    pat = "id\":([^,]+),\"duration" :: ByteString
+    pat = "id\":\"([^,]+)\",\"mediaIdentifier" :: ByteString
     r = body =~ pat :: [[ByteString]]
 
 parseDescription :: Cursor -> Text

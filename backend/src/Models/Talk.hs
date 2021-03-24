@@ -23,7 +23,7 @@ import           Model
 import qualified Models.RedisKeys            as Keys
 import           Models.Types                (mkTalkUrl)
 import           Web.TED.TalkPage            (parseDescription, parseImage,
-                                              parseMediaPad, parseTalkObject)
+                                              parseTalkObject)
 
 
 data TalkObj = TalkObj
@@ -120,7 +120,6 @@ fetchTalk url = do
       cursor = fromDocument $ parseLBS body
       desc = parseDescription cursor
       img = parseImage cursor
-      mdPad = parseMediaPad body
       core = parseTalkObject body
     case eitherDecode core of
       Right TalkObj{..} -> do
@@ -133,7 +132,7 @@ fetchTalk url = do
           , talkImage = img
           , talkLanguages = toJSON languages
           , talkMediaSlug = mediaSlug
-          , talkMediaPad = mdPad
+          , talkMediaPad = 0.0
           })
       Left err      -> do
         logErrorS "fetchTalk" $ fromString err
